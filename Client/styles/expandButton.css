@@ -1,0 +1,54 @@
+/*------ Settings ------*/
+.container {
+  --color: #a5a5b0;
+  --size: 24px;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  font-size: var(--size);
+  user-select: none;
+  fill: var(--color);
+}
+
+.container .expand {
+  position: absolute;
+  animation: keyframes-fill 0.5s;
+}
+
+.container .compress {
+  position: absolute;
+  display: none;
+  animation: keyframes-fill 0.5s;
+}
+
+/* ------ On check event ------ */
+.container input:checked ~ .expand {
+  display: none;
+}
+
+.container input:checked ~ .compress {
+  display: block;
+}
+
+/* ------ Hide the default checkbox ------ */
+.container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* ------ Animation ------ */
+@keyframes keyframes-fill {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+}

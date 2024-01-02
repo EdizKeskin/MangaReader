@@ -1,0 +1,286 @@
+{
+  "Navbar": {
+    "home": "Ana Sayfa",
+    "categories": "Kategoriler",
+    "bookmarks": "Kaydettiklerim",
+    "profile": "Profil",
+    "logout": "Çıkış Yap",
+    "adminPanel": "Admin Paneli",
+    "login": "Giriş Yap",
+    "register": "Kayıt Ol",
+    "search": "Ara...",
+    "changeLocale": "Dili Değiştir",
+    "calendar": "Takvim",
+    "announcements": "Duyurular",
+    "mobile": "M. Uygulama",
+    "faq": "S.S.S"
+  },
+  "Hero": {
+    "gotoseries": "Seriye Git"
+  },
+  "Slider": {
+    "populerSeries": "Popüler Seriler"
+  },
+  "Title": {
+    "newSeries": "Yeni eklenenler",
+    "admin": "Admin Paneline hoşgeldiniz",
+    "announcements": "Duyurular",
+    "featured": "Öne Çıkanlar"
+  },
+  "NotFound": {
+    "title": "Aradığın içerik bulunamadı.",
+    "goHome": "Ana sayfaya git"
+  },
+  "Error": {
+    "title": "Bir hata oluştu.",
+    "goHome": "Ana sayfaya git"
+  },
+  "Login": {
+    "title": "Giriş Yap",
+    "password": "Şifre",
+    "email": "Email ya da Kullanıcı Adı",
+    "emailRequired": "Email yada Kullanıcı Adı gereklidir.",
+    "passwordRequired": "Şifre gereklidir.",
+    "minLength": "Şifre en az 4 karakter olmalıdır.",
+    "or": "ya da"
+  },
+  "Register": {
+    "title": "Kayıt Ol",
+    "username": "Kullanıcı Adı",
+    "email": "Email",
+    "password": "Şifre",
+    "passwordConfirm": "Şifre Tekrar",
+    "verifyEmail": "Mail adresinize gelen sihirli rakamları girin",
+    "verify": "Doğrula",
+    "usernameRequired": "Kullanıcı adı gereklidir.",
+    "emailRequired": "Email gereklidir.",
+    "emailValid": "Geçerli bir email adresi girin.",
+    "passwordRequired": "Şifre gereklidir.",
+    "passwordConfirmRequired": "Şifre tekrarı gereklidir.",
+    "passwordConfirmSame": "Şifreler aynı olmalıdır.",
+    "minLength": "En az 4 karakter olmalıdır.",
+    "or": "ya da"
+  },
+  "Bookmarks": {
+    "title": "Kaydettiklerim",
+    "noBookmarks": "Henüz hiçbir şey kaydetmemişsiniz."
+  },
+  "Category": {
+    "title": "Kategoriler",
+    "notFound": "Bu kategoriye ait içerik bulunamadı."
+  },
+  "Manga": {
+    "author": "Yazar",
+    "categories": "Kategoriler",
+    "summary": "Özet",
+    "goFirstChapter": "İlk Bölüme Git",
+    "loading": "Yükleniyor...",
+    "addBookmark": "Kaydet",
+    "removeBookmark": "Kaydı Kaldır",
+    "bookmarkRemoved": "Kaldırıldı.",
+    "bookmarkAdded": "Kaydedildi."
+  },
+  "Chapter": {
+    "loading": "Yükleniyor...",
+    "goManga": "Mangaya Git",
+    "readStyle": "Okuma Stili",
+    "selectChapter": "Bölüm Seç",
+    "selectPage": "Sayfa Seç",
+    "theme": "Tema",
+    "dark": "Karanlık",
+    "light": "Aydınlık",
+    "notPublished": "Bu bölüm henüz yayınlanmadı."
+  },
+  "Profile": {
+    "username": "Kullanıcı Adı",
+    "signOut": "Çıkış Yap",
+    "update": "Güncelle"
+  },
+  "ChapterForm": {
+    "mangaRequired": "Manga adı gereklidir.",
+    "titleRequired": "Bölüm adı gereklidir.",
+    "folderRequired": "Bölüm dosyası zorunlu",
+    "folderInvalid": "Sadece zip dosyaları yüklenebilir",
+    "updating": "Bölüm güncelleniyor...",
+    "updated": "Bölüm başarıyla güncellendi.",
+    "updateError": "Bölüm güncellenirken bir hata oluştu.",
+    "error": "Bölüm güncellenirken bir hata oluştu.",
+    "adding": "Bölüm ekleniyor...",
+    "added": "Bölüm başarıyla eklendi.",
+    "addError": "Bölüm eklenirken bir hata oluştu.",
+    "loading": "Yükleniyor...",
+    "selectManga": "Mangayı Seç",
+    "title": "Başlık",
+    "chapterNumber": "Bölüm Numarası",
+    "chapterNumberDesc": "Boş bırakırsanız otomatik olarak en son bölüm numarasına göre eklenir.",
+    "remove": "Kaldır",
+    "dragAndDrop1": "Yüklemek için tıklayın",
+    "dragAndDrop2": "yada sürükleyip bırakın",
+    "update": "Güncelle",
+    "add": "Ekle",
+    "shrink": "Küçült",
+    "expand": "Genişlet",
+    "content": "İçerik",
+    "publishDate": "Yayınlanma Tarihi"
+  },
+  "CustomTable": {
+    "deleting": "Benden günah gitti..",
+    "deleted": "Başarıyla Silindi.",
+    "deleteError": "Silinirken bir hata oluştu.",
+    "updating": "Güncelleniyor...",
+    "updated": "Başarıyla Güncellendi.",
+    "updateError": "Güncellenirken bir hata oluştu.",
+    "user": "Kullanıcı",
+    "rowsPerPage": "Sayfa başına gösterim",
+    "status": "Durum",
+    "search": "İsme göre ara...",
+    "columns": "Sütunlar",
+    "addItem": "Yeni {name}",
+    "totalLength": "Toplam {name} sayısı: {count}",
+    "allSelected": "Tümü seçildi",
+    "tableNotFound": "{name} bulunamadı.",
+    "attention": "Dikkat!",
+    "deleteWarning": "Bu işlem geri alınamaz ve ilişkili olduğu her dosyayı uzayın sonsuz boşluğuna gönderir.",
+    "cancel": "İptal",
+    "delete": "Okudum, anladım",
+    "subscribed": "Abone",
+    "remainingDays": "Kalan gün: {count}"
+  },
+  "GenresTable": {
+    "editGenre": "Kategoriyi Düzenle",
+    "details": "Detaylar",
+    "deleteGenre": "Kategoriyi Sil",
+    "searchByName": "İsme göre ara...",
+    "columns": "Sütunlar",
+    "addGenre": "Kategori ekle",
+    "adding": "Kategori ekleniyor...",
+    "added": "Kategori başarıyla eklendi.",
+    "addError": "Eklemeye çaşıştığınız kategori zaten var",
+    "deleting": "Kategori siliniyor...",
+    "deleted": "Kategori başarıyla silindi.",
+    "deleteError": "Kategori silinirken bir hata oluştu.",
+    "updating": "Kategori güncelleniyor...",
+    "updated": "Kategori başarıyla güncellendi.",
+    "updateError": "Kategori güncellenirken bir hata oluştu.",
+    "newGenre": "Kategori ekle",
+    "eg": "Örnek: Aksiyon",
+    "close": "Kapat",
+    "add": "Ekle",
+    "attention": "Dikkat!",
+    "deleteWarning": "kategorisi silinecek ve bu işlem geri alınamaz.",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "editCategory": "Kategori Düzenle",
+    "save": "Kaydet"
+  },
+  "MangaForm": {
+    "mangaRequired": "Manga adı gereklidir.",
+    "authorRequired": "Yazar adı gereklidir.",
+    "summaryRequired": "Özet gereklidir.",
+    "coverRequired": "Kapak zorunlu",
+    "categoryRequired": "En az bir kategori seçmelisiniz.",
+    "categoryAdding": "Kategori ekleniyor...",
+    "categoryAdded": "Kategori başarıyla eklendi.",
+    "categoryAddError": "Kategori eklenirken bir hata oluştu.",
+    "updating": "Manga güncelleniyor...",
+    "updated": "Manga başarıyla güncellendi.",
+    "updateError": "Manga güncellenirken bir hata oluştu.",
+    "adding": "Manga ekleniyor...",
+    "added": "Manga başarıyla eklendi.",
+    "addError": "Manga eklenirken bir hata oluştu.",
+    "mangaName": "Manga Adı",
+    "author": "Yazar",
+    "categories": "Kategoriler",
+    "addCategory": "Kategori Ekle",
+    "summary": "Özet",
+    "remove": "Kaldır",
+    "dragAndDrop1": "Yüklemek için tıklayın",
+    "dragAndDrop2": "yada sürükleyip bırakın",
+    "submit": "Onayla",
+    "eg": "Örnek: Aksiyon",
+    "close": "Kapat",
+    "add": "Ekle",
+    "advanced": "Gelişmiş",
+    "type": "İçerik türünü seçiniz"
+  },
+  "StatsCard": {
+    "manga": "Manga Sayısı",
+    "chapter": "Bölüm Sayısı",
+    "user": "Kullanıcı Sayısı",
+    "category": "Kategori sayısı",
+    "announcements": "Duyuru sayısı"
+  },
+
+  "Author": {
+    "notFound": "Bu yazara ait bir seri yok.",
+    "error": "Yazar bulunurken bir hata oluştu."
+  },
+  "AnnouncementsTable": {
+    "editAnnouncement": "Duyuruyu Düzenle",
+    "details": "Detaylar",
+    "deleteAnnouncement": "Duyuruyu Sil",
+    "searchByTitle": "İsme göre ara...",
+    "columns": "Sütunlar",
+    "addAnnouncement": "Duyuru ekle",
+    "adding": "Duyuru ekleniyor...",
+    "added": "Duyuru başarıyla eklendi.",
+    "addError": "Duyuru eklenirken bir hata oluştu.",
+    "deleting": "Duyuru siliniyor...",
+    "deleted": "Duyuru başarıyla silindi.",
+    "deleteError": "Duyuru silinirken bir hata oluştu.",
+    "updating": "Duyuru güncelleniyor...",
+    "updated": "Duyuru başarıyla güncellendi.",
+    "updateError": "Duyuru güncellenirken bir hata oluştu.",
+    "newAnnouncement": "Duyuru ekle",
+    "title": "Başlık",
+    "close": "Kapat",
+    "contents": "İçerik",
+    "add": "Ekle",
+    "attention": "Dikkat!",
+    "deleteWarning": "duyurusu silinecek ve bu işlem geri alınamaz.",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "save": "Kaydet",
+    "advanced": "Gelişmiş",
+    "link": "Link",
+    "linkDescription": "Link eklenirse duyuru başlığına tıklandığında yönlendirilirsiniz ve içerik gözükmez"
+  },
+  "Announcements": {
+    "notFound": "Bu duyuru bulunamadı.",
+    "loadMore": "Daha fazla yükle"
+  },
+  "Calendar": {
+    "calendar": "Takvim",
+    "error": "Planlanmış bölüm bulunamadı."
+  },
+  "AddSubscriber": {
+    "addSubscriber": "Abone Ekle",
+    "addSubscriberDescription": "Veritabanına bir abone ekleyin.",
+    "userId": "Kullanıcı ID",
+    "day": "Gün",
+    "add": "Ekle",
+    "adding": "Abone ekleniyor...",
+    "added": "Abone başarıyla eklendi.",
+    "addError": "Abone eklenirken bir hata oluştu.",
+    "remainingDays": "Kalan gün",
+    "update": "Güncelle",
+    "updateSubscriber": "Aboneyi Güncelle",
+    "updating": "Abone güncelleniyor...",
+    "updated": "Abone başarıyla güncellendi.",
+    "updateError": "Abone güncellenirken bir hata oluştu.",
+    "deleting": "Abone siliniyor...",
+    "deleted": "Abone başarıyla silindi.",
+    "deleteError": "Abone silinirken bir hata oluştu."
+  },
+  "Mobile": {
+    "title": "Mobil Uygulamamızı indirin",
+    "description": "Bölümleri indirerek çevrimdışı okuma gibi özelliklerden yararlanmak için uygulamamızı indirin.",
+    "btn": "Yapım aşamasında !"
+  },
+  "Faq": {
+    "title": "SSS"
+  },
+  "InfiniteScroll": {
+    "noMoreDataToLoad": "Daha fazla manga yok."
+  }
+}

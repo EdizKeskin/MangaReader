@@ -1,0 +1,56 @@
+/* :root {
+  --grid-offset: calc(50% + 80px);
+  --bg-size: 180px;
+  --grid-accent: hsl(280 0% 80% / 0.1);
+  --grid-line: hsl(0 0% 12%);
+}
+
+html {
+  background: black;
+  min-height: 100vh;
+}
+html::before {
+  content: "";
+  transition: background 0.2s;
+  z-index: -1;
+  background:
+    linear-gradient(
+        var(--grid-accent) 0 2px,
+        transparent 2px calc(100% - 2px),
+        var(--grid-accent) calc(100% - 2px)
+      )
+      calc((var(--grid-offset) - (var(--bg-size) * 2)) - 1px)
+      calc((var(--grid-offset) - var(--bg-size)) - 1px) /
+      calc(var(--bg-size) + 2px) calc(var(--bg-size) + 2px) no-repeat,
+    linear-gradient(
+        90deg,
+        var(--grid-accent) 0 2px,
+        transparent 2px calc(100% - 2px),
+        var(--grid-accent) calc(100% - 2px)
+      )
+      calc((var(--grid-offset) - (var(--bg-size) * 2)) - 1px)
+      calc((var(--grid-offset) - var(--bg-size)) - 1px) /
+      calc(var(--bg-size) + 2px) calc(var(--bg-size) + 2px) no-repeat,
+    linear-gradient(
+        transparent calc(var(--bg-size) - 2px),
+        var(--grid-line) calc(var(--bg-size) - 2px) var(--bg-size)
+      )
+      var(--grid-offset) var(--grid-offset) / 100% var(--bg-size),
+    linear-gradient(
+        90deg,
+        transparent calc(var(--bg-size) - 2px),
+        var(--grid-line) calc(var(--bg-size) - 2px) var(--bg-size)
+      )
+      var(--grid-offset) var(--grid-offset) / var(--bg-size) 100%,
+    transparent;
+
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  width: 100vw;
+  -webkit-mask: radial-gradient(
+    circle at 0% 0%,
+    hsl(0 0% 100% / 0.5),
+    transparent
+  );
+} */

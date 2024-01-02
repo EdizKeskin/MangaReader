@@ -1,0 +1,40 @@
+/* inspired by: https://codepen.io/jh3y/pen/RwqZNKa */
+
+.glow:hover {
+  --active: 1;
+}
+
+.glow:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at calc(var(--x) * 1px) calc(var(--y) * 1px),
+    hsl(0 0% 100% / 0.15),
+    transparent 15vmin
+  );
+  background-attachment: fixed;
+  opacity: var(--active, 0);
+  transition: opacity 0.2s;
+
+  pointer-events: none;
+}
+
+.glow:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      circle at calc(var(--x) * 1px) calc(var(--y) * 1px),
+      hsl(0 0% 100% / 0.5),
+      transparent 15vmin
+    ),
+    transparent;
+  background-attachment: fixed;
+  pointer-events: none;
+  mask:
+    linear-gradient(white, white) 50% 0 / 100% 2px no-repeat,
+    linear-gradient(white, white) 50% 100% / 100% 2px no-repeat,
+    linear-gradient(white, white) 0 50% / 2px 100% no-repeat,
+    linear-gradient(white, white) 100% 50% / 2px 100% no-repeat;
+}

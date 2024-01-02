@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  scroll-behavior: smooth;
+  font-family: "Montserrat", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+*:before,
+*:after {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*::-webkit-scrollbar {
+  width: 0.45rem;
+  background-color: #282c34;
+  border-radius: 6px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #171923;
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 24, 24, 27;
+  }
+}
+
+.no-tap-highlight {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  color: rgb(var(--foreground-rgb));
+}
+
+#disqus_thread {
+  color-scheme: none !important;
+}
+#disqus_thread a {
+  color: #fff !important;
+}
