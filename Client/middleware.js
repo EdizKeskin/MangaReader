@@ -38,6 +38,8 @@ export default authMiddleware({
     "/:locale/calendar",
     "/faq",
     "/:locale/faq",
+    "/mobile",
+    "/:locale/mobile",
   ],
 });
 

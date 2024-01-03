@@ -1,13 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Input,
-  Button,
-} from "@nextui-org/react";
+import { Card, CardHeader, CardBody, Input, Button } from "@nextui-org/react";
 import { TbEye, TbEyeClosed, TbLock, TbMail } from "react-icons/tb";
 import { Formik } from "formik";
 import * as Yup from "yup";

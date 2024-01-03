@@ -4,7 +4,6 @@ import {
   Card,
   CardHeader,
   CardBody,
-  CardFooter,
   Input,
   Button,
   Modal,
@@ -22,7 +21,6 @@ import { useRouter } from "next13-progressbar";
 import { useSignUp } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
 import SignInOAuthButtons from "@/components/SignInOAuthButtons";
-import Spotlight from "@/components/Spotlight";
 
 export default function Login() {
   const t = useTranslations("Register");

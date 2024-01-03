@@ -44,9 +44,30 @@ export default function MangaRead({ params }) {
   const pathname = usePathname();
   const slug = params.id;
   const t = useTranslations("Chapter");
+  const readChapters = JSON.parse(localStorage.getItem("readChapters"));
+
+  useEffect(() => {
+    toast("This is a sample chapter, not related to the manga.", {
+      duration: 5000,
+    });
+  }, []);
+
+  const setReaded = (id) => {
+    if (readChapters) {
+      if (!readChapters.includes(id)) {
+        localStorage.setItem(
+          "readChapters",
+          JSON.stringify([...readChapters, id])
+        );
+      }
+    } else {
+      localStorage.setItem("readChapters", JSON.stringify([id]));
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
+
     setNovelTheme(localStorage.getItem("NovelTheme") ?? "dark");
     try {
       getChaptersByMangaSlug(slug).then((res) => {
@@ -63,6 +84,7 @@ export default function MangaRead({ params }) {
               if (res !== null && new Date(res.expireAt) > new Date()) {
                 setChapter(response);
                 setSelected(new Set([response.chapter._id]));
+                setReaded(response.chapter._id);
                 setLoading(false);
               } else if (isLoaded) {
                 toast.error(t("notPublished"));
@@ -73,25 +95,15 @@ export default function MangaRead({ params }) {
         } else {
           setChapter(response);
           setSelected(new Set([response.chapter._id]));
+          setReaded(response.chapter._id);
           setLoading(false);
         }
       });
 
-      const readChapters = JSON.parse(localStorage.getItem("readChapters"));
       setReadStyle(
         new Set([JSON.parse(localStorage?.getItem("readStyle")) ?? "List"])
       );
       setReadStyleName(JSON.parse(localStorage.getItem("readStyle")) ?? "List");
-      if (readChapters) {
-        if (!readChapters.includes(id)) {
-          localStorage.setItem(
-            "readChapters",
-            JSON.stringify([...readChapters, id])
-          );
-        }
-      } else {
-        localStorage.setItem("readChapters", JSON.stringify([id]));
-      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -346,7 +358,7 @@ export default function MangaRead({ params }) {
         {mangaType !== "novel" && readStyleName === "List" ? (
           <>
             <ul
-              className={`flex flex-col items-center justify-center p-10 ${
+              className={`flex flex-col items-center justify-center mx-5 ${
                 mangaType === "webtoon" ? "gap-0" : "gap-2"
               }`}
             >
@@ -373,7 +385,7 @@ export default function MangaRead({ params }) {
           </>
         ) : (
           <div
-            className="relative flex items-center justify-center w-4/5 shadow-none cursor-pointer shadow-black/5 rounded-large no-tap-highlight "
+            className="relative flex items-center justify-center mx-5 shadow-none cursor-pointer md:w-4/5 shadow-black/5 rounded-large no-tap-highlight "
             onClick={(e) => {
               const imageWidth = e.target.offsetWidth;
               const clickX = e.clientX - e.target.getBoundingClientRect().left;
@@ -397,7 +409,7 @@ export default function MangaRead({ params }) {
           >
             <Image
               src={chapter.chapter.content[page]}
-              className="w-full rounded-none pointer-events-none select-none md:w-4/5 "
+              className="w-full rounded-none pointer-events-none select-none md:w-4/5"
               alt="manga"
               loading="lazy"
               removeWrapper
