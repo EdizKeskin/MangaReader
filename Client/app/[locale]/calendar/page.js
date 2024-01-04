@@ -62,7 +62,7 @@ const Calendar = () => {
 
   return (
     <div className="flex flex-col items-center justify-center mt-6 mb-6 md:m-10">
-      <Title text={t("calendar")} color="#9353d3" />
+      <Title text={t("calendar")} />
       {Object.keys(groupedChapters).length > 0 ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4 lg:grid-cols-5 lg:gap-8 justify-items-center ">
           {Object.keys(groupedChapters).map((date, index) => (

@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import MangaListArea from "@/sections/MangaListArea";
 import "@/styles/background.css";
 import TopContent from "@/sections/TopContent";
+import { discordIframe } from "@/config";
 export default async function Index() {
   const genres = await fetchGenres();
   const mangas = await fetchMangaListHome();
@@ -24,13 +25,13 @@ export default async function Index() {
             <Announcements />
 
             <div className="my-6">
-              <Title text={"Kategoriler"} color={"#9353d3"} />
+              <Title text={"Kategoriler"} />
             </div>
             <Sidebar genres={genres} />
             <div className="my-6 mr-10">
-              <Title text={"Discord"} color={"#9353d3"} />
+              <Title text={"Discord"} />
               <iframe
-                src="https://discord.com/widget?id=1170397757438177410&theme=dark"
+                src={discordIframe}
                 style={{
                   width: "100%",
                   height: "500px",

@@ -86,7 +86,7 @@ export default function Category() {
 
       {mangas && (
         <div className="flex flex-col justify-center m-2">
-          <Title text={category} color={"#9353d3"} />
+          <Title text={category} />
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5 lg:gap-8 justify-items-center">
             {mangas.map((manga) => (
               <Card key={manga._id} item={manga} />

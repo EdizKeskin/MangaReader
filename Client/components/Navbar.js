@@ -24,6 +24,7 @@ import { useRouter } from "next13-progressbar";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter as useIntlRouter } from "next-intl/client";
 import { MdOutlineAdminPanelSettings } from "react-icons/md";
+import { websiteTitle } from "@/config";
 
 export default function Navbar() {
   const t = useTranslations("Navbar");
@@ -74,7 +75,7 @@ export default function Navbar() {
             className="font-bold cursor-pointer text-secondary"
             onClick={() => router.push("/")}
           >
-            Logo
+            {websiteTitle}
           </p>
         </NavbarBrand>
       </NavbarContent>

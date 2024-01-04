@@ -1,9 +1,10 @@
 "use client";
+import { discordUrl } from "@/config";
 import { useRouter } from "next/navigation";
 import React from "react";
 
 export default function Discord() {
   const router = useRouter();
-  router.push("https://discord.gg/vaTnFDB6Nr");
+  router.push(discordUrl);
   return <div>Yönlendiriliyosunuz</div>;
 }

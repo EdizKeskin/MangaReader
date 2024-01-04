@@ -11,7 +11,7 @@ export default function MangaListArea() {
     <div className="md:col-span-2">
       <div className={"my-6"}>
         <div className="ml-6">
-          <Title text={"new"} color={"#9353d3"} />
+          <Title text={"new"} />
         </div>
         <Tabs
           aria-label="Options"

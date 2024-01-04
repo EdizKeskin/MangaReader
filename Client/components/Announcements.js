@@ -42,7 +42,7 @@ export default function Announcements() {
   return (
     <>
       <div className="my-6 cursor-pointer">
-        <Title text={"announcements"} color={"#9353d3"} />
+        <Title text={"announcements"} />
       </div>
       <Card className="z-10 mr-10">
         <CardBody className="max-h-[400px]">

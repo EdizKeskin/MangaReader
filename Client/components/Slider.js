@@ -24,7 +24,7 @@ export default function Slider({ data }) {
   return (
     <>
       <div className="z-20 mt-6 ml-6 -mb-10 bg-black">
-        <Title text={t("populerSeries")} color={"#9353d3"} />
+        <Title text={t("populerSeries")} />
       </div>
       <div className="relative z-20 flex items-center overflow-visible">
         <MdChevronLeft

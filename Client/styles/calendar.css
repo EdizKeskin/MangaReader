@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 .react-calendar {
   background: #27272a !important;
   z-index: 100 !important;
@@ -22,15 +26,15 @@
   padding: 5px !important;
 }
 .react-calendar__tile--now {
-  background: #9353d3 !important;
+  @apply bg-custom !important;
 }
 
 .react-calendar__tile--now:enabled:hover,
 .react-calendar__tile--now:enabled:focus {
-  background: #6020a0 !important;
+  @apply bg-custom/70 !important;
 }
 
 .react-date-picker__button:enabled:hover .react-date-picker__button__icon,
 .react-date-picker__button:enabled:focus .react-date-picker__button__icon {
-  stroke: #9353d3 !important;
+  @apply bg-custom !important;
 }

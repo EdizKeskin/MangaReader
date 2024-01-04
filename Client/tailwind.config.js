@@ -4,6 +4,7 @@ const svgToDataUri = require("mini-svg-data-uri");
 const {
   default: flattenColorPalette,
 } = require("tailwindcss/lib/util/flattenColorPalette");
+const { color } = require("./config");
 
 module.exports = {
   content: [
@@ -15,6 +16,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        custom: color,
+      },
       animation: {
         spotlight: "spotlight 2s ease .75s 1 forwards",
         scroll:
@@ -41,7 +45,17 @@ module.exports = {
   },
   darkMode: "class",
   plugins: [
-    nextui(),
+    nextui({
+      themes: {
+        dark: {
+          colors: {
+            secondary: {
+              DEFAULT: color,
+            },
+          },
+        },
+      },
+    }),
     function ({ matchUtilities, theme }) {
       matchUtilities(
         {

@@ -24,7 +24,7 @@ export default function Author() {
 
   return (
     <div className="flex flex-col items-center justify-center mt-3 mb-6">
-      <Title text={author} color={"#9353d3"} />
+      <Title text={author} />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5 lg:gap-8 justify-items-center">
         {mangas.map((item, i) => (

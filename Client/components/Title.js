@@ -26,7 +26,7 @@ export default function Title({ text, className }) {
   return (
     <div className={cn("flex", className)}>
       <p
-        className={`mb-6 text-3xl font-bold underline underline-offset-8 decoration-8 decoration-[#9353d3] leading-relaxed z-20`}
+        className={`mb-6 text-3xl font-bold underline underline-offset-8 decoration-8 decoration-custom leading-relaxed z-20`}
       >
         {text}
       </p>
