@@ -71,6 +71,7 @@
   },
   "Manga": {
     "author": "Yazar",
+    "artist": "Çizer",
     "categories": "Kategoriler",
     "summary": "Özet",
     "goFirstChapter": "İlk Bölüme Git",
@@ -201,7 +202,8 @@
     "close": "Kapat",
     "add": "Ekle",
     "advanced": "Gelişmiş",
-    "type": "İçerik türünü seçiniz"
+    "type": "İçerik türünü seçiniz",
+    "artist": "Çizer"
   },
   "StatsCard": {
     "manga": "Manga Sayısı",
@@ -282,5 +284,9 @@
   },
   "InfiniteScroll": {
     "noMoreDataToLoad": "Daha fazla manga yok."
+  },
+  "Artist": {
+    "notFound": "Bu çizere ait bir seri yok.",
+    "error": "Çizer bulunurken bir hata oluştu."
   }
 }

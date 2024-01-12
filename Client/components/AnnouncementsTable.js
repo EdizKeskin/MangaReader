@@ -42,7 +42,7 @@ export default function AnnouncementsTable({
   announcements: initialAnnouncements,
   columns,
   INITIAL_VISIBLE_COLUMNS,
-  username,
+  userId,
   email,
 }) {
   const [announcements, setAnnouncements] = useState(initialAnnouncements);
@@ -243,7 +243,7 @@ export default function AnnouncementsTable({
     const promise = addAnnouncement({
       title: newTitle,
       contents: newContents,
-      uploader: username || email,
+      uploader: userId,
       link: newLink !== "" ? newLink : null,
     });
 
@@ -281,7 +281,7 @@ export default function AnnouncementsTable({
     const promise = patchAnnouncement(editId, {
       title: editTitle,
       contents: editContents,
-      uploader: username || email,
+      uploader: userId,
       link: newLink !== "" ? newLink : null,
     });
 

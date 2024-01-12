@@ -8,6 +8,7 @@ const mangaSchema = new mongoose.Schema({
     unique: true,
   },
   author: String,
+  artist: String,
   genres: [{ type: mongoose.Schema.Types.ObjectId, ref: "Genre" }],
   summary: String,
   coverImage: String,

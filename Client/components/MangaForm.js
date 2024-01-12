@@ -64,7 +64,8 @@ export default function MangaForm({ update, mangaId, username, email }) {
 
   const validationSchema = Yup.object({
     name: Yup.string().required(t("mangaRequired")),
-    author: Yup.string().required(t("authorRequired")),
+    author: Yup.string().notRequired(),
+    artist: Yup.string().notRequired(),
     genres: Yup.array()
       .min(1, t("categoryRequired"))
       .required(t("categoryRequired")),
@@ -121,10 +122,11 @@ export default function MangaForm({ update, mangaId, username, email }) {
   };
 
   const handleSubmit = async (values, { resetForm, setFieldValue }) => {
-    const { name, author, genres, summary, coverImage, type } = values;
+    const { name, author, artist, genres, summary, coverImage, type } = values;
     const formData = new FormData();
     formData.append("name", name);
     formData.append("author", author);
+    formData.append("artist", artist);
     formData.append("genres", genres);
     formData.append("summary", summary);
     formData.append("coverImage", coverImage);
@@ -134,6 +136,7 @@ export default function MangaForm({ update, mangaId, username, email }) {
     setFieldValue("genres", genres);
     setFieldValue("summary", summary);
     setFieldValue("author", author);
+    setFieldValue("artist", artist);
     setFieldValue("name", name);
     setFieldValue("type", type);
     if (update) {
@@ -176,6 +179,7 @@ export default function MangaForm({ update, mangaId, username, email }) {
           initialValues={{
             name: manga?.name || "",
             author: manga?.author || "",
+            artist: manga?.artist || "",
             genres: manga?.genres || [],
             summary: manga?.summary || "",
             coverImage: manga?.coverImage || null,
@@ -209,20 +213,36 @@ export default function MangaForm({ update, mangaId, username, email }) {
                 value={values.name}
                 isDisabled={isSubmitting}
               />
-              <Input
-                name="author"
-                label={t("author")}
-                size="lg"
-                labelPlacement="outside"
-                validationState={
-                  errors.author && touched.author ? "invalid" : "valid"
-                }
-                errorMessage={errors.author}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={values.author}
-                isDisabled={isSubmitting}
-              />
+              <div className="flex flex-wrap w-full gap-4 md:flex-nowrap">
+                <Input
+                  name="author"
+                  label={t("author")}
+                  size="lg"
+                  labelPlacement="outside"
+                  validationState={
+                    errors.author && touched.author ? "invalid" : "valid"
+                  }
+                  errorMessage={errors.author}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.author}
+                  isDisabled={isSubmitting}
+                />
+                <Input
+                  name="artist"
+                  label={t("artist")}
+                  size="lg"
+                  labelPlacement="outside"
+                  validationState={
+                    errors.artist && touched.artist ? "invalid" : "valid"
+                  }
+                  errorMessage={errors.artist}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.artist}
+                  isDisabled={isSubmitting}
+                />
+              </div>
               <div className="flex flex-row items-center gap-5">
                 {genres && (
                   <Select

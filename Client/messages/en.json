@@ -71,6 +71,7 @@
   },
   "Manga": {
     "author": "Author",
+    "artist": "Artist",
     "categories": "Categories",
     "summary": "Summary",
     "goFirstChapter": "Go to first chapter",
@@ -201,7 +202,8 @@
     "close": "Close",
     "add": "Add",
     "advanced": "Advanced",
-    "type": "Select Type"
+    "type": "Select Type",
+    "artist": "Artist"
   },
   "StatsCard": {
     "manga": "Total Manga",
@@ -281,5 +283,9 @@
   },
   "InfiniteScroll": {
     "noMoreDataToLoad": "No more data to load"
+  },
+  "Artist": {
+    "notFound": "There is no series in this artist.",
+    "error": "An error occurred while getting the artist."
   }
 }

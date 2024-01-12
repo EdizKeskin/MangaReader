@@ -136,6 +136,26 @@ router.get("/author", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+router.get("/artist", async (req, res) => {
+  try {
+    const artist = req.query.artist;
+
+    const mangasByArtist = await Manga.find({ artist: artist });
+
+    if (mangasByArtist.length === 0 || !mangasByArtist) {
+      return res.json({
+        message: "Belirtilen yazarın mangaları bulunamadı.",
+        status: 404,
+      });
+    }
+
+    res.json(mangasByArtist);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get("/list/admin", async (req, res) => {
   try {
     const mangaList = await Manga.find();
@@ -290,7 +310,7 @@ router.delete("/:id", async (req, res) => {
 router.patch("/:id", upload.single("coverImage"), async (req, res) => {
   try {
     const mangaId = req.params.id;
-    const { name, author, genres, summary, uploader, type } = req.body;
+    const { name, author, genres, summary, uploader, type, artist } = req.body;
 
     const existingManga = await Manga.findById(mangaId);
 
@@ -307,15 +327,15 @@ router.patch("/:id", upload.single("coverImage"), async (req, res) => {
       summary,
       type,
       uploader,
+      artist,
       slug: slug,
     };
 
     if (req.file) {
       const file = req.file;
 
-      // Use sharp to optimize and convert the image to WebP format
       const optimizedImageBuffer = await sharp(file.buffer)
-        .webp({ quality: 80 }) // You can adjust the quality as needed
+        .webp({ quality: 80 })
         .toBuffer();
 
       const fileName = `${Date.now()}_${file.originalname}`;
@@ -323,7 +343,7 @@ router.patch("/:id", upload.single("coverImage"), async (req, res) => {
 
       const blobStream = fileUpload.createWriteStream({
         metadata: {
-          contentType: "image/webp", // Set the content type to WebP
+          contentType: "image/webp",
         },
       });
 
@@ -340,7 +360,6 @@ router.patch("/:id", upload.single("coverImage"), async (req, res) => {
             expires: "03-09-2099",
           });
 
-        // Delete the old cover image
         await bucket
           .file(`coverImages/${parseFileNameFromURL(oldCoverImageURL)}`)
           .delete();
@@ -360,7 +379,6 @@ router.patch("/:id", upload.single("coverImage"), async (req, res) => {
         res.json(updatedMangaDoc);
       });
 
-      // Use the optimized image buffer for uploading
       blobStream.end(optimizedImageBuffer);
     } else {
       const updatedMangaDoc = await Manga.findByIdAndUpdate(
@@ -388,13 +406,12 @@ function parseFileNameFromURL(url) {
 
 router.post("/add", upload.single("coverImage"), async (req, res) => {
   try {
-    const { name, author, genres, summary, uploader, type } = req.body;
+    const { name, author, genres, summary, uploader, type, artist } = req.body;
 
     const file = req.file;
 
-    // Use sharp to optimize and convert the image to WebP format
     const optimizedImageBuffer = await sharp(file.buffer)
-      .webp({ quality: 80 }) // You can adjust the quality as needed
+      .webp({ quality: 80 })
       .toBuffer();
 
     const fileName = `${Date.now()}_${file.originalname}`;
@@ -402,7 +419,7 @@ router.post("/add", upload.single("coverImage"), async (req, res) => {
 
     const blobStream = fileUpload.createWriteStream({
       metadata: {
-        contentType: "image/webp", // Set the content type to WebP
+        contentType: "image/webp",
       },
     });
 
@@ -426,6 +443,7 @@ router.post("/add", upload.single("coverImage"), async (req, res) => {
       const manga = new Manga({
         name,
         author,
+        artist,
         genres: genreNames,
         summary,
         uploadDate,
@@ -440,7 +458,6 @@ router.post("/add", upload.single("coverImage"), async (req, res) => {
       res.status(201).json({ message: "Manga başarıyla eklendi!" });
     });
 
-    // Use the optimized image buffer for uploading
     blobStream.end(optimizedImageBuffer);
   } catch (error) {
     res.status(500).json({ error: error.message });

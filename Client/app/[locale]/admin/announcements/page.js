@@ -28,13 +28,14 @@ export default async function Genres({ params }) {
     { name: locale === "en" ? "Uploader" : "Yükleyen", uid: "uploader" },
     { name: "ACTIONS", uid: "actions" },
   ];
+  console.log(user);
   return (
     <>
       <AnnouncementsTable
         announcements={announcements.announcements}
         columns={columns}
         INITIAL_VISIBLE_COLUMNS={INITIAL_VISIBLE_COLUMNS}
-        username={user.username}
+        userId={user.id}
         email={user.emailAddresses[0].emailAddress}
       />
     </>

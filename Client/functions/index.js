@@ -419,6 +419,18 @@ export const getMangaByAuthor = async (author) => {
     console.error("error");
   }
 };
+
+export const getMangaByArtist = async (artist) => {
+  try {
+    const response = await axios.get(
+      process.env.NEXT_PUBLIC_MONGO_DB_URL + "manga/artist?artist=" + artist
+    );
+    return response.data;
+  } catch (error) {
+    console.error("error");
+  }
+};
+
 export const uploadFileToServer = async (file) => {
   const formData = new FormData();
   formData.append("image", file);
