@@ -2,14 +2,15 @@
 import { Button } from "@nextui-org/react";
 import { useRouter } from "next13-progressbar";
 import { BiArrowBack } from "react-icons/bi";
+import { cn } from "@/utils/cn";
 
-const BackButton = ({ href }) => {
+const BackButton = ({ href, className, onClick }) => {
   const router = useRouter();
   return (
-    <div className="flex items-start gap-2">
+    <div className={cn("flex items-start gap-2", className)}>
       <Button
-        onClick={() => {
-          href ? router.push(href) : router.back();
+        onPress={() => {
+          onClick ? onClick() : href ? router.push(href) : router.back();
         }}
         isIconOnly
       >
@@ -18,4 +19,5 @@ const BackButton = ({ href }) => {
     </div>
   );
 };
+
 export default BackButton;

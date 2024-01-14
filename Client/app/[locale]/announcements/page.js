@@ -10,6 +10,7 @@ import EditorViewer from "@/components/EditorViewer";
 import { TbExternalLink } from "react-icons/tb";
 import "@/styles/glow.css";
 import { useWindowSize } from "@/hooks/useWindowSize";
+import BackButton from "@/components/BackButton";
 
 export default function Announcements() {
   const [announcement, setAnnouncement] = useState();
@@ -20,7 +21,6 @@ export default function Announcements() {
   const [limit, setLimit] = useState(10);
   const { width } = useWindowSize();
   const t = useTranslations("Announcements");
-  const lg = width > 1024;
 
   useEffect(() => {
     setLoading(true);
@@ -77,21 +77,25 @@ export default function Announcements() {
           </p>
         </div>
       ) : id && announcement ? (
-        <div className="p-5 m-10 rounded-md bg-zinc-900">
-          <div className="flex justify-between">
-            <Title text={announcement.title} />
-            <div className="flex items-center gap-5">
-              <h2 className="font-thin text-gray-300">
-                {announcement.uploader}
-              </h2>
-              <h2 className="font-thin text-gray-300">{formattedDate}</h2>
+        <>
+          <BackButton onClick={() => setId(null)} className={"m-10"} />
+          <div className="p-5 m-10 rounded-md bg-zinc-900">
+            <div className="flex justify-between">
+              <Title text={announcement.title} />
+              <div className="flex items-center gap-5">
+                <h2 className="font-thin text-gray-300">
+                  {announcement.uploader}
+                </h2>
+                <h2 className="font-thin text-gray-300">{formattedDate}</h2>
+              </div>
             </div>
+            <EditorViewer value={announcement.contents} />
           </div>
-          <EditorViewer value={announcement.contents} />
-        </div>
+        </>
       ) : (
         list && (
           <div className="container mx-auto cursor-pointer">
+            <BackButton className={"mt-10"} />
             {list.announcements.map((announcement) => (
               <div
                 key={announcement._id}

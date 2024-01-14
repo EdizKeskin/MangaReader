@@ -126,7 +126,7 @@ export default function Manga({ params }) {
               <h1 className="text-4xl lg:text-7xl text-slate-50">
                 {manga.name}
               </h1>
-              <div className="flow-root my-5">
+              <div className="flow-root my-5 ">
                 <dl className="-my-3 divide-y divide-gray-100 text-md dark:divide-gray-700">
                   {manga.author && (
                     <div className="grid items-center grid-cols-1 gap-1 py-3 sm:grid-cols-3 sm:gap-4">

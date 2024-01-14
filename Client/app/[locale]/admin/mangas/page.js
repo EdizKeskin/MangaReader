@@ -36,6 +36,11 @@ export default async function Mangas({ params }) {
       sortable: true,
     },
     {
+      name: locale === "en" ? "Artist" : "Yazar",
+      uid: "artist",
+      sortable: true,
+    },
+    {
       name: locale === "en" ? "Date" : "Tarih",
       uid: "uploadDate",
       sortable: true,
