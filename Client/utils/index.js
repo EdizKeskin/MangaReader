@@ -47,10 +47,8 @@ export const getDayDifference = (expireAt) => {
   const currentDate = new Date();
   const expireAtDate = new Date(expireAt);
 
-  // İki tarih arasındaki zaman farkını hesapla (milisaniye cinsinden)
   const timeDifference = expireAtDate - currentDate;
 
-  // İki tarih arasındaki gün farkını hesapla
   const dayDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
 
   return dayDifference;

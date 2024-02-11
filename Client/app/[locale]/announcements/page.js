@@ -9,7 +9,6 @@ import { useTranslations } from "next-intl";
 import EditorViewer from "@/components/EditorViewer";
 import { TbExternalLink } from "react-icons/tb";
 import "@/styles/glow.css";
-import { useWindowSize } from "@/hooks/useWindowSize";
 import BackButton from "@/components/BackButton";
 
 export default function Announcements() {
@@ -19,7 +18,6 @@ export default function Announcements() {
   const [notFound, setNotFound] = useState();
   const [id, setId] = useState(useSearchParams().get("id"));
   const [limit, setLimit] = useState(10);
-  const { width } = useWindowSize();
   const t = useTranslations("Announcements");
 
   useEffect(() => {
