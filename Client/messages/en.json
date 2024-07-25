@@ -25,7 +25,8 @@
     "newSeries": "New Chapters",
     "admin": "Welcome to the Admin Panel",
     "announcements": "Announcements",
-    "featured": "Featured Series"
+    "featured": "Featured Series",
+    "categories": "Categories"
   },
   "NotFound": {
     "title": "The content you were looking for was not found.",

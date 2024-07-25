@@ -19,6 +19,9 @@ export default function Title({ text, className }) {
     case "featured":
       text = t("featured");
       break;
+    case "categories":
+      text = t("categories");
+      break;
     default:
       break;
   }

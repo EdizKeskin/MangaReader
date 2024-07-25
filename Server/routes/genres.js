@@ -37,22 +37,6 @@ router.get("/count", async (req, res) => {
   }
 });
 
-router.get("/:genreId/mangas", async (req, res) => {
-  try {
-    const genreId = req.params.genreId;
-
-    const mangas = await Manga.find({ genres: genreId });
-
-    if (mangas.length === 0) {
-      return res.status(404).json({ error: "Bu türe ait manga bulunamadı." });
-    }
-
-    res.json(mangas);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 router.delete("/:id", async (req, res) => {
   try {
     const genreId = req.params.id;

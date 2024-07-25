@@ -54,6 +54,7 @@ router.get("/list", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 router.get("/list/home", async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;

@@ -107,7 +107,7 @@ export default function Navbar() {
         </NavbarItem>
       </NavbarContent>
       <NavbarContent justify="end">
-        <NavbarItem className="">
+        <NavbarItem className="hidden md:block">
           <Button onClick={changeLocale} isIconOnly>
             {locale === "en" ? "TR" : "EN"}
           </Button>
@@ -201,6 +201,11 @@ export default function Navbar() {
             onChange={(e) => setSearch(e)}
             placeholder={t("search")}
           />
+        </NavbarMenuItem>
+        <NavbarMenuItem className="mt-4">
+          <Button onClick={changeLocale} isIconOnly>
+            {locale === "en" ? "TR" : "EN"}
+          </Button>
         </NavbarMenuItem>
       </NavbarMenu>
     </NavbarNextUI>

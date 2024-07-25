@@ -25,7 +25,7 @@ export default async function Index() {
             <Announcements />
 
             <div className="my-6">
-              <Title text={"Kategoriler"} />
+              <Title text={"categories"} />
             </div>
             <Sidebar genres={genres} />
             <div className="my-6 mr-10">

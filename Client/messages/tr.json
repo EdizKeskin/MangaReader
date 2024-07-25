@@ -25,7 +25,8 @@
     "newSeries": "Yeni eklenenler",
     "admin": "Admin Paneline hoşgeldiniz",
     "announcements": "Duyurular",
-    "featured": "Öne Çıkanlar"
+    "featured": "Öne Çıkanlar",
+    "categories": "Kategoriler"
   },
   "NotFound": {
     "title": "Aradığın içerik bulunamadı.",
