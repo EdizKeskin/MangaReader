@@ -19,10 +19,20 @@ export default function MangaListArea() {
             tabList: "ml-3 z-20",
           }}
         >
-          <Tab key="page" title={<TbBook size={24} />}>
+          <Tab
+            key="page"
+            title={<TbBook size={24} />}
+            aria-label="Paged"
+            id="paged"
+          >
             <MangaList />
           </Tab>
-          <Tab key="infinite" title={<ImInfinite size={24} />}>
+          <Tab
+            id="infinite"
+            key="infinite"
+            title={<ImInfinite size={24} />}
+            aria-label="Infinite"
+          >
             <InfiniteScroll />
           </Tab>
         </Tabs>

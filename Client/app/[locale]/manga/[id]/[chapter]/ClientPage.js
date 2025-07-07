@@ -51,6 +51,21 @@ export default function MangaRead({ params }) {
     });
   }, []);
 
+  const readChapters = JSON.parse(localStorage.getItem("readChapters"));
+
+  const setReaded = (id) => {
+    if (readChapters) {
+      if (!readChapters.includes(id)) {
+        localStorage.setItem(
+          "readChapters",
+          JSON.stringify([...readChapters, id])
+        );
+      }
+    } else {
+      localStorage.setItem("readChapters", JSON.stringify([id]));
+    }
+  };
+
   useEffect(() => {
     setLoading(true);
 
@@ -165,20 +180,6 @@ export default function MangaRead({ params }) {
         const nextChapterId = allChapters[currentIndex + 1].slug;
         router.replace(`/manga/${slug}/${nextChapterId}`);
       }
-    }
-  };
-  const readChapters = JSON.parse(localStorage.getItem("readChapters"));
-
-  const setReaded = (id) => {
-    if (readChapters) {
-      if (!readChapters.includes(id)) {
-        localStorage.setItem(
-          "readChapters",
-          JSON.stringify([...readChapters, id])
-        );
-      }
-    } else {
-      localStorage.setItem("readChapters", JSON.stringify([id]));
     }
   };
 

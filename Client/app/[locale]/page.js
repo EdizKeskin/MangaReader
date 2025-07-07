@@ -33,6 +33,7 @@ export default async function Index() {
             <div className="my-6 mr-10">
               <Title text={"Discord"} />
               <iframe
+                title="Discord Community"
                 src={discordIframe}
                 style={{
                   width: "100%",
@@ -87,23 +88,12 @@ export const metadata = {
     images: ["https://manga-lilac.vercel.app/logo.png"],
     site: "@mangaoku",
   },
-  alternates: {
-    canonical: "https://manga-lilac.vercel.app/",
+  robots: {
+    index: true,
+    follow: true,
   },
   icons: {
     icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-    other: [
-      {
-        rel: "icon",
-        url: "/favicon-32x32.png",
-        sizes: "32x32",
-      },
-      {
-        rel: "icon",
-        url: "/favicon-16x16.png",
-        sizes: "16x16",
-      },
-    ],
+    apple: "/favicon.ico",
   },
 };

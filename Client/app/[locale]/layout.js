@@ -12,9 +12,50 @@ import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 
 export const metadata = {
-  title: "Manga Oku | Popüler Mangalar",
-  description: "MangaOku ile en yeni ve popüler mangaları ücretsiz okuyun.",
-  keywords: ["manga oku", "webtoon", "ücretsiz manga"],
+  title: "Manga Oku | En Yeni ve Popüler Mangalar",
+  description:
+    "Ücretsiz manga ve webnovel okuyabileceğiniz platform. Popüler, en çok okunan ve yeni çıkan mangaları keşfedin.",
+  keywords: [
+    "manga oku",
+    "webtoon",
+    "manga sitesi",
+    "popüler manga",
+    "ücretsiz manga oku",
+    "manga listesi",
+    "webnovel",
+  ],
+  openGraph: {
+    title: "Manga Oku | En Yeni ve Popüler Mangalar",
+    description:
+      "Ücretsiz manga ve webnovel okuyabileceğiniz platform. Popüler, en çok okunan ve yeni çıkan mangaları keşfedin.",
+    url: "https://manga-lilac.vercel.app/",
+    siteName: "MangaOku",
+    images: [
+      {
+        url: "https://manga-lilac.vercel.app/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Manga Oku | En Yeni Mangalar",
+      },
+    ],
+    locale: "tr_TR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Manga Oku | En Yeni ve Popüler Mangalar",
+    description: "En yeni ve popüler mangaları ücretsiz oku.",
+    images: ["https://manga-lilac.vercel.app/logo.png"],
+    site: "@mangaoku",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 };
 
 export default async function RootLayout({ children, params: { locale } }) {
