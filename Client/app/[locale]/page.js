@@ -9,6 +9,8 @@ import MangaListArea from "@/sections/MangaListArea";
 import "@/styles/background.css";
 import TopContent from "@/sections/TopContent";
 import { discordIframe } from "@/config";
+import { icons } from "react-icons";
+
 export default async function Index() {
   const genres = await fetchGenres();
   const mangas = await fetchMangaListHome();
@@ -48,3 +50,60 @@ export default async function Index() {
     </div>
   );
 }
+export const metadata = {
+  title: "Manga Oku | En Yeni ve Popüler Mangalar",
+  description:
+    "Ücretsiz manga ve webnovel okuyabileceğiniz platform. Popüler, en çok okunan ve yeni çıkan mangaları keşfedin.",
+  keywords: [
+    "manga oku",
+    "webtoon",
+    "manga sitesi",
+    "popüler manga",
+    "ücretsiz manga oku",
+    "manga listesi",
+    "webnovel",
+  ],
+  openGraph: {
+    title: "Manga Oku | En Yeni ve Popüler Mangalar",
+    description:
+      "Ücretsiz manga ve webnovel okuyabileceğiniz platform. Popüler, en çok okunan ve yeni çıkan mangaları keşfedin.",
+    url: "https://manga-lilac.vercel.app/",
+    siteName: "MangaOku",
+    images: [
+      {
+        url: "https://manga-lilac.vercel.app/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Manga Oku | En Yeni Mangalar",
+      },
+    ],
+    locale: "tr_TR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Manga Oku | En Yeni ve Popüler Mangalar",
+    description: "En yeni ve popüler mangaları ücretsiz oku.",
+    images: ["https://manga-lilac.vercel.app/logo.png"],
+    site: "@mangaoku",
+  },
+  alternates: {
+    canonical: "https://manga-lilac.vercel.app/",
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+    other: [
+      {
+        rel: "icon",
+        url: "/favicon-32x32.png",
+        sizes: "32x32",
+      },
+      {
+        rel: "icon",
+        url: "/favicon-16x16.png",
+        sizes: "16x16",
+      },
+    ],
+  },
+};
