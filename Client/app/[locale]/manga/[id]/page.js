@@ -15,6 +15,7 @@ export async function generateMetadata({ params }) {
   return {
     title: manga.name,
     description: manga.summary,
+
     keywords: [
       manga.name,
       manga.name + "türkçe",
@@ -29,6 +30,8 @@ export async function generateMetadata({ params }) {
       title: manga.name,
       description: manga.summary,
       images: [manga.coverImage],
+      url: `https://manga-lilac.vercel.app/${params.id}`,
+      siteName: "MangaOku",
     },
   };
 }

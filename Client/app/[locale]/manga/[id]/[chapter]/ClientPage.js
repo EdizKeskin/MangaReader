@@ -44,26 +44,12 @@ export default function MangaRead({ params }) {
   const pathname = usePathname();
   const slug = params.id;
   const t = useTranslations("Chapter");
-  const readChapters = JSON.parse(localStorage.getItem("readChapters"));
 
   useEffect(() => {
     toast("This is a sample chapter, not related to the manga.", {
       duration: 5000,
     });
   }, []);
-
-  const setReaded = (id) => {
-    if (readChapters) {
-      if (!readChapters.includes(id)) {
-        localStorage.setItem(
-          "readChapters",
-          JSON.stringify([...readChapters, id])
-        );
-      }
-    } else {
-      localStorage.setItem("readChapters", JSON.stringify([id]));
-    }
-  };
 
   useEffect(() => {
     setLoading(true);
@@ -181,6 +167,21 @@ export default function MangaRead({ params }) {
       }
     }
   };
+  const readChapters = JSON.parse(localStorage.getItem("readChapters"));
+
+  const setReaded = (id) => {
+    if (readChapters) {
+      if (!readChapters.includes(id)) {
+        localStorage.setItem(
+          "readChapters",
+          JSON.stringify([...readChapters, id])
+        );
+      }
+    } else {
+      localStorage.setItem("readChapters", JSON.stringify([id]));
+    }
+  };
+
   const styles = ["Paged", "List"];
   const changeReadStyle = (style) => {
     localStorage.setItem("readStyle", JSON.stringify(style));

@@ -1,0 +1,5 @@
+# public/robots.txt
+User-agent: *
+Allow: /
+
+Sitemap: https://manga-lilac.vercel.app/sitemap.xml

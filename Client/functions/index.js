@@ -525,3 +525,30 @@ export const wakeUpAdmin = async () => {
     throw error;
   }
 };
+export const getAllMangaSlugs = async () => {
+  try {
+    const response = await axios.get(
+      process.env.NEXT_PUBLIC_MONGO_DB_URL + "manga/list"
+    );
+    return response.data.map((manga) => ({
+      slug: manga.slug,
+    }));
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getChaptersSlugs = async (slug) => {
+  try {
+    const response = await axios.get(
+      process.env.NEXT_PUBLIC_MONGO_DB_URL + "manga/slug/" + slug + "/chapters"
+    );
+    return response.data.chapters.map((chapter) => ({
+      slug: chapter.slug,
+    }));
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
