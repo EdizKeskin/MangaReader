@@ -9,7 +9,6 @@ import MangaListArea from "@/sections/MangaListArea";
 import "@/styles/background.css";
 import TopContent from "@/sections/TopContent";
 import { discordIframe } from "@/config";
-import { icons } from "react-icons";
 
 export default async function Index() {
   const genres = await fetchGenres();
@@ -68,11 +67,11 @@ export const metadata = {
     title: "Manga Oku | En Yeni ve Popüler Mangalar",
     description:
       "Ücretsiz manga ve webnovel okuyabileceğiniz platform. Popüler, en çok okunan ve yeni çıkan mangaları keşfedin.",
-    url: "https://manga-lilac.vercel.app/",
+    url: process.env.NEXT_PUBLIC_BASE_URL || "https://manga-lilac.vercel.app/",
     siteName: "MangaOku",
     images: [
       {
-        url: "https://manga-lilac.vercel.app/logo.png",
+        url: `${process.env.NEXT_PUBLIC_BASE_URL}/logo.png`,
         width: 1200,
         height: 630,
         alt: "Manga Oku | En Yeni Mangalar",
@@ -85,7 +84,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "Manga Oku | En Yeni ve Popüler Mangalar",
     description: "En yeni ve popüler mangaları ücretsiz oku.",
-    images: ["https://manga-lilac.vercel.app/logo.png"],
+    images: [process.env.NEXT_PUBLIC_BASE_URL + "/logo.png"],
     site: "@mangaoku",
   },
   robots: {
