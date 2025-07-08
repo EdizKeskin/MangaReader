@@ -10,57 +10,6 @@ import { enUS, trTR } from "@clerk/localizations";
 import { notFound } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
-console.log(process.env.NEXT_PUBLIC_BASE_URL);
-
-export const metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL || "https://manga-lilac.vercel.app/"
-  ),
-  title: "Manga Oku | En Yeni ve Popüler Mangalar",
-  description:
-    "Ücretsiz manga ve webnovel okuyabileceğiniz platform. Popüler, en çok okunan ve yeni çıkan mangaları keşfedin.",
-  keywords: [
-    "manga oku",
-    "webtoon",
-    "manga sitesi",
-    "popüler manga",
-    "ücretsiz manga oku",
-    "manga listesi",
-    "webnovel",
-  ],
-  openGraph: {
-    title: "Manga Oku | En Yeni ve Popüler Mangalar",
-    description:
-      "Ücretsiz manga ve webnovel okuyabileceğiniz platform. Popüler, en çok okunan ve yeni çıkan mangaları keşfedin.",
-    url: process.env.NEXT_PUBLIC_BASE_URL || "https://manga-lilac.vercel.app/",
-    siteName: "MangaOku",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_BASE_URL}/logo.png`,
-        width: 1200,
-        height: 630,
-        alt: "Manga Oku | En Yeni Mangalar",
-      },
-    ],
-    locale: "tr_TR",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Manga Oku | En Yeni ve Popüler Mangalar",
-    description: "En yeni ve popüler mangaları ücretsiz oku.",
-    images: [process.env.NEXT_PUBLIC_BASE_URL + "/logo.png"],
-    site: "@mangaoku",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/favicon.ico",
-  },
-};
 
 export default async function RootLayout({ children, params: { locale } }) {
   let messages;
@@ -72,6 +21,23 @@ export default async function RootLayout({ children, params: { locale } }) {
 
   const randomNumber = Math.floor(Math.random() * 2);
 
+  // Metadata values
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://manga-lilac.vercel.app/";
+  const title = "Manga Oku | En Yeni ve Popüler Mangalar";
+  const description =
+    "Ücretsiz manga ve webnovel okuyabileceğiniz platform. Popüler, en çok okunan ve yeni çıkan mangaları keşfedin.";
+  const keywords = [
+    "manga oku",
+    "webtoon",
+    "manga sitesi",
+    "popüler manga",
+    "ücretsiz manga oku",
+    "manga listesi",
+    "webnovel",
+  ];
+  const ogImage = `${baseUrl}/og-image.png`;
+
   return (
     <html
       lang={locale}
@@ -80,6 +46,32 @@ export default async function RootLayout({ children, params: { locale } }) {
       }`}
       suppressHydrationWarning
     >
+      <head>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <meta name="keywords" content={keywords.join(", ")} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={baseUrl} />
+        <meta property="og:site_name" content="MangaOku" />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Manga Oku | En Yeni Mangalar" />
+        <meta property="og:locale" content="tr_TR" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta
+          name="twitter:description"
+          content="En yeni ve popüler mangaları ücretsiz oku."
+        />
+        <meta name="twitter:image" content={ogImage} />
+        <meta name="twitter:site" content="@mangaoku" />
+        <meta name="robots" content="index, follow" />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/favicon.ico" />
+      </head>
       <NextIntlClientProvider locale={locale} messages={messages}>
         <ClerkProvider
           appearance={{
