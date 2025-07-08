@@ -37,7 +37,7 @@ export async function generateMetadata({ params }) {
       title: manga.name,
       description: manga.name + " - " + chapter.chapter.title,
       images: [manga.coverImage],
-      url: `https://manga-lilac.vercel.app/${params.id}/${params.chapter}`,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL}/${params.id}/${params.chapter}`,
       siteName: "MangaOku",
     },
   };

@@ -1,6 +1,6 @@
 import { getAllMangaSlugs, getChaptersSlugs } from "@/functions/index";
 
-const baseUrl = process.env.BASE_URL;
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 export async function GET() {
   const mangas = await getAllMangaSlugs();
