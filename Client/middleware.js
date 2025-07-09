@@ -28,46 +28,46 @@ const BOT_USER_AGENTS = [
   "ia_archiver",
 ];
 
-export default authMiddleware({
-  beforeAuth: (req) => {
-    // Check if the request is from a known bot
-    const userAgent = req.headers.get("user-agent") || "";
-    if (BOT_USER_AGENTS.some((bot) => userAgent.includes(bot))) {
-      // Bypass auth for bots so they can fetch OG tags
-      return intlMiddleware(req);
-    }
+export default function middleware(req) {
+  const userAgent = req.headers.get("user-agent") || "";
+  if (BOT_USER_AGENTS.some((bot) => userAgent.includes(bot))) {
+    // Sadece botlar için: Sadece intlMiddleware çalışsın, auth devre dışı
     return intlMiddleware(req);
-  },
+  }
+  // Diğer tüm istekler için auth + intl
+  return authMiddleware({
+    publicRoutes: [
+      "/",
+      "/en",
+      "/:locale/login",
+      "/:locale/register",
+      "/:locale/manga",
+      "/:locale/manga/:path*",
+      "/:locale/manga/:path*/:path*",
+      "/manga",
+      "/manga/:path*",
+      "/manga/:path*/:path*",
+      "/:locale/sso-callback",
+      "/sso-callback",
+      "/category",
+      "/:locale/category",
+      "/bookmarks",
+      "/:locale/bookmarks",
+      "/announcements/:path*",
+      "/:locale/announcements/:path*",
+      "/discord",
+      "/:locale/discord",
+      "/calendar",
+      "/:locale/calendar",
+      "/faq",
+      "/:locale/faq",
+      "/mobile",
+      "/:locale/mobile",
+    ],
 
-  publicRoutes: [
-    "/",
-    "/en",
-    "/:locale/login",
-    "/:locale/register",
-    "/:locale/manga",
-    "/:locale/manga/:path*",
-    "/:locale/manga/:path*/:path*",
-    "/manga",
-    "/manga/:path*",
-    "/manga/:path*/:path*",
-    "/:locale/sso-callback",
-    "/sso-callback",
-    "/category",
-    "/:locale/category",
-    "/bookmarks",
-    "/:locale/bookmarks",
-    "/announcements/:path*",
-    "/:locale/announcements/:path*",
-    "/discord",
-    "/:locale/discord",
-    "/calendar",
-    "/:locale/calendar",
-    "/faq",
-    "/:locale/faq",
-    "/mobile",
-    "/:locale/mobile",
-  ],
-});
+    beforeAuth: (req) => intlMiddleware(req),
+  })(req);
+}
 
 export const config = {
   matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
