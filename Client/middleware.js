@@ -1,5 +1,4 @@
 import { authMiddleware } from "@clerk/nextjs";
-
 import createMiddleware from "next-intl/middleware";
 
 const intlMiddleware = createMiddleware({
@@ -8,8 +7,35 @@ const intlMiddleware = createMiddleware({
   defaultLocale: "tr",
 });
 
+// List of known social media bots
+const BOT_USER_AGENTS = [
+  "Discordbot",
+  "WhatsApp",
+  "Twitterbot",
+  "facebookexternalhit",
+  "Googlebot",
+  "LinkedInBot",
+  "Slackbot",
+  "TelegramBot",
+  "Applebot",
+  "Bingbot",
+  "YandexBot",
+  "DuckDuckBot",
+  "Baiduspider",
+  "Sogou",
+  "Exabot",
+  "facebot",
+  "ia_archiver",
+];
+
 export default authMiddleware({
   beforeAuth: (req) => {
+    // Check if the request is from a known bot
+    const userAgent = req.headers.get("user-agent") || "";
+    if (BOT_USER_AGENTS.some((bot) => userAgent.includes(bot))) {
+      // Bypass auth for bots so they can fetch OG tags
+      return intlMiddleware(req);
+    }
     return intlMiddleware(req);
   },
 
