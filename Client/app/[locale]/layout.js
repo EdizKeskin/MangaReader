@@ -36,7 +36,7 @@ export const metadata = {
     siteName: "MangaOku",
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_BASE_URL}/logo.png`,
+        url: `${process.env.NEXT_PUBLIC_BASE_URL}/og-image.png`,
         width: 1200,
         height: 630,
         alt: "Manga Oku | En Yeni Mangalar",
@@ -49,7 +49,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "Manga Oku | En Yeni ve Popüler Mangalar",
     description: "En yeni ve popüler mangaları ücretsiz oku.",
-    images: [process.env.NEXT_PUBLIC_BASE_URL + "/logo.png"],
+    images: [process.env.NEXT_PUBLIC_BASE_URL + "/og-image.png"],
     site: "@mangaoku",
   },
   robots: {

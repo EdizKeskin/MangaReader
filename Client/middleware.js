@@ -63,6 +63,10 @@ export default function middleware(req) {
       "/:locale/faq",
       "/mobile",
       "/:locale/mobile",
+      "/og-image.png",
+      "/:locale/og-image.png",
+      "/logo.png",
+      "/:locale/logo.png",
     ],
 
     beforeAuth: (req) => intlMiddleware(req),
