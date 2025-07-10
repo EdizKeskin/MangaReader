@@ -10,7 +10,6 @@ import { enUS, trTR } from "@clerk/localizations";
 import { notFound } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
-console.log(process.env.NEXT_PUBLIC_BASE_URL);
 
 export const metadata = {
   metadataBase: new URL(

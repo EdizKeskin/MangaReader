@@ -5,6 +5,8 @@ import React from "react";
 
 export default async function EditChapter({ params }) {
   const user = await currentUser();
+  console.log(`sad`);
+
   return (
     <>
       <div className="mt-3 ml-10">

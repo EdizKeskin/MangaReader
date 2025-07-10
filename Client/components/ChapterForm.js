@@ -26,10 +26,8 @@ import "react-datetime-picker/dist/DateTimePicker.css";
 import "react-calendar/dist/Calendar.css";
 import "@/styles/calendar.css";
 
-const Editor = dynamic(() => import("@/components/Editor"), {
-  ssr: false,
-  loading: () => <p>Loading...</p>,
-});
+import { SimpleEditor } from "./tiptap-templates/simple/simple-editor";
+
 const DateTimePicker = dynamic(() => import("react-datetime-picker"), {
   ssr: false,
   loading: () => <p>Loading...</p>,
@@ -41,7 +39,7 @@ export default function ChapterForm({ update, chapterId, username, email }) {
   const [chapter, setChapter] = useState(null);
   const [mangaType, setMangaType] = useState();
   const [selectedManga, setSelectedManga] = useState();
-  const [novelContent, setNovelContent] = useState();
+  const [novelContent, setNovelContent] = useState("");
   const [mangaValue, setMangaValue] = useState("");
   const [expanded, setExpanded] = useState(false);
   const searchParams = useSearchParams();
@@ -71,21 +69,27 @@ export default function ChapterForm({ update, chapterId, username, email }) {
   useEffect(() => {
     setChapter(null);
 
-    if (update && chapterId) {
+    if (update && chapterId && mangaList.length > 0) {
       setLoading(true);
       const getChapter = async () => {
         try {
           const chapter = await getChapterById(chapterId);
           setChapter(chapter.chapter);
           setMangaType(chapter.mangaType);
-          setNovelContent(chapter.chapter.novelContent);
+          setNovelContent(chapter.chapter.novelContent || "");
           setSelectedManga(chapter.chapter.manga);
-          setMangaValue(
-            mangaList.find((manga) => manga._id === chapter.chapter.manga).name
+
+          const foundManga = mangaList.find(
+            (manga) => manga._id === chapter.chapter.manga
           );
+          if (foundManga) {
+            setMangaValue(foundManga.name);
+          }
+
           setLoading(false);
         } catch (error) {
           console.error(error);
+          setLoading(false);
         }
       };
       getChapter();
@@ -149,7 +153,7 @@ export default function ChapterForm({ update, chapterId, username, email }) {
       console.error(error);
     }
   };
-  if (loading) {
+  if (loading || (update && mangaList.length === 0)) {
     return <p>{t("loading")}</p>;
   }
 
@@ -164,7 +168,9 @@ export default function ChapterForm({ update, chapterId, username, email }) {
               title: chapter?.title || "",
               folder: null,
               novelContent: chapter?.novelContent || "",
-              publishDate: chapter?.publishDate || new Date(),
+              publishDate: chapter?.publishDate
+                ? new Date(chapter.publishDate)
+                : new Date(),
             }}
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
@@ -246,11 +252,11 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                     <div
                       className={`${
                         expanded &&
-                        "absolute top-0 bottom-0 left-0 right-0 z-50 w-full h-full bg-zinc-900"
+                        "absolute top-0 bottom-0 left-0 right-0 z-50 w-full h-full bg-zinc-800"
                       }`}
                     >
                       <div
-                        className={`flex flex-row items-center gap-3 ${
+                        className={`flex flex-row items-center gap-3 bg-zinc-700${
                           expanded ? "p-4" : "mb-2"
                         }`}
                       >
@@ -260,7 +266,7 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                         >
                           {t("content")}
                         </label>
-                        <label class="container">
+                        <label className="container">
                           <input
                             checked={expanded}
                             type="checkbox"
@@ -270,7 +276,7 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                             viewBox="0 0 448 512"
                             height="1em"
                             xmlns="http://www.w3.org/2000/svg"
-                            class="expand"
+                            className="expand"
                           >
                             <path d="M32 32C14.3 32 0 46.3 0 64v96c0 17.7 14.3 32 32 32s32-14.3 32-32V96h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7 14.3 32 32 32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H64V352zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32h64v64c0 17.7 14.3 32 32 32s32-14.3 32-32V64c0-17.7-14.3-32-32-32H320zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64H320c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c17.7 0 32-14.3 32-32V352z"></path>
                           </svg>
@@ -278,15 +284,16 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                             viewBox="0 0 448 512"
                             height="1em"
                             xmlns="http://www.w3.org/2000/svg"
-                            class="compress"
+                            className="compress"
                           >
                             <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32v64H32c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c17.7 0 32-14.3 32-32V64zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32H96v64c0 17.7 14.3 32 32 32s32-14.3 32-32V352c0-17.7-14.3-32-32-32H32zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7 14.3 32 32 32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H352V64zM320 320c-17.7 0-32 14.3-32 32v96c0 17.7 14.3 32 32 32s32-14.3 32-32V384h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H320z"></path>
                           </svg>
                         </label>
                       </div>
-                      <Editor
-                        name={"novelContent"}
-                        value={novelContent}
+                      <SimpleEditor
+                        value={
+                          typeof novelContent === "string" ? novelContent : ""
+                        }
                         setValue={setNovelContent}
                       />
                     </div>

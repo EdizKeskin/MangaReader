@@ -14,7 +14,23 @@
     "@clerk/localizations": "^1.26.8",
     "@clerk/nextjs": "^4.26.2",
     "@clerk/themes": "^1.7.9",
+    "@floating-ui/react": "^0.27.13",
     "@nextui-org/react": "^2.2.1",
+    "@tiptap/extension-character-count": "^2.25.0",
+    "@tiptap/extension-focus": "^2.25.0",
+    "@tiptap/extension-highlight": "^2.25.0",
+    "@tiptap/extension-image": "^2.25.0",
+    "@tiptap/extension-link": "^2.25.0",
+    "@tiptap/extension-subscript": "^2.25.0",
+    "@tiptap/extension-superscript": "^2.25.0",
+    "@tiptap/extension-task-item": "^2.25.0",
+    "@tiptap/extension-task-list": "^2.25.0",
+    "@tiptap/extension-text-align": "^2.25.0",
+    "@tiptap/extension-typography": "^2.25.0",
+    "@tiptap/extension-underline": "^2.25.0",
+    "@tiptap/pm": "^2.25.0",
+    "@tiptap/react": "^2.25.0",
+    "@tiptap/starter-kit": "^2.25.0",
     "@vercel/analytics": "^1.1.1",
     "@vercel/speed-insights": "^1.0.1",
     "autoprefixer": "10.4.16",
@@ -46,6 +62,7 @@
   "devDependencies": {
     "depcheck": "^1.4.6",
     "eslint-config-prettier": "^9.0.0",
-    "prettier": "3.0.3"
+    "prettier": "3.0.3",
+    "sass": "^1.89.2"
   }
 }

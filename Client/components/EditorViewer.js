@@ -1,16 +1,11 @@
 "use client";
-import { BlockNoteView, useBlockNote } from "@blocknote/react";
-import "@blocknote/core/style.css";
+import { TiptapNovelReader } from "@/components/TiptapNovelReader";
 
-export default function EditorViewer({ value, theme }) {
-  const editor = useBlockNote({
-    initialContent: JSON.parse(value),
-    editable: false,
-  });
-
+export default function EditorViewer({ value, theme = "dark" }) {
   return (
-    <div>
-      <BlockNoteView editor={editor} theme={theme ? theme : "dark"} />
-    </div>
+    <TiptapNovelReader 
+      value={value} 
+      theme={theme}
+    />
   );
-}
+} 
