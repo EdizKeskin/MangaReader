@@ -42,8 +42,6 @@ router.patch("/update", async (req, res) => {
   const { userId, day } = req.body;
   const currentDate = new Date();
 
-  console.log(day);
-
   const expireAt = new Date(
     currentDate.setDate(currentDate.getDate() + parseInt(day))
   );

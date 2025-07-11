@@ -41,7 +41,10 @@ export default function Announcements() {
   );
   return (
     <>
-      <div className="my-6 cursor-pointer">
+      <div
+        className="my-6 transition-colors duration-200 cursor-pointer hover:text-custom"
+        onClick={() => router.push("/announcements")}
+      >
         <Title text={"announcements"} />
       </div>
       <Card className="z-10 mr-10">

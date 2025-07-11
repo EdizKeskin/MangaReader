@@ -28,7 +28,7 @@ export default async function Genres({ params }) {
     { name: locale === "en" ? "Uploader" : "Yükleyen", uid: "uploader" },
     { name: "ACTIONS", uid: "actions" },
   ];
-  console.log(user);
+
   return (
     <>
       <AnnouncementsTable
