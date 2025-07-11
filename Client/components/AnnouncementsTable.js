@@ -28,7 +28,6 @@ import {
   Tooltip,
   useDisclosure,
 } from "@nextui-org/react";
-import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next13-progressbar";
 import React, { useCallback, useMemo, useState } from "react";
@@ -36,7 +35,7 @@ import toast from "react-hot-toast";
 import { BiCaretDown, BiPlus, BiSearchAlt } from "react-icons/bi";
 import { PiWarningBold } from "react-icons/pi";
 import { TbEdit, TbEye, TbTrash } from "react-icons/tb";
-const Editor = dynamic(() => import("@/components/Editor"), { ssr: false });
+import { SimpleEditor } from "./tiptap-templates/simple/simple-editor";
 
 export default function AnnouncementsTable({
   announcements: initialAnnouncements,
@@ -49,7 +48,7 @@ export default function AnnouncementsTable({
   const [deleteAnnouncementId, setDeleteAnnouncementId] = useState();
   const [newTitle, setNewTitle] = useState("");
   const [loading, setLoading] = useState(false);
-  const [newContents, setNewContents] = useState();
+  const [newContents, setNewContents] = useState("");
   const [filterValue, setFilterValue] = useState("");
   const [editId, setEditId] = useState("");
   const [editTitle, setEditTitle] = useState("");
@@ -240,6 +239,8 @@ export default function AnnouncementsTable({
 
   const addNewAnnouncement = async () => {
     if (newTitle === "" || !newTitle) return;
+
+    // console.log("Adding announcement:", { newTitle, newContents, newLink });
     const promise = addAnnouncement({
       title: newTitle,
       contents: newContents,
@@ -257,7 +258,8 @@ export default function AnnouncementsTable({
 
       const result = await promise;
       setNewTitle("");
-      setNewContents();
+      setNewContents("");
+      setNewLink("");
       setAnnouncements([
         {
           title: result.title,
@@ -265,6 +267,7 @@ export default function AnnouncementsTable({
           date: result.uploadDate,
           uploader: result.uploader,
           contents: result.contents,
+          link: result.link,
         },
         ...announcements,
       ]);
@@ -277,12 +280,17 @@ export default function AnnouncementsTable({
 
   const editAnnouncement = async () => {
     if (editTitle === "" || !editTitle) return;
-    console.log(editId);
+    console.log("Editing announcement:", {
+      editId,
+      editTitle,
+      editContents,
+      editLink,
+    });
     const promise = patchAnnouncement(editId, {
       title: editTitle,
       contents: editContents,
       uploader: userId,
-      link: newLink !== "" ? newLink : null,
+      link: editLink !== "" ? editLink : null,
     });
 
     try {
@@ -296,6 +304,8 @@ export default function AnnouncementsTable({
       const result = await promise;
       setEditTitle("");
       setEditContents("");
+      setEditLink("");
+      setEditId("");
       setAnnouncements((preb) => {
         const index = preb.findIndex((x) => x._id === editId);
         const newAnnouncements = [...preb];
@@ -305,6 +315,7 @@ export default function AnnouncementsTable({
           date: result.uploadDate,
           uploader: result.uploader,
           contents: result.contents,
+          link: result.link,
         };
         return newAnnouncements;
       });
@@ -389,7 +400,10 @@ export default function AnnouncementsTable({
                   />
                   <p>{t("contents")}</p>
                   <div className="container">
-                    <Editor setValue={setNewContents} />
+                    <SimpleEditor
+                      setValue={setNewContents}
+                      value={typeof newContents === "string" ? newContents : ""}
+                    />
                   </div>
                 </div>
                 <Accordion>
@@ -451,7 +465,12 @@ export default function AnnouncementsTable({
                   />
                   <div className="container">
                     <p className="mb-2">{t("contents")}</p>
-                    <Editor setValue={setEditContents} value={editContents} />
+                    <SimpleEditor
+                      setValue={setEditContents}
+                      value={
+                        typeof editContents === "string" ? editContents : ""
+                      }
+                    />
                   </div>
                 </div>
                 <Accordion>

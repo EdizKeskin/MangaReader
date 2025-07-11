@@ -37,16 +37,26 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/add", async (req, res) => {
-  const { title, contents, uploader, link } = req.body;
   try {
+    // Artık body doğrudan { title, contents, uploader, link } olarak geliyor
+    const { title, contents, uploader, link } = req.body;
+    console.log(req.body);
+
+    if (!title || !contents) {
+      return res
+        .status(400)
+        .json({ error: "Başlık, içerik ve yükleyici zorunludur." });
+    }
+
     const newAnnouncement = new Announcement({
-      title,
-      contents,
-      uploader,
-      link,
+      title: title.trim(),
+      contents: contents.trim(),
+      uploader: uploader.trim(),
+      link: link ? link.trim() : undefined,
     });
+
     await newAnnouncement.save();
-    res.json(newAnnouncement);
+    res.status(201).json(newAnnouncement);
   } catch (error) {
     res.status(500).json({ error: "Duyuru oluşturulurken bir hata oluştu." });
   }

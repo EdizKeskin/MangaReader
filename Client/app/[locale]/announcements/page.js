@@ -3,11 +3,21 @@ import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { fetchAnnouncements, getAnnouncementById } from "@/functions";
 import Loading from "@/components/Loading";
-import Title from "@/components/Title";
 import { unixTimeStampToDateTime } from "@/utils";
 import { useTranslations } from "next-intl";
-import EditorViewer from "@/components/EditorViewer";
-import { TbExternalLink } from "react-icons/tb";
+import { TiptapNovelReader } from "@/components/TiptapNovelReader";
+import { TbExternalLink, TbCalendar, TbUser } from "react-icons/tb";
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  Button,
+  Chip,
+  Avatar,
+  Divider,
+  Spacer,
+} from "@nextui-org/react";
+import { motion, AnimatePresence } from "framer-motion";
 import "@/styles/glow.css";
 import BackButton from "@/components/BackButton";
 
@@ -18,6 +28,7 @@ export default function Announcements() {
   const [notFound, setNotFound] = useState();
   const [id, setId] = useState(useSearchParams().get("id"));
   const [limit, setLimit] = useState(10);
+  const [loadingMore, setLoadingMore] = useState(false);
   const t = useTranslations("Announcements");
 
   useEffect(() => {
@@ -46,11 +57,23 @@ export default function Announcements() {
     }
   }, [id, limit]);
 
+  const handleLoadMore = async () => {
+    setLoadingMore(true);
+    setLimit(limit + 10);
+    setLoadingMore(false);
+  };
+
   if (loading) {
-    return <Loading />;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loading />
+      </div>
+    );
   }
+
   const date = new Date(announcement?.uploadDate);
   const formattedDate = unixTimeStampToDateTime(date);
+
   const handleClick = ({ id, link }) => {
     if (link && link !== null) {
       window.open(link, "_blank");
@@ -59,6 +82,7 @@ export default function Announcements() {
       setId(id);
     }
   };
+
   const updateCursor = ({ x, y }) => {
     document.documentElement.style.setProperty("--x", x);
     document.documentElement.style.setProperty("--y", y);
@@ -66,74 +90,258 @@ export default function Announcements() {
 
   document.body.addEventListener("pointermove", updateCursor);
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+  };
+
   return (
-    <div>
-      {notFound ? (
-        <div className="p-5 m-10 rounded-md bg-zinc-900">
-          <p className="mx-8 text-3xl font-bold text-center text-red-500">
-            {t("notFound")}
-          </p>
-        </div>
-      ) : id && announcement ? (
-        <>
-          <BackButton onClick={() => setId(null)} className={"m-10"} />
-          <div className="p-5 m-10 rounded-md bg-zinc-900">
-            <div className="flex justify-between">
-              <Title text={announcement.title} />
-              <div className="flex items-center gap-5">
-                <h2 className="font-thin text-gray-300">
-                  {announcement.uploader}
-                </h2>
-                <h2 className="font-thin text-gray-300">{formattedDate}</h2>
-              </div>
-            </div>
-            <EditorViewer value={announcement.contents} />
-          </div>
-        </>
-      ) : (
-        list && (
-          <div className="container mx-auto cursor-pointer">
-            <BackButton className={"mt-10"} />
-            {list.announcements.map((announcement) => (
-              <div
-                key={announcement._id}
-                className="p-5 m-10 rounded-md bg-zinc-900 glow"
-                onClick={() =>
-                  handleClick({ id: announcement._id, link: announcement.link })
-                }
-              >
-                <div className="flex justify-between">
-                  <div className="flex items-center gap-2 text-2xl font-bold text-gray-300">
-                    {announcement.title}{" "}
-                    {announcement.link && <TbExternalLink />}
-                  </div>
-                  <div className="flex items-center gap-5">
-                    <h2 className="font-thin text-gray-300">
-                      {announcement.uploader}
-                    </h2>
-                    <h2 className="font-thin text-gray-300">
-                      {unixTimeStampToDateTime(
-                        new Date(announcement.uploadDate)
-                      )}
-                    </h2>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {list.length > limit && (
-              <div className="flex justify-center">
-                <button
-                  className="p-2 m-2 text-gray-300 rounded-md bg-zinc-900"
-                  disabled={loading || limit >= list.length}
-                  onClick={() => setLimit(limit + 10)}
+    <div className="min-h-screen ">
+      <AnimatePresence mode="wait">
+        {notFound ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="flex items-center justify-center min-h-screen p-4"
+          >
+            <Card className="w-full border md:max-w-2xl bg-gradient-to-br from-red-500/10 to-red-600/5 border-red-500/20">
+              <CardBody className="p-12 text-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  className="mb-6 text-6xl text-red-500"
                 >
-                  {t("loadMore")}
-                </button>
-              </div>
-            )}
-          </div>
-        )
-      )}
+                  🚫
+                </motion.div>
+                <h1 className="mb-4 text-3xl font-bold text-red-500">
+                  {t("notFound")}
+                </h1>
+                <p className="text-lg text-gray-400">
+                  Bu duyuru bulunamadı veya kaldırılmış olabilir.
+                </p>
+                <Spacer y={6} />
+                <Button
+                  color="primary"
+                  variant="ghost"
+                  onPress={() => setId(null)}
+                  className="font-semibold"
+                >
+                  Duyurulara Geri Dön
+                </Button>
+              </CardBody>
+            </Card>
+          </motion.div>
+        ) : id && announcement ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="container max-w-5xl px-4 py-8 mx-auto"
+          >
+            <motion.div
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              className="mb-8"
+            >
+              <BackButton onClick={() => setId(null)} className="mb-6" />
+            </motion.div>
+
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card className="border shadow-2xl bg-zinc-900/80 backdrop-blur-sm border-zinc-700/50">
+                <CardHeader className="pb-4">
+                  <div className="flex flex-col w-full">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                      <div className="flex-1">
+                        <h1 className="text-3xl font-bold leading-tight text-transparent md:text-4xl bg-gradient-to-r from-white to-gray-300 bg-clip-text">
+                          {announcement.title}
+                        </h1>
+                      </div>
+
+                      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                        <Chip
+                          startContent={<TbUser className="text-sm" />}
+                          variant="flat"
+                          color="secondary"
+                          className="font-medium"
+                        >
+                          {announcement.uploader}
+                        </Chip>
+                        <Chip
+                          startContent={<TbCalendar className="text-sm" />}
+                          variant="flat"
+                          color="primary"
+                          className="font-medium"
+                        >
+                          {formattedDate}
+                        </Chip>
+                      </div>
+                    </div>
+                    <Divider className="mt-6" />
+                  </div>
+                </CardHeader>
+
+                <CardBody className="px-6 pb-8 md:px-8">
+                  <div className="prose prose-lg prose-invert max-w-none">
+                    <TiptapNovelReader value={announcement.contents} />
+                  </div>
+                </CardBody>
+              </Card>
+            </motion.div>
+          </motion.div>
+        ) : (
+          list && (
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="container max-w-6xl px-4 py-8 mx-auto"
+            >
+              <motion.div
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                className="mb-8"
+              >
+                <BackButton className="mb-6" />
+                <div className="mb-12 text-center">
+                  <h1 className="mb-4 text-4xl font-bold text-transparent md:text-5xl bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text">
+                    📢 Duyurular
+                  </h1>
+                  <p className="max-w-2xl mx-auto text-lg text-gray-400">
+                    En son haberler, güncellemeler ve önemli duyurular burada!
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="grid gap-6 md:gap-8"
+                variants={containerVariants}
+              >
+                {list.announcements.map((announcement, index) => (
+                  <motion.div
+                    key={announcement._id}
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Card
+                      isPressable
+                      onPress={() =>
+                        handleClick({
+                          id: announcement._id,
+                          link: announcement.link,
+                        })
+                      }
+                      className="w-full transition-all duration-300 border cursor-pointer bg-gradient-to-br from-zinc-900/90 to-zinc-800/50 backdrop-blur-sm border-zinc-700/30 hover:border-zinc-600/50 glow group"
+                    >
+                      <CardBody className="p-6 md:p-8">
+                        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-3">
+                              <h2 className="text-xl font-bold text-white transition-colors duration-300 md:text-2xl group-hover:text-blue-300 line-clamp-2">
+                                {announcement.title}
+                              </h2>
+                              {announcement.link && (
+                                <motion.div
+                                  whileHover={{ rotate: 15, scale: 1.1 }}
+                                  transition={{
+                                    type: "spring",
+                                    stiffness: 300,
+                                  }}
+                                >
+                                  <TbExternalLink className="flex-shrink-0 text-xl text-blue-400" />
+                                </motion.div>
+                              )}
+                            </div>
+
+                            {announcement.link && (
+                              <Chip
+                                size="sm"
+                                variant="flat"
+                                color="primary"
+                                className="mb-3"
+                              >
+                                Harici Bağlantı
+                              </Chip>
+                            )}
+                          </div>
+
+                          <div className="flex flex-col gap-3 md:flex-row md:items-center md:text-right">
+                            <div className="flex items-center gap-2 text-gray-300">
+                              <Avatar
+                                size="sm"
+                                name={announcement.uploader}
+                                className="bg-gradient-to-br from-blue-500 to-purple-600"
+                              />
+                              <span className="font-medium">
+                                {announcement.uploader}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2 text-gray-400">
+                              <TbCalendar className="text-sm" />
+                              <time className="font-medium">
+                                {unixTimeStampToDateTime(
+                                  new Date(announcement.uploadDate)
+                                )}
+                              </time>
+                            </div>
+                          </div>
+                        </div>
+                      </CardBody>
+                    </Card>
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {list.length > limit && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex justify-center mt-12"
+                >
+                  <Button
+                    color="primary"
+                    variant="ghost"
+                    size="lg"
+                    onPress={handleLoadMore}
+                    isLoading={loadingMore}
+                    disabled={loadingMore || limit >= list.length}
+                    className="px-8 py-3 font-semibold border-0 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    {loadingMore ? "Yükleniyor..." : t("loadMore")}
+                  </Button>
+                </motion.div>
+              )}
+            </motion.div>
+          )
+        )}
+      </AnimatePresence>
     </div>
   );
 }

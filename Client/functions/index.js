@@ -111,6 +111,7 @@ export const addGenre = async (genre) => {
   );
   return response.data;
 };
+
 export const addAnnouncement = async (announcement) => {
   try {
     const response = await axios.post(
@@ -321,6 +322,7 @@ export const deleteGenre = async (id) => {
   }
 };
 export const deleteAnnouncement = async (id) => {
+  console.log("Deleting announcement with ID:", id);
   try {
     const response = await axios.delete(
       process.env.NEXT_PUBLIC_MONGO_DB_URL + "announcements/" + id
@@ -357,6 +359,7 @@ export const patchGenre = async (id, genre) => {
 };
 
 export const patchAnnouncement = async (id, announcement) => {
+  console.log("Adding announcement:", announcement);
   try {
     const response = await axios.patch(
       process.env.NEXT_PUBLIC_MONGO_DB_URL + "announcements/" + id,

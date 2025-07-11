@@ -167,18 +167,20 @@ export function TiptapNovelReader({ value, theme = "dark" }) {
   return (
     <div className="relative w-full">
       {/* Settings Button */}
-      <div className="z-50 flex items-center justify-end mr-2 md:mr-16 ">
-        <Button
-          isIconOnly
-          variant="solid"
-          color="primary"
-          className="shadow-lg"
-          onClick={() => setShowSettings(!showSettings)}
-        >
-          <TbSettings size={20} />
-        </Button>
-      </div>
-
+      {typeof window !== "undefined" &&
+        window.location.pathname !== "/announcements" && (
+          <div className="z-50 flex items-center justify-end mr-2 md:mr-16 ">
+            <Button
+              isIconOnly
+              variant="solid"
+              color="primary"
+              className="shadow-lg"
+              onClick={() => setShowSettings(!showSettings)}
+            >
+              <TbSettings size={20} />
+            </Button>
+          </div>
+        )}
       {/* Settings Panel */}
       {showSettings && (
         <div className="fixed top-20 right-2 md:right-16 z-40 w-80 max-w-[90vw] max-h-[85vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
@@ -392,7 +394,6 @@ export function TiptapNovelReader({ value, theme = "dark" }) {
           </Card>
         </div>
       )}
-
       {/* Novel Content */}
       <div className="w-full min-h-screen">
         <div
