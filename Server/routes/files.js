@@ -28,7 +28,7 @@ router.post("/upload", upload.single("image"), async (req, res) => {
           action: "read",
           expires: "03-09-2099",
         });
-      console.log(signedUrl[0]);
+
       res.json({ url: signedUrl[0] });
     });
 

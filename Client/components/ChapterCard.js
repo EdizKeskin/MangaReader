@@ -1,10 +1,10 @@
 "use client";
-import { Badge, Card, CardBody, Checkbox } from "@nextui-org/react";
+import { Card, CardBody, Checkbox } from "@nextui-org/react";
 import { usePathname } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next13-progressbar";
 import { dateForChapters } from "@/utils";
-import "@/styles/glow.css";
+import { TbClock, TbEye } from "react-icons/tb";
 
 export default function ChapterCard({ chapter, readedChapters }) {
   const [checked, setChecked] = useState(readedChapters.includes(chapter._id));
@@ -12,54 +12,108 @@ export default function ChapterCard({ chapter, readedChapters }) {
   const router = useRouter();
   const pathname = usePathname();
   const date = dateForChapters(chapter.publishDate);
-  const onChange = (value) => {
-    if (value === false) {
-      localStorage.setItem(
-        "readChapters",
-        JSON.stringify(readedChapters.filter((item) => item !== chapter._id))
-      );
-      setChecked(false);
-    } else if (value === true) {
-      localStorage.setItem(
-        "readChapters",
-        JSON.stringify([...readedChapters, chapter._id])
-      );
-      setChecked(true);
-    }
-  };
+
+  const isVipOnly = useMemo(
+    () => new Date(chapter.publishDate) > new Date(),
+    [chapter.publishDate]
+  );
+
+  const onChange = useCallback(
+    (value) => {
+      const updatedChapters = value
+        ? [...readedChapters, chapter._id]
+        : readedChapters.filter((item) => item !== chapter._id);
+
+      localStorage.setItem("readChapters", JSON.stringify(updatedChapters));
+      setChecked(value);
+    },
+    [readedChapters, chapter._id]
+  );
+
+  const handleCardPress = useCallback(() => {
+    router.push(`${pathname}/${chapter.slug}`);
+  }, [router, pathname, chapter.slug]);
 
   return (
-    <>
-      <Badge
-        content="VIP only"
-        className={new Date(chapter.publishDate) < new Date() && "hidden"}
-        color="secondary"
+    <div className="relative w-full">
+      <Card
+        onPress={handleCardPress}
+        className={`
+          relative w-full h-32 transition-all duration-300 cursor-pointer group
+          ${
+            checked
+              ? "bg-zinc-800/60 border-zinc-600/50 opacity-70"
+              : "bg-zinc-900/90 border-zinc-700/50 hover:border-purple-500/50 hover:bg-zinc-800/90"
+          }
+          backdrop-blur-sm border shadow-lg hover:shadow-xl hover:scale-[1.02]
+          rounded-xl overflow-hidden
+        `}
+        isPressable
       >
-        <Card
-          onPress={() => router.push(`${pathname}/${chapter.slug}`)}
-          className="rounded-md shadow-md glow"
-          isPressable
-          fullWidth={true}
-        >
-          <CardBody className="flex flex-col w-full gap-3 ">
-            <div className="flex flex-row gap-4">
-              <p className={`${checked && "text-gray-600 line-through"}`}>
-                {" "}
+        <CardBody className="flex flex-col justify-between h-full p-4">
+          {/* Header with Checkbox */}
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <div className="flex-1 min-w-0">
+              <h3
+                className={`
+                font-semibold text-sm leading-tight transition-colors duration-200
+                ${
+                  checked
+                    ? "text-gray-500 line-through"
+                    : "text-white group-hover:text-purple-300"
+                }
+                line-clamp-2 mb-1
+              `}
+              >
                 {chapter.title}
-              </p>
-              <Checkbox
-                color="secondary"
-                lineThrough
-                isSelected={checked}
-                onValueChange={onChange}
-              />
+              </h3>
             </div>
-            <div>
-              <p className="text-sm text-gray-400">{date}</p>
+
+            <Checkbox
+              color="secondary"
+              size="sm"
+              isSelected={checked}
+              onValueChange={onChange}
+              className="flex-shrink-0 mt-0.5"
+            />
+          </div>
+
+          {/* Footer */}
+          <div className="flex flex-col gap-1 mt-auto">
+            {/* Date */}
+            <div className="flex items-center gap-1.5">
+              <TbClock size={12} className="flex-shrink-0 text-gray-400" />
+              <span className="text-xs text-gray-400 truncate">{date}</span>
             </div>
-          </CardBody>
-        </Card>
-      </Badge>
-    </>
+
+            {/* Read Status */}
+            {checked && (
+              <div className="flex items-center gap-1.5">
+                <TbEye size={12} className="flex-shrink-0 text-green-500" />
+                <span className="text-xs font-medium text-green-500">
+                  Okundu
+                </span>
+              </div>
+            )}
+
+            {/* VIP Status for non-VIP chapters */}
+            {!isVipOnly && (
+              <div className="flex items-center gap-1.5">
+                <div className="flex-shrink-0 w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-xs font-medium text-green-400">
+                  Ücretsiz
+                </span>
+              </div>
+            )}
+            {isVipOnly && (
+              <div className="flex items-center gap-1.5">
+                <div className="flex-shrink-0 w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <span className="text-xs font-medium text-yellow-400">VIP</span>
+              </div>
+            )}
+          </div>
+        </CardBody>
+      </Card>
+    </div>
   );
 }

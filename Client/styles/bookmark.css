@@ -42,6 +42,16 @@
   transform-origin: top;
 }
 
+.ui-bookmark .bookmark svg {
+  width: 100%;
+  height: 100%;
+  fill: inherit;
+}
+
+.ui-bookmark .bookmark svg path {
+  fill: inherit;
+}
+
 .bookmark::after {
   content: "";
   position: absolute;

@@ -38,9 +38,7 @@ router.get("/:id", async (req, res) => {
 
 router.post("/add", async (req, res) => {
   try {
-    // Artık body doğrudan { title, contents, uploader, link } olarak geliyor
     const { title, contents, uploader, link } = req.body;
-    console.log(req.body);
 
     if (!title || !contents) {
       return res

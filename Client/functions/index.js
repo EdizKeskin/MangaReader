@@ -241,7 +241,7 @@ export const getUserCount = async () => {
 export const getUsers = async () => {
   try {
     const response = await axios.get(
-      "https://api.clerk.com/v1/users?limit=10&offset=0&order_by=-created_at",
+      "https://api.clerk.com/v1/users?limit=500&offset=0&order_by=-created_at",
       {
         headers: {
           Authorization: "Bearer " + process.env.NEXT_PUBLIC_CLERK_API_KEY,

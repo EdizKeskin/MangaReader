@@ -214,7 +214,7 @@ router.patch("/:id", upload.single("folder"), async (req, res) => {
               action: "read",
               expires: "03-09-2099",
             });
-            console.log(imageUrls);
+
             imageUrls.push(url[0]);
           }
         }
