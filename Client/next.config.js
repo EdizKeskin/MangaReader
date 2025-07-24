@@ -8,6 +8,7 @@ const nextConfig = {
       "storage.googleapis.com",
       "monomanga.7108c887db85882602a558daa1896428.r2.cloudflarestorage.com",
       "7108c887db85882602a558daa1896428.r2.cloudflarestorage.com",
+      "cdn.monomanga.com.tr",
     ],
   },
   experimental: {
