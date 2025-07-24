@@ -77,12 +77,6 @@ export const metadata = {
         height: 630,
         alt: "Monomanga Logo",
       },
-      {
-        url: `${process.env.NEXT_PUBLIC_BASE_URL}/logo.png`,
-        width: 400,
-        height: 400,
-        alt: "Monomanga Logo",
-      },
     ],
     locale: "tr_TR",
     type: "website",
