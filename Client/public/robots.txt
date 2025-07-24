@@ -2,4 +2,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://manga-lilac.vercel.app/sitemap.xml
+Sitemap: https://monomanga.com.tr/sitemap.xml

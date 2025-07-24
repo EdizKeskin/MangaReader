@@ -2,14 +2,12 @@ const express = require("express");
 const router = express.Router();
 const Manga = require("../models/Manga");
 const multer = require("multer");
-const admin = require("firebase-admin");
 const Chapter = require("../models/Chapter");
 const slugify = require("slugify");
 const sharp = require("sharp");
+const { uploadToR2, deleteFromR2, getPublicUrl, parseFileKeyFromURL } = require("../utils/r2-client");
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-
-const bucket = admin.storage().bucket();
 
 router.get("/list", async (req, res) => {
   try {
@@ -340,32 +338,21 @@ router.patch("/:id", upload.single("coverImage"), async (req, res) => {
         .toBuffer();
 
       const fileName = `${Date.now()}_${file.originalname}`;
-      const fileUpload = bucket.file(`coverImages/${fileName}`);
+      const fileKey = `coverImages/${fileName}`;
 
-      const blobStream = fileUpload.createWriteStream({
-        metadata: {
-          contentType: "image/webp",
-        },
-      });
+      try {
+        // Upload new image to R2
+        await uploadToR2(optimizedImageBuffer, fileKey, "image/webp");
 
-      blobStream.on("error", (error) => {
-        console.error(error);
-        res.status(500).json({ error: "Resim yüklenirken bir hata oluştu." });
-      });
+        // Delete old image from R2
+        const oldFileKey = parseFileKeyFromURL(oldCoverImageURL);
+        if (oldFileKey) {
+          await deleteFromR2(oldFileKey).catch(err => console.error("Error deleting old image:", err));
+        }
 
-      blobStream.on("finish", async () => {
-        const signedUrl = await bucket
-          .file(`coverImages/${fileName}`)
-          .getSignedUrl({
-            action: "read",
-            expires: "03-09-2099",
-          });
-
-        await bucket
-          .file(`coverImages/${parseFileNameFromURL(oldCoverImageURL)}`)
-          .delete();
-
-        updatedManga.coverImage = signedUrl[0];
+        // Get public URL for the new image
+        const publicUrl = getPublicUrl(fileKey);
+        updatedManga.coverImage = publicUrl;
 
         const updatedMangaDoc = await Manga.findByIdAndUpdate(
           mangaId,
@@ -378,9 +365,10 @@ router.patch("/:id", upload.single("coverImage"), async (req, res) => {
         }
 
         res.json(updatedMangaDoc);
-      });
-
-      blobStream.end(optimizedImageBuffer);
+      } catch (error) {
+        console.error("Error uploading image to R2:", error);
+        res.status(500).json({ error: "Resim yüklenirken bir hata oluştu." });
+      }
     } else {
       const updatedMangaDoc = await Manga.findByIdAndUpdate(
         mangaId,
@@ -416,26 +404,14 @@ router.post("/add", upload.single("coverImage"), async (req, res) => {
       .toBuffer();
 
     const fileName = `${Date.now()}_${file.originalname}`;
-    const fileUpload = bucket.file(`coverImages/${fileName}`);
+    const fileKey = `coverImages/${fileName}`;
 
-    const blobStream = fileUpload.createWriteStream({
-      metadata: {
-        contentType: "image/webp",
-      },
-    });
+    try {
+      // Upload image to R2
+      await uploadToR2(optimizedImageBuffer, fileKey, "image/webp");
 
-    blobStream.on("error", (error) => {
-      console.error(error);
-      res.status(500).json({ error: "Resim yüklenirken bir hata oluştu." });
-    });
-
-    blobStream.on("finish", async () => {
-      const signedUrl = await bucket
-        .file(`coverImages/${fileName}`)
-        .getSignedUrl({
-          action: "read",
-          expires: "03-09-2099",
-        });
+      // Get public URL
+      const publicUrl = getPublicUrl(fileKey);
 
       const genreNames = genres.split(",").map((genre) => genre.trim());
       const uploadDate = new Date();
@@ -451,15 +427,16 @@ router.post("/add", upload.single("coverImage"), async (req, res) => {
         uploader,
         type,
         slug: slug,
-        coverImage: signedUrl[0],
+        coverImage: publicUrl,
       });
 
       await manga.save();
 
       res.status(201).json({ message: "Manga başarıyla eklendi!" });
-    });
-
-    blobStream.end(optimizedImageBuffer);
+    } catch (error) {
+      console.error("Error uploading image to R2:", error);
+      res.status(500).json({ error: "Resim yüklenirken bir hata oluştu." });
+    }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

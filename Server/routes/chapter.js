@@ -5,11 +5,9 @@ const Manga = require("../models/Manga");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
-const admin = require("firebase-admin");
 const AdmZip = require("adm-zip");
 const { default: slugify } = require("slugify");
-
-const bucket = admin.storage().bucket();
+const { uploadToR2, deleteFromR2, deleteMultipleFromR2, getPublicUrl, parseFileKeyFromURL } = require("../utils/r2-client");
 
 router.get("/count", async (req, res) => {
   try {
@@ -112,12 +110,14 @@ function cleanupDisk() {
 }
 
 function extractIdAndTextFromUrl(url) {
-  const parts = url.split("/");
+  // Parse the file key from R2 URL
+  const fileKey = parseFileKeyFromURL(url);
+  const parts = fileKey.split("/");
 
   let id = null;
   let text = null;
   for (let i = 0; i < parts.length; i++) {
-    if (parts[i] === "chapters") {
+    if (parts[i] === "chapters" && i + 1 < parts.length) {
       id = parts[i + 1];
       i++;
     } else if (parts[i].endsWith(".zip")) {
@@ -178,16 +178,13 @@ router.patch("/:id", upload.single("folder"), async (req, res) => {
           const oldImages = oldChapter.content;
           const result = extractIdAndTextFromUrl(oldImages[0]);
           const folderPath = `chapters/${result.id}/${result.text}`;
-          await bucket
-            .deleteFiles({
-              prefix: folderPath,
-            })
-            .then(() => {
-              console.log(`Klasör başarıyla silindi: ${folderPath}`);
-            })
-            .catch((error) => {
-              console.error(`Klasör silinirken hata oluştu: ${error}`);
-            });
+          
+          try {
+            await deleteMultipleFromR2(folderPath);
+            console.log(`Klasör başarıyla silindi: ${folderPath}`);
+          } catch (error) {
+            console.error(`Klasör silinirken hata oluştu: ${error}`);
+          }
         }
 
         const zip = new AdmZip(folderPath);
@@ -200,22 +197,15 @@ router.patch("/:id", upload.single("folder"), async (req, res) => {
           const imagePath = path.join(extractedPath, image);
 
           if (fs.statSync(imagePath).isFile()) {
-            const fileUpload = bucket.file(
-              `chapters/${manga}/${req.file.filename}/${image}`
-            );
-
+            const fileKey = `chapters/${manga}/${req.file.filename}/${image}`;
             const fileBuffer = fs.readFileSync(imagePath);
 
-            await fileUpload.save(fileBuffer, {
-              metadata: { contentType: "image/jpeg" },
-            });
+            // Upload image to R2
+            await uploadToR2(fileBuffer, fileKey, "image/jpeg");
 
-            const url = await fileUpload.getSignedUrl({
-              action: "read",
-              expires: "03-09-2099",
-            });
-
-            imageUrls.push(url[0]);
+            // Get public URL
+            const publicUrl = getPublicUrl(fileKey);
+            imageUrls.push(publicUrl);
           }
         }
 
@@ -314,22 +304,15 @@ router.post("/add", upload.single("folder"), async (req, res) => {
         const imagePath = path.join(extractedPath, image);
 
         if (fs.statSync(imagePath).isFile()) {
-          const fileUpload = bucket.file(
-            `chapters/${manga}/${req.file.filename}/${image}`
-          );
-
+          const fileKey = `chapters/${manga}/${req.file.filename}/${image}`;
           const fileBuffer = fs.readFileSync(imagePath);
 
-          await fileUpload.save(fileBuffer, {
-            metadata: { contentType: "image/jpeg" },
-          });
+          // Upload image to R2
+          await uploadToR2(fileBuffer, fileKey, "image/jpeg");
 
-          const url = await fileUpload.getSignedUrl({
-            action: "read",
-            expires: "03-09-2099",
-          });
-
-          imageUrls.push(url[0]);
+          // Get public URL
+          const publicUrl = getPublicUrl(fileKey);
+          imageUrls.push(publicUrl);
         }
       }
 
@@ -370,16 +353,13 @@ router.delete("/:id", async (req, res) => {
       const oldImages = oldChapter.content;
       const result = extractIdAndTextFromUrl(oldImages[0]);
       const folderPath = `chapters/${result.id}/${result.text}`;
-      await bucket
-        .deleteFiles({
-          prefix: folderPath,
-        })
-        .then(() => {
-          console.log(`Klasör başarıyla silindi: ${folderPath}`);
-        })
-        .catch((error) => {
-          console.error(`Klasör silinirken hata oluştu: ${error}`);
-        });
+      
+      try {
+        await deleteMultipleFromR2(folderPath);
+        console.log(`Klasör başarıyla silindi: ${folderPath}`);
+      } catch (error) {
+        console.error(`Klasör silinirken hata oluştu: ${error}`);
+      }
 
       await Chapter.findByIdAndRemove(chapterId);
 

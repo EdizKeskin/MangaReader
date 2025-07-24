@@ -13,7 +13,7 @@ import { Analytics } from "@vercel/analytics/react";
 
 export const metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL || "https://manga-lilac.vercel.app/"
+    process.env.NEXT_PUBLIC_BASE_URL || "https://monomanga.com.tr.vercel.app/"
   ),
   title: "Manga Oku | En Yeni ve Popüler Mangalar",
   description:
@@ -31,7 +31,9 @@ export const metadata = {
     title: "Manga Oku | En Yeni ve Popüler Mangalar",
     description:
       "Ücretsiz manga ve webnovel okuyabileceğiniz platform. Popüler, en çok okunan ve yeni çıkan mangaları keşfedin.",
-    url: process.env.NEXT_PUBLIC_BASE_URL || "https://manga-lilac.vercel.app/",
+    url:
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      "https://monomanga.com.tr.vercel.app/",
     siteName: "MangaOku",
     images: [
       {
