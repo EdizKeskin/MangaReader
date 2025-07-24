@@ -131,12 +131,8 @@ async function deleteMultipleFromR2(prefix) {
  * @returns {string} Public URL
  */
 function getPublicUrl(key) {
-  // If your R2 bucket is public, you can use direct URLs
-  // Format: https://[custom-domain]/[key] or https://[bucket-name].[account-id].r2.cloudflarestorage.com/[key]
-  const publicDomain =
-    process.env.R2_PUBLIC_DOMAIN ||
-    `${bucketName}.${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`;
-  return `https://${publicDomain}/${key}`;
+  // Artık tüm public URL'ler cdn.monomanga.com.tr üzerinden olacak
+  return `https://cdn.monomanga.com.tr/${key}`;
 }
 
 /**
