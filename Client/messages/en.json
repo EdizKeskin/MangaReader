@@ -123,7 +123,12 @@
     "shrink": "Shrink",
     "expand": "Expand",
     "content": "Content",
-    "publishDate": "Publish Date"
+    "publishDate": "Publish Date",
+    "processing": "Processing ZIP file and uploading images...",
+    "imagesUploaded": "images uploaded successfully",
+    "imagesReady": "images ready for upload",
+    "uploadingImages": "Uploading images to storage...",
+    "selectMangaFirst": "Please select a manga first before uploading images"
   },
   "CustomTable": {
     "deleting": "It's your funeral...",
@@ -204,7 +209,13 @@
     "add": "Add",
     "advanced": "Advanced",
     "type": "Select Type",
-    "artist": "Artist"
+    "artist": "Artist",
+    "uploadingImage": "Uploading and optimizing image...",
+    "imageUploaded": "Image uploaded successfully!",
+    "imageUploadError": "Error uploading image. Please try again.",
+    "imageSelected": "Image selected and ready for upload!",
+    "imageReady": "Image ready for upload",
+    "imageProcessError": "Error processing image. Please try again."
   },
   "StatsCard": {
     "manga": "Total Manga",

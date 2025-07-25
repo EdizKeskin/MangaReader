@@ -2,12 +2,8 @@ const express = require("express");
 const router = express.Router();
 const Chapter = require("../models/Chapter");
 const Manga = require("../models/Manga");
-const multer = require("multer");
-const fs = require("fs");
-const path = require("path");
-const AdmZip = require("adm-zip");
 const { default: slugify } = require("slugify");
-const { uploadToR2, deleteFromR2, deleteMultipleFromR2, getPublicUrl, parseFileKeyFromURL } = require("../utils/r2-client");
+const { deleteMultipleFromR2, parseFileKeyFromURL } = require("../utils/r2-client");
 
 router.get("/count", async (req, res) => {
   try {
@@ -77,37 +73,6 @@ router.get("/slug/:mangaSlug/:chapterSlug", async (req, res) => {
     res.status(500).json({ error: error });
   }
 });
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const chapterFolder = path.join(__dirname, "..", "uploads", "chapters");
-    if (!fs.existsSync(chapterFolder)) {
-      fs.mkdirSync(chapterFolder, { recursive: true });
-    }
-    cb(null, chapterFolder);
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname);
-  },
-});
-function cleanupDisk() {
-  const chapterFolder = path.join(__dirname, "..", "uploads", "chapters");
-  fs.readdir(chapterFolder, (err, files) => {
-    if (err) {
-      console.error("Disk temizleme hatası:", err);
-      return;
-    }
-    for (const file of files) {
-      const filePath = path.join(chapterFolder, file);
-      fs.unlink(filePath, (err) => {
-        if (err) {
-          console.error("Dosya silinirken hata oluştu:", err);
-        } else {
-          console.log("Dosya başarıyla silindi:", filePath);
-        }
-      });
-    }
-  });
-}
 
 function extractIdAndTextFromUrl(url) {
   // Parse the file key from R2 URL
@@ -128,19 +93,20 @@ function extractIdAndTextFromUrl(url) {
   return { id, text };
 }
 
-const upload = multer({ storage });
-router.patch("/:id", upload.single("folder"), async (req, res) => {
+router.patch("/:id", async (req, res) => {
   try {
     const {
       manga,
       chapterNumber,
       title,
       uploader,
-      content,
       novelContent,
       mangaType,
       publishDate,
+      imageUrls, // Now comes as array directly from frontend JSON
     } = req.body;
+    
+    // No need to JSON.parse since it's already an array from JSON request
     const chapterId = req.params.id;
     const existingChapter = await Chapter.findOne({ manga, title });
 
@@ -149,34 +115,24 @@ router.patch("/:id", upload.single("folder"), async (req, res) => {
         .status(400)
         .json({ error: "Bu başlık daha önce kullanılmıştır." });
     }
+    
+    let currentChapterNumber = chapterNumber;
     if (!chapterNumber) {
       const currentChapter = await Chapter.findById(chapterId);
       if (currentChapter) {
-        chapterNumber = currentChapter.chapterNumber;
+        currentChapterNumber = currentChapter.chapterNumber;
       }
     }
 
+    let finalImageUrls = [];
     if (mangaType === "novel") {
+      // For novels, no images needed
     } else {
-      if (req.file) {
+      if (imageUrls && imageUrls.length > 0) {
+        // Delete old images from R2 if updating with new images
         const oldChapter = await Chapter.findById(chapterId);
-        const folderPath = path.join(
-          __dirname,
-          "..",
-          "uploads",
-          "chapters",
-          req.file.filename
-        );
-        const extractedPath = path.join(
-          __dirname,
-          "..",
-          "uploads",
-          "chapters",
-          req.file.filename.split(".")[0]
-        );
-        if (oldChapter) {
-          const oldImages = oldChapter.content;
-          const result = extractIdAndTextFromUrl(oldImages[0]);
+        if (oldChapter && oldChapter.content && oldChapter.content.length > 0) {
+          const result = extractIdAndTextFromUrl(oldChapter.content[0]);
           const folderPath = `chapters/${result.id}/${result.text}`;
           
           try {
@@ -186,36 +142,15 @@ router.patch("/:id", upload.single("folder"), async (req, res) => {
             console.error(`Klasör silinirken hata oluştu: ${error}`);
           }
         }
-
-        const zip = new AdmZip(folderPath);
-        zip.extractAllTo(extractedPath, /* overwrite */ true);
-
-        const images = fs.readdirSync(extractedPath);
-
-        var imageUrls = [];
-        for (const image of images) {
-          const imagePath = path.join(extractedPath, image);
-
-          if (fs.statSync(imagePath).isFile()) {
-            const fileKey = `chapters/${manga}/${req.file.filename}/${image}`;
-            const fileBuffer = fs.readFileSync(imagePath);
-
-            // Upload image to R2
-            await uploadToR2(fileBuffer, fileKey, "image/jpeg");
-
-            // Get public URL
-            const publicUrl = getPublicUrl(fileKey);
-            imageUrls.push(publicUrl);
-          }
-        }
-
-        fs.rmSync(extractedPath, { recursive: true });
+        finalImageUrls = imageUrls;
       } else {
-        imageUrls = content;
+        // Keep existing images if no new images provided
+        const currentChapter = await Chapter.findById(chapterId);
+        finalImageUrls = currentChapter?.content || [];
       }
     }
-    var date = publishDate;
 
+    var date = publishDate;
     if (!publishDate) {
       date = new Date();
     } else {
@@ -225,27 +160,26 @@ router.patch("/:id", upload.single("folder"), async (req, res) => {
     const slug = slugify(title, { lower: true });
     const updatedChapter = {
       manga,
-      chapterNumber,
+      chapterNumber: currentChapterNumber,
       title,
       uploader,
       novelContent,
       slug: slug,
       publishDate: date,
-      content: imageUrls,
+      content: finalImageUrls,
       uploadDate: new Date(),
     };
 
     await Chapter.findByIdAndUpdate(chapterId, updatedChapter);
 
     res.json({ message: "Chapter başarıyla güncellendi" });
-    cleanupDisk();
   } catch (error) {
     console.error("Chapter güncellenirken bir hata oluştu:", error);
     res.status(500).json({ error: "Chapter güncellenirken bir hata oluştu" });
   }
 });
 
-router.post("/add", upload.single("folder"), async (req, res) => {
+router.post("/add", async (req, res) => {
   try {
     const {
       manga,
@@ -255,7 +189,10 @@ router.post("/add", upload.single("folder"), async (req, res) => {
       novelContent,
       mangaType,
       publishDate,
+      imageUrls, // Now comes as array directly from frontend JSON
     } = req.body;
+    
+    // No need to JSON.parse since it's already an array from JSON request
 
     const existingChapter = await Chapter.findOne({ manga, title });
 
@@ -278,49 +215,15 @@ router.post("/add", upload.single("folder"), async (req, res) => {
       }
     }
 
-    const imageUrls = [];
-    if (mangaType === "novel") {
-    } else {
-      const folderPath = path.join(
-        __dirname,
-        "..",
-        "uploads",
-        "chapters",
-        req.file.filename
-      );
-      const extractedPath = path.join(
-        __dirname,
-        "..",
-        "uploads",
-        "chapters",
-        req.file.filename.split(".")[0]
-      );
-      const zip = new AdmZip(folderPath);
-      zip.extractAllTo(extractedPath, /* overwrite */ true);
-
-      const images = fs.readdirSync(extractedPath);
-
-      for (const image of images) {
-        const imagePath = path.join(extractedPath, image);
-
-        if (fs.statSync(imagePath).isFile()) {
-          const fileKey = `chapters/${manga}/${req.file.filename}/${image}`;
-          const fileBuffer = fs.readFileSync(imagePath);
-
-          // Upload image to R2
-          await uploadToR2(fileBuffer, fileKey, "image/jpeg");
-
-          // Get public URL
-          const publicUrl = getPublicUrl(fileKey);
-          imageUrls.push(publicUrl);
-        }
-      }
-
-      fs.rmSync(extractedPath, { recursive: true });
+    let finalImageUrls = [];
+    if (mangaType !== "novel" && imageUrls && imageUrls.length > 0) {
+      finalImageUrls = imageUrls;
     }
+
     if (!publishDate) {
       publishDate = new Date();
     }
+    
     const slug = slugify(title, { lower: true });
     const chapter = new Chapter({
       manga,
@@ -329,7 +232,7 @@ router.post("/add", upload.single("folder"), async (req, res) => {
       uploader,
       novelContent,
       slug: slug,
-      content: imageUrls ? imageUrls : null,
+      content: finalImageUrls.length > 0 ? finalImageUrls : null,
       uploadDate: new Date(),
       publishDate: publishDate,
     });
@@ -337,7 +240,6 @@ router.post("/add", upload.single("folder"), async (req, res) => {
     await chapter.save();
 
     res.json({ message: "Chapter başarıyla yüklendi" });
-    cleanupDisk();
   } catch (error) {
     console.error("Chapter eklenirken bir hata oluştu:", error);
     res.status(500).json({ error: "Chapter eklenirken bir hata oluştu" });

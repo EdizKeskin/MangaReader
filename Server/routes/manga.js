@@ -1,13 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const Manga = require("../models/Manga");
-const multer = require("multer");
 const Chapter = require("../models/Chapter");
 const slugify = require("slugify");
-const sharp = require("sharp");
-const { uploadToR2, deleteFromR2, getPublicUrl, parseFileKeyFromURL } = require("../utils/r2-client");
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const { deleteFromR2, parseFileKeyFromURL } = require("../utils/r2-client");
 
 router.get("/list", async (req, res) => {
   try {
@@ -306,10 +302,10 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.patch("/:id", upload.single("coverImage"), async (req, res) => {
+router.patch("/:id", async (req, res) => {
   try {
     const mangaId = req.params.id;
-    const { name, author, genres, summary, uploader, type, artist } = req.body;
+    const { name, author, genres, summary, uploader, type, artist, coverImageUrl } = req.body;
 
     const existingManga = await Manga.findById(mangaId);
 
@@ -317,12 +313,11 @@ router.patch("/:id", upload.single("coverImage"), async (req, res) => {
       return res.status(404).json({ message: "Manga bulunamadı." });
     }
 
-    const oldCoverImageURL = existingManga.coverImage;
     const slug = slugify(name, { lower: true });
     const updatedManga = {
       name,
       author,
-      genres: genres.split(",").map((genre) => genre.trim()),
+      genres: Array.isArray(genres) ? genres : genres.split(",").map((genre) => genre.trim()),
       summary,
       type,
       uploader,
@@ -330,114 +325,65 @@ router.patch("/:id", upload.single("coverImage"), async (req, res) => {
       slug: slug,
     };
 
-    if (req.file) {
-      const file = req.file;
-
-      const optimizedImageBuffer = await sharp(file.buffer)
-        .webp({ quality: 80 })
-        .toBuffer();
-
-      const fileName = `${Date.now()}_${file.originalname}`;
-      const fileKey = `coverImages/${fileName}`;
-
-      try {
-        // Upload new image to R2
-        await uploadToR2(optimizedImageBuffer, fileKey, "image/webp");
-
-        // Delete old image from R2
-        const oldFileKey = parseFileKeyFromURL(oldCoverImageURL);
-        if (oldFileKey) {
-          await deleteFromR2(oldFileKey).catch(err => console.error("Error deleting old image:", err));
-        }
-
-        // Get public URL for the new image
-        const publicUrl = getPublicUrl(fileKey);
-        updatedManga.coverImage = publicUrl;
-
-        const updatedMangaDoc = await Manga.findByIdAndUpdate(
-          mangaId,
-          updatedManga,
-          { new: true }
-        );
-
-        if (!updatedMangaDoc) {
-          return res.status(404).json({ message: "Manga bulunamadı." });
-        }
-
-        res.json(updatedMangaDoc);
-      } catch (error) {
-        console.error("Error uploading image to R2:", error);
-        res.status(500).json({ error: "Resim yüklenirken bir hata oluştu." });
+    // If new cover image URL is provided and different from existing
+    if (coverImageUrl && coverImageUrl !== existingManga.coverImage) {
+      // Delete old image from R2
+      const oldCoverImageURL = existingManga.coverImage;
+      const oldFileKey = parseFileKeyFromURL(oldCoverImageURL);
+      if (oldFileKey) {
+        await deleteFromR2(oldFileKey).catch(err => console.error("Error deleting old image:", err));
       }
-    } else {
-      const updatedMangaDoc = await Manga.findByIdAndUpdate(
-        mangaId,
-        updatedManga,
-        { new: true }
-      );
-
-      if (!updatedMangaDoc) {
-        return res.status(404).json({ message: "Manga bulunamadı." });
-      }
-
-      res.json(updatedMangaDoc);
+      
+      updatedManga.coverImage = coverImageUrl;
     }
+
+    const updatedMangaDoc = await Manga.findByIdAndUpdate(
+      mangaId,
+      updatedManga,
+      { new: true }
+    );
+
+    if (!updatedMangaDoc) {
+      return res.status(404).json({ message: "Manga bulunamadı." });
+    }
+
+    res.json(updatedMangaDoc);
   } catch (error) {
+    console.error("Manga update error:", error);
     res.status(500).json({ error: error.message });
   }
 });
-function parseFileNameFromURL(url) {
-  const urlParts = url.split("/");
-  const fileNameWithQuery = urlParts[urlParts.length - 1];
-  const fileNameParts = fileNameWithQuery.split("?")[0];
-  return fileNameParts;
-}
 
-router.post("/add", upload.single("coverImage"), async (req, res) => {
+router.post("/add", async (req, res) => {
   try {
-    const { name, author, genres, summary, uploader, type, artist } = req.body;
+    const { name, author, genres, summary, uploader, type, artist, coverImageUrl } = req.body;
 
-    const file = req.file;
-
-    const optimizedImageBuffer = await sharp(file.buffer)
-      .webp({ quality: 80 })
-      .toBuffer();
-
-    const fileName = `${Date.now()}_${file.originalname}`;
-    const fileKey = `coverImages/${fileName}`;
-
-    try {
-      // Upload image to R2
-      await uploadToR2(optimizedImageBuffer, fileKey, "image/webp");
-
-      // Get public URL
-      const publicUrl = getPublicUrl(fileKey);
-
-      const genreNames = genres.split(",").map((genre) => genre.trim());
-      const uploadDate = new Date();
-      const slug = slugify(name, { lower: true });
-
-      const manga = new Manga({
-        name,
-        author,
-        artist,
-        genres: genreNames,
-        summary,
-        uploadDate,
-        uploader,
-        type,
-        slug: slug,
-        coverImage: publicUrl,
-      });
-
-      await manga.save();
-
-      res.status(201).json({ message: "Manga başarıyla eklendi!" });
-    } catch (error) {
-      console.error("Error uploading image to R2:", error);
-      res.status(500).json({ error: "Resim yüklenirken bir hata oluştu." });
+    if (!coverImageUrl) {
+      return res.status(400).json({ error: "Cover image is required." });
     }
+
+    const genreNames = Array.isArray(genres) ? genres : genres.split(",").map((genre) => genre.trim());
+    const uploadDate = new Date();
+    const slug = slugify(name, { lower: true });
+
+    const manga = new Manga({
+      name,
+      author,
+      artist,
+      genres: genreNames,
+      summary,
+      uploadDate,
+      uploader,
+      type,
+      slug: slug,
+      coverImage: coverImageUrl,
+    });
+
+    await manga.save();
+
+    res.status(201).json({ message: "Manga başarıyla eklendi!" });
   } catch (error) {
+    console.error("Manga add error:", error);
     res.status(500).json({ error: error.message });
   }
 });

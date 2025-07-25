@@ -12,6 +12,7 @@ import {
   Card,
   CardBody,
   Input,
+  Progress,
 } from "@nextui-org/react";
 import { Formik } from "formik";
 import React, { useEffect, useState } from "react";
@@ -21,6 +22,8 @@ import { TbFileTypeZip, TbUpload } from "react-icons/tb";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
+import JSZip from "jszip";
+import { uploadMultipleFilesToR2 } from "@/utils/r2-upload";
 import "@/styles/expandButton.css";
 import "react-datetime-picker/dist/DateTimePicker.css";
 import "react-calendar/dist/Calendar.css";
@@ -42,6 +45,11 @@ export default function ChapterForm({ update, chapterId, username, email }) {
   const [novelContent, setNovelContent] = useState("");
   const [mangaValue, setMangaValue] = useState("");
   const [expanded, setExpanded] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [imageUrls, setImageUrls] = useState([]);
+  const [extractedImages, setExtractedImages] = useState([]); // Store extracted images before upload
+  const [zipFileName, setZipFileName] = useState(""); // Store ZIP file name
   const searchParams = useSearchParams();
   const search = searchParams.get("mangaId");
   const t = useTranslations("ChapterForm");
@@ -102,27 +110,106 @@ export default function ChapterForm({ update, chapterId, username, email }) {
     chapterNumber: Yup.number(),
   });
 
-  const handleFolderChange = (event, setFieldValue) => {
-    const selectedFolder = event.target.files[0];
-    setFieldValue("folder", selectedFolder);
+  const handleFolderChange = async (event, setFieldValue) => {
+    const selectedFile = event.target.files[0];
+    setFieldValue("folder", selectedFile);
+
+    if (selectedFile && selectedFile.name.endsWith('.zip') && mangaType !== "novel") {
+      setUploading(true);
+      setUploadProgress(0);
+      
+      try {
+        // Extract ZIP file
+        const zip = new JSZip();
+        const zipContent = await zip.loadAsync(selectedFile);
+        
+        setUploadProgress(50);
+        
+        // Get image files from ZIP
+        const imageFiles = [];
+        for (const filename of Object.keys(zipContent.files)) {
+          const file = zipContent.files[filename];
+          if (!file.dir && /\.(jpg|jpeg|png|gif|webp)$/i.test(filename)) {
+            const blob = await file.async('blob');
+            const imageFile = new File([blob], filename, { type: 'image/jpeg' });
+            imageFiles.push(imageFile);
+          }
+        }
+
+        if (imageFiles.length === 0) {
+          toast.error('ZIP dosyasında geçerli resim dosyası bulunamadı');
+          setUploading(false);
+          return;
+        }
+
+        // Sort files by name to maintain order
+        imageFiles.sort((a, b) => a.name.localeCompare(b.name));
+
+        // Store extracted images for later upload
+        setExtractedImages(imageFiles);
+        setZipFileName(selectedFile.name.replace('.zip', ''));
+        setUploadProgress(100);
+        
+        toast.success(`${imageFiles.length} resim hazırlandı. Gönder butonuna basarak yükleyin.`);
+      } catch (error) {
+        console.error('ZIP processing error:', error);
+        toast.error('ZIP dosyası işlenirken hata oluştu');
+        setExtractedImages([]);
+        setZipFileName("");
+      } finally {
+        setUploading(false);
+        setUploadProgress(0);
+      }
+    }
   };
 
   const handleSubmit = async (values, { resetForm, setFieldValue }) => {
-    const { manga, chapterNumber, title, folder, publishDate } = values;
-    console.log(values);
-    const formData = new FormData();
-    formData.append("manga", manga);
-    formData.append("chapterNumber", chapterNumber);
-    formData.append("title", title);
-    formData.append("folder", folder);
-    formData.append("novelContent", novelContent);
-    formData.append("uploader", username || email);
-    formData.append("mangaType", mangaType);
-    formData.append("publishDate", publishDate);
+    const { manga, chapterNumber, title, publishDate } = values;
+    
+    let finalImageUrls = imageUrls; // Use existing URLs if available
+    
+    // If we have extracted images, upload them to R2 first
+    if (extractedImages.length > 0 && mangaType !== "novel") {
+      setUploading(true);
+      setUploadProgress(0);
+      
+      try {
+        toast.loading(t("uploadingImages"));
+        setUploadProgress(25);
+        
+        // Upload extracted images to R2
+        const basePath = `chapters/${manga}/${zipFileName}`;
+        const urls = await uploadMultipleFilesToR2(extractedImages, basePath);
+        finalImageUrls = urls;
+        setImageUrls(urls);
+        
+        setUploadProgress(75);
+        toast.dismiss();
+        toast.success(`${extractedImages.length} resim başarıyla yüklendi`);
+      } catch (error) {
+        console.error('Image upload error:', error);
+        toast.dismiss();
+        toast.error('Resimler yüklenirken hata oluştu');
+        setUploading(false);
+        setUploadProgress(0);
+        return;
+      }
+    }
+    
+    const submitData = {
+      manga,
+      chapterNumber,
+      title,
+      novelContent,
+      uploader: username || email,
+      mangaType,
+      publishDate,
+      imageUrls: mangaType !== "novel" ? finalImageUrls : [],
+    };
 
     if (update) {
       try {
-        toast.promise(patchChapter(chapterId, formData), {
+        toast.promise(patchChapter(chapterId, submitData), {
           loading: t("updating"),
           success: t("updated"),
           error: t("updateError"),
@@ -134,14 +221,20 @@ export default function ChapterForm({ update, chapterId, username, email }) {
         setFieldValue("title", title);
         setFieldValue("novelContent", novelContent);
         setFieldValue("publishDate", publishDate);
+        setImageUrls([]);
+        setExtractedImages([]);
+        setZipFileName("");
       } catch (error) {
         console.error(error);
+      } finally {
+        setUploading(false);
+        setUploadProgress(0);
       }
       return;
     }
 
     try {
-      toast.promise(addChapter(formData), {
+      toast.promise(addChapter(submitData), {
         loading: t("adding"),
         success: t("added"),
         error: t("addError"),
@@ -149,8 +242,14 @@ export default function ChapterForm({ update, chapterId, username, email }) {
       resetForm();
       setSelectedManga();
       setMangaValue("");
+      setImageUrls([]);
+      setExtractedImages([]);
+      setZipFileName("");
     } catch (error) {
       console.error(error);
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
     }
   };
   if (loading || (update && mangaList.length === 0)) {
@@ -301,7 +400,14 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                 )}
                 {mangaType !== "novel" && (
                   <>
-                    {values.folder ? (
+                    {uploading && (
+                      <div className="flex flex-col gap-3">
+                        <p className="text-sm">{t("processing")}</p>
+                        <Progress value={uploadProgress} color="primary" />
+                      </div>
+                    )}
+                    
+                    {values.folder && !uploading ? (
                       <div className="flex flex-col items-start gap-3">
                         <div className="flex items-center justify-center gap-3">
                           <TbFileTypeZip
@@ -313,17 +419,29 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                             {(values.folder.size / 1000000).toFixed(2)} MB)
                           </p>
                         </div>
+                        
+                        {(imageUrls.length > 0 || extractedImages.length > 0) && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-success">
+                              ✓ {imageUrls.length > 0 ? imageUrls.length + " " + t("imagesUploaded") : extractedImages.length + " " + t("imagesReady")}
+                            </span>
+                          </div>
+                        )}
+                        
                         <Button
                           color="danger"
                           variant="light"
                           onClick={() => {
                             setFieldValue("folder", null);
+                            setImageUrls([]);
+                            setExtractedImages([]);
+                            setZipFileName("");
                           }}
                         >
                           {t("remove")}
                         </Button>
                       </div>
-                    ) : (
+                    ) : !uploading ? (
                       <>
                         <div className="items-center justify-center hidden w-full sm:flex ">
                           <label
@@ -351,6 +469,7 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                               onChange={(event) => {
                                 handleFolderChange(event, setFieldValue);
                               }}
+                              disabled={uploading || !selectedManga}
                             />
                           </label>
                         </div>
@@ -363,9 +482,16 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                           onChange={(event) => {
                             handleFolderChange(event, setFieldValue);
                           }}
+                          disabled={uploading || !selectedManga}
                         />
+                        
+                        {!selectedManga && (
+                          <p className="text-sm text-orange-500">
+                            {t("selectMangaFirst")}
+                          </p>
+                        )}
                       </>
-                    )}
+                    ) : null}
                   </>
                 )}
                 <div className="flex flex-col gap-4">
@@ -382,13 +508,11 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                     className={"bg-zinc-800"}
                   />
                 </div>
-                {mangaType !== "novel" && errors.folder && (
-                  <p className="text-danger">{errors.folder}</p>
-                )}
                 <Button
                   type="submit"
-                  isLoading={isSubmitting}
+                  isLoading={isSubmitting || uploading}
                   onClick={handleSubmit}
+                  isDisabled={mangaType !== "novel" && imageUrls.length === 0 && extractedImages.length === 0 && !update}
                 >
                   {update ? t("update") : t("add")}
                 </Button>

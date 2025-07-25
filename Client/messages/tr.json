@@ -123,7 +123,12 @@
     "shrink": "Küçült",
     "expand": "Genişlet",
     "content": "İçerik",
-    "publishDate": "Yayınlanma Tarihi"
+    "publishDate": "Yayınlanma Tarihi",
+    "processing": "ZIP dosyası işleniyor ve resimler yükleniyor...",
+    "imagesUploaded": "resim başarıyla yüklendi",
+    "imagesReady": "resim yüklenmeye hazır",
+    "uploadingImages": "Resimler depolamaya yükleniyor...",
+    "selectMangaFirst": "Resim yüklemeden önce lütfen bir manga seçin"
   },
   "CustomTable": {
     "deleting": "Benden günah gitti..",
@@ -204,7 +209,13 @@
     "add": "Ekle",
     "advanced": "Gelişmiş",
     "type": "İçerik türünü seçiniz",
-    "artist": "Çizer"
+    "artist": "Çizer",
+    "uploadingImage": "Resim yükleniyor ve optimize ediliyor...",
+    "imageUploaded": "Resim başarıyla yüklendi!",
+    "imageUploadError": "Resim yüklenirken hata oluştu. Lütfen tekrar deneyin.",
+    "imageSelected": "Resim seçildi ve yüklenmeye hazır!",
+    "imageReady": "Resim yüklenmeye hazır",
+    "imageProcessError": "Resim işlenirken hata oluştu. Lütfen tekrar deneyin."
   },
   "StatsCard": {
     "manga": "Manga Sayısı",

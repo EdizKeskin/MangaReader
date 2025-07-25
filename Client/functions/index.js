@@ -125,14 +125,14 @@ export const addAnnouncement = async (announcement) => {
   }
 };
 
-export const addManga = async (formData) => {
+export const addManga = async (data) => {
   try {
     const response = await axios.post(
       process.env.NEXT_PUBLIC_MONGO_DB_URL + "manga/add",
-      formData,
+      data,
       {
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json",
         },
       }
     );
@@ -279,13 +279,13 @@ export const getMangaNames = async () => {
   }
 };
 
-export const addChapter = async (formData) => {
+export const addChapter = async (data) => {
   try {
     const response = await axios.post(
       process.env.NEXT_PUBLIC_MONGO_DB_ADMIN_URL + "chapter/add",
-      formData,
+      data,
       {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { "Content-Type": "application/json" },
       }
     );
     return response.data;
@@ -295,13 +295,13 @@ export const addChapter = async (formData) => {
   }
 };
 
-export const patchManga = async (id, formData) => {
+export const patchManga = async (id, data) => {
   try {
     const response = await axios.patch(
       process.env.NEXT_PUBLIC_MONGO_DB_URL + "manga/" + id,
-      formData,
+      data,
       {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { "Content-Type": "application/json" },
       }
     );
     return response.data;
@@ -372,11 +372,14 @@ export const patchAnnouncement = async (id, announcement) => {
   }
 };
 
-export const patchChapter = async (id, formData) => {
+export const patchChapter = async (id, data) => {
   try {
     const response = await axios.patch(
       process.env.NEXT_PUBLIC_MONGO_DB_URL + "chapter/" + id,
-      formData
+      data,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
     );
     return response.data;
   } catch (error) {

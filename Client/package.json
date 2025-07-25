@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.445.0",
+    "@aws-sdk/s3-request-presigner": "^3.445.0",
     "@blocknote/core": "^0.9.5",
     "@blocknote/react": "^0.9.5",
     "@clerk/localizations": "^1.26.8",
@@ -42,6 +44,7 @@
     "eslint-config-next": "13.4.19",
     "formik": "^2.4.3",
     "framer-motion": "^10.16.16",
+    "jszip": "^3.10.1",
     "mini-svg-data-uri": "^1.4.4",
     "next": "13.5.6",
     "next-intl": "^2.20.2",

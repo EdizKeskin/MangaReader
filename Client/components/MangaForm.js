@@ -20,11 +20,12 @@ import {
   SelectItem,
   Textarea,
   useDisclosure,
-  Image,
+  Image as NextUIImage,
   Accordion,
   AccordionItem,
   RadioGroup,
   Radio,
+  Progress,
 } from "@nextui-org/react";
 import { Formik } from "formik";
 import React, { useEffect, useState } from "react";
@@ -32,6 +33,7 @@ import * as Yup from "yup";
 import toast from "react-hot-toast";
 import { TbUpload } from "react-icons/tb";
 import { useTranslations } from "next-intl";
+import { uploadFileToR2 } from "@/utils/r2-upload";
 
 export default function MangaForm({ update, mangaId, username, email }) {
   const [coverImagePreview, setCoverImagePreview] = useState(null);
@@ -42,6 +44,10 @@ export default function MangaForm({ update, mangaId, username, email }) {
   const [updating, setUpdating] = useState(false);
   const [newGenre, setNewGenre] = useState("");
   const [genres, setGenres] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [selectedImageFile, setSelectedImageFile] = useState(null); // Store selected image file
   const t = useTranslations("MangaForm");
 
   useEffect(() => {
@@ -70,7 +76,11 @@ export default function MangaForm({ update, mangaId, username, email }) {
       .min(1, t("categoryRequired"))
       .required(t("categoryRequired")),
     summary: Yup.string().required(t("summaryRequired")),
-    coverImage: Yup.mixed().required(t("coverRequired")),
+    coverImage: Yup.string().nullable().when('$isUpdate', {
+      is: false,
+      then: (schema) => schema.required(t("coverRequired")),
+      otherwise: (schema) => schema.nullable(),
+    }),
   });
 
   useEffect(() => {
@@ -85,19 +95,85 @@ export default function MangaForm({ update, mangaId, username, email }) {
     getGenres();
   }, []);
 
-  const handleImageChange = (event, setFieldValue) => {
+  const handleImageChange = async (event, setFieldValue) => {
     const file = event.target.files[0];
     if (file) {
-      setFieldValue("coverImage", file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCoverImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      try {
+        // Create preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setCoverImagePreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+
+        // Store the selected file for later upload
+        setSelectedImageFile(file);
+        setFieldValue("coverImage", "selected"); // Set a placeholder value for validation
+        
+        toast.success(t("imageSelected"));
+      } catch (error) {
+        console.error('Image processing error:', error);
+        toast.error(t("imageProcessError"));
+        setCoverImagePreview(null);
+        setSelectedImageFile(null);
+        setFieldValue("coverImage", null);
+      }
     } else {
       setFieldValue("coverImage", null);
       setCoverImagePreview(null);
+      setSelectedImageFile(null);
+      setCoverImageUrl("");
     }
+  };
+
+  // Basic image optimization function
+  const optimizeImage = (file) => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Set max dimensions
+        const maxWidth = 800;
+        const maxHeight = 1200;
+        
+        let { width, height } = img;
+        
+        // Calculate new dimensions while maintaining aspect ratio
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob(
+          (blob) => {
+            const optimizedFile = new File([blob], file.name, {
+              type: 'image/webp',
+              lastModified: Date.now(),
+            });
+            resolve(optimizedFile);
+          },
+          'image/webp',
+          0.8 // Quality
+        );
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
   };
 
   const addNewGenre = async () => {
@@ -123,48 +199,96 @@ export default function MangaForm({ update, mangaId, username, email }) {
 
   const handleSubmit = async (values, { resetForm, setFieldValue }) => {
     const { name, author, artist, genres, summary, coverImage, type } = values;
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("author", author);
-    formData.append("artist", artist);
-    formData.append("genres", genres);
-    formData.append("summary", summary);
-    formData.append("coverImage", coverImage);
-    formData.append("uploader", username || email);
-    formData.append("type", type);
-    setFieldValue("coverImage", coverImage);
-    setFieldValue("genres", genres);
-    setFieldValue("summary", summary);
-    setFieldValue("author", author);
-    setFieldValue("artist", artist);
-    setFieldValue("name", name);
-    setFieldValue("type", type);
+    
+    let finalCoverImage = coverImageUrl || (update ? coverImage : null);
+    
+    // If we have a selected image file, upload it to R2 first
+    if (selectedImageFile) {
+      setUploading(true);
+      setUploadProgress(0);
+      
+      try {
+        toast.loading(t("uploadingImage"));
+        setUploadProgress(25);
+
+        // Optimize image using Canvas API (basic optimization)
+        const optimizedFile = await optimizeImage(selectedImageFile);
+        setUploadProgress(50);
+
+        // Upload to R2
+        const timestamp = Date.now();
+        const fileName = `${timestamp}_${selectedImageFile.name}`;
+        const fileKey = `coverImages/${fileName}`;
+        
+        const publicUrl = await uploadFileToR2(optimizedFile, fileKey);
+        finalCoverImage = publicUrl;
+        setCoverImageUrl(publicUrl);
+        
+        setUploadProgress(100);
+        toast.dismiss();
+        toast.success(t("imageUploaded"));
+      } catch (error) {
+        console.error('Image upload error:', error);
+        toast.dismiss();
+        toast.error(t("imageUploadError"));
+        setUploading(false);
+        setUploadProgress(0);
+        return;
+      }
+    }
+    
+    if (!finalCoverImage && !update) {
+      toast.error(t("coverRequired"));
+      return;
+    }
+    
+    const submitData = {
+      name,
+      author,
+      artist,
+      genres: Array.isArray(genres) ? genres : [],
+      summary,
+      coverImageUrl: finalCoverImage,
+      uploader: username || email,
+      type,
+    };
+
     if (update) {
       try {
         setUpdating(true);
-        toast.promise(patchManga(mangaId, formData), {
+        toast.promise(patchManga(mangaId, submitData), {
           loading: t("updating"),
           success: t("updated"),
           error: t("updateError"),
         });
         setUpdating(false);
+        setSelectedImageFile(null);
       } catch (error) {
         console.error(error);
+        setUpdating(false);
+      } finally {
+        setUploading(false);
+        setUploadProgress(0);
       }
     } else {
       try {
-        toast.promise(addManga(formData), {
+        toast.promise(addManga(submitData), {
           loading: t("adding"),
           success: t("added"),
           error: t("addError"),
         });
         resetForm();
         setCoverImagePreview(null);
+        setCoverImageUrl("");
+        setSelectedImageFile(null);
         setFieldValue("coverImage", null);
         setFieldValue("genres", null);
         setLoading(false);
       } catch (error) {
         console.error(error);
+      } finally {
+        setUploading(false);
+        setUploadProgress(0);
       }
     }
   };
@@ -186,6 +310,7 @@ export default function MangaForm({ update, mangaId, username, email }) {
             type: manga?.type || "manga",
           }}
           validationSchema={validationSchema}
+          validationContext={{ isUpdate: update }}
           onSubmit={handleSubmit}
         >
           {({
@@ -302,25 +427,43 @@ export default function MangaForm({ update, mangaId, username, email }) {
                 value={values.summary}
               />
 
-              {coverImagePreview || values.coverImage ? (
+              {uploading && (
+                <div className="flex flex-col gap-3">
+                  <p className="text-sm">{t("uploadingImage")}</p>
+                  <Progress value={uploadProgress} color="primary" />
+                </div>
+              )}
+
+              {(coverImagePreview || values.coverImage) && !uploading ? (
                 <div>
-                  <Image
+                  <NextUIImage
                     src={coverImagePreview || values.coverImage}
                     alt="Cover Image Preview"
                     style={{ maxWidth: "100px" }}
                   />
+                  
+                  {selectedImageFile && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-sm text-success">
+                        ✓ {t("imageReady")}
+                      </span>
+                    </div>
+                  )}
+                  
                   <Button
                     color="error"
                     variant="light"
                     onClick={() => {
                       setCoverImagePreview(null);
+                      setCoverImageUrl("");
+                      setSelectedImageFile(null);
                       setFieldValue("coverImage", null);
                     }}
                   >
                     {t("remove")}
                   </Button>
                 </div>
-              ) : (
+              ) : !uploading ? (
                 <>
                   <div className="items-center justify-center hidden w-full md:flex ">
                     <label
@@ -348,6 +491,7 @@ export default function MangaForm({ update, mangaId, username, email }) {
                         onChange={(event) => {
                           handleImageChange(event, setFieldValue);
                         }}
+                        disabled={uploading}
                       />
                     </label>
                   </div>
@@ -360,9 +504,10 @@ export default function MangaForm({ update, mangaId, username, email }) {
                     onChange={(event) => {
                       handleImageChange(event, setFieldValue);
                     }}
+                    disabled={uploading}
                   />
                 </>
-              )}
+              ) : null}
 
               {errors.coverImage && (
                 <p className="text-danger">{errors.coverImage}</p>
@@ -391,8 +536,9 @@ export default function MangaForm({ update, mangaId, username, email }) {
               </Accordion>
               <Button
                 type="submit"
-                isLoading={isSubmitting}
+                isLoading={isSubmitting || uploading}
                 onClick={handleSubmit}
+                isDisabled={!update && !selectedImageFile && !coverImageUrl && !values.coverImage}
               >
                 {t("submit")}
               </Button>
