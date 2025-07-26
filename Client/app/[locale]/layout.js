@@ -105,7 +105,6 @@ export const metadata = {
       "Monomanga ile en yeni, popüler ve ücretsiz manga, webtoon, manhwa ve webnovel'leri çevrimiçi okuyun. Mobil uyumlu, reklamsız ve hızlı okuma deneyimi.",
     images: [
       process.env.NEXT_PUBLIC_BASE_URL + "/og-image.png",
-      process.env.NEXT_PUBLIC_BASE_URL + "/logo.png",
     ],
     site: "@monomanga",
     creator: "@monomanga",
