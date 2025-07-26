@@ -110,7 +110,7 @@ router.patch("/:id", async (req, res) => {
     const chapterId = req.params.id;
     const existingChapter = await Chapter.findOne({ manga, title });
 
-    if (existingChapter._id != chapterId) {
+    if (existingChapter && existingChapter._id.toString() !== chapterId) {
       return res
         .status(400)
         .json({ error: "Bu başlık daha önce kullanılmıştır." });

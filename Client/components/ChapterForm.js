@@ -23,7 +23,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import JSZip from "jszip";
-import { uploadMultipleFilesToR2 } from "@/utils/r2-upload";
+import { uploadMultipleFilesToR2, convertToWebP } from "@/utils/r2-upload";
 import "@/styles/expandButton.css";
 import "react-datetime-picker/dist/DateTimePicker.css";
 import "react-calendar/dist/Calendar.css";
@@ -125,27 +125,42 @@ export default function ChapterForm({ update, chapterId, username, email }) {
         
         setUploadProgress(50);
         
-        // Get image files from ZIP
+        // Get image files from ZIP and convert to WebP
         const imageFiles = [];
-        for (const filename of Object.keys(zipContent.files)) {
+        const fileEntries = Object.keys(zipContent.files).filter(filename => {
           const file = zipContent.files[filename];
-          if (!file.dir && /\.(jpg|jpeg|png|gif|webp)$/i.test(filename)) {
-            const blob = await file.async('blob');
-            const imageFile = new File([blob], filename, { type: 'image/jpeg' });
-            imageFiles.push(imageFile);
-          }
-        }
+          return !file.dir && /\.(jpg|jpeg|png|gif|webp)$/i.test(filename);
+        });
 
-        if (imageFiles.length === 0) {
+        if (fileEntries.length === 0) {
           toast.error('ZIP dosyasında geçerli resim dosyası bulunamadı');
           setUploading(false);
           return;
         }
 
-        // Sort files by name to maintain order
-        imageFiles.sort((a, b) => a.name.localeCompare(b.name));
+        // Sort filenames to maintain order
+        fileEntries.sort((a, b) => a.localeCompare(b));
 
-        // Store extracted images for later upload
+        // Process each image file
+        for (const filename of fileEntries) {
+          const file = zipContent.files[filename];
+          const blob = await file.async('blob');
+          const imageFile = new File([blob], filename, { 
+            type: blob.type || 'image/jpeg' 
+          });
+          
+          // Convert to WebP
+          try {
+            const webpFile = await convertToWebP(imageFile);
+            imageFiles.push(webpFile);
+          } catch (error) {
+            console.error(`WebP conversion failed for ${filename}:`, error);
+            // If conversion fails, use original file
+            imageFiles.push(imageFile);
+          }
+        }
+
+        // Store converted images for later upload
         setExtractedImages(imageFiles);
         setZipFileName(selectedFile.name.replace('.zip', ''));
         setUploadProgress(100);

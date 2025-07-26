@@ -33,7 +33,7 @@ import * as Yup from "yup";
 import toast from "react-hot-toast";
 import { TbUpload } from "react-icons/tb";
 import { useTranslations } from "next-intl";
-import { uploadFileToR2 } from "@/utils/r2-upload";
+import { uploadFileToR2, convertToWebP } from "@/utils/r2-upload";
 
 export default function MangaForm({ update, mangaId, username, email }) {
   const [coverImagePreview, setCoverImagePreview] = useState(null);
@@ -99,18 +99,20 @@ export default function MangaForm({ update, mangaId, username, email }) {
     const file = event.target.files[0];
     if (file) {
       try {
-        // Create preview
+        // Convert to WebP and create preview
+        const webpFile = await convertToWebP(file);
+        
         const reader = new FileReader();
         reader.onloadend = () => {
           setCoverImagePreview(reader.result);
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(webpFile);
 
-        // Store the selected file for later upload
-        setSelectedImageFile(file);
+        // Store the WebP file for later upload
+        setSelectedImageFile(webpFile);
         setFieldValue("coverImage", "selected"); // Set a placeholder value for validation
         
-        toast.success(t("imageSelected"));
+        toast.success(t("imageSelected") + " (WebP)");
       } catch (error) {
         console.error('Image processing error:', error);
         toast.error(t("imageProcessError"));
@@ -126,55 +128,7 @@ export default function MangaForm({ update, mangaId, username, email }) {
     }
   };
 
-  // Basic image optimization function
-  const optimizeImage = (file) => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      img.onload = () => {
-        // Set max dimensions
-        const maxWidth = 800;
-        const maxHeight = 1200;
-        
-        let { width, height } = img;
-        
-        // Calculate new dimensions while maintaining aspect ratio
-        if (width > height) {
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = (width * maxHeight) / height;
-            height = maxHeight;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        // Draw and compress
-        ctx.drawImage(img, 0, 0, width, height);
-        
-        canvas.toBlob(
-          (blob) => {
-            const optimizedFile = new File([blob], file.name, {
-              type: 'image/webp',
-              lastModified: Date.now(),
-            });
-            resolve(optimizedFile);
-          },
-          'image/webp',
-          0.8 // Quality
-        );
-      };
-      
-      img.src = URL.createObjectURL(file);
-    });
-  };
+
 
   const addNewGenre = async () => {
     if (newGenre === "" || !newGenre) return;
@@ -211,16 +165,13 @@ export default function MangaForm({ update, mangaId, username, email }) {
         toast.loading(t("uploadingImage"));
         setUploadProgress(25);
 
-        // Optimize image using Canvas API (basic optimization)
-        const optimizedFile = await optimizeImage(selectedImageFile);
-        setUploadProgress(50);
-
-        // Upload to R2
+        // Upload to R2 (will be auto-converted to WebP)
         const timestamp = Date.now();
         const fileName = `${timestamp}_${selectedImageFile.name}`;
         const fileKey = `coverImages/${fileName}`;
         
-        const publicUrl = await uploadFileToR2(optimizedFile, fileKey);
+        setUploadProgress(50);
+        const publicUrl = await uploadFileToR2(selectedImageFile, fileKey);
         finalCoverImage = publicUrl;
         setCoverImageUrl(publicUrl);
         

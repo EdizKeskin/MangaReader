@@ -30,7 +30,7 @@ import {
 } from "@nextui-org/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next13-progressbar";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { BiCaretDown, BiPlus, BiSearchAlt } from "react-icons/bi";
 import { PiWarningBold } from "react-icons/pi";
@@ -44,7 +44,7 @@ export default function AnnouncementsTable({
   userId,
   email,
 }) {
-  const [announcements, setAnnouncements] = useState(initialAnnouncements);
+  const [announcements, setAnnouncements] = useState([]);
   const [deleteAnnouncementId, setDeleteAnnouncementId] = useState();
   const [newTitle, setNewTitle] = useState("");
   const [loading, setLoading] = useState(false);
@@ -76,6 +76,13 @@ export default function AnnouncementsTable({
     onOpenChange: editAnnouncementChange,
   } = useDisclosure();
   const t = useTranslations("AnnouncementsTable");
+
+  // Handle initialAnnouncements prop changes
+  useEffect(() => {
+    if (initialAnnouncements && Array.isArray(initialAnnouncements)) {
+      setAnnouncements(initialAnnouncements);
+    }
+  }, [initialAnnouncements]);
 
   const headerColumns = useMemo(() => {
     if (visibleColumns === "all") return columns;
