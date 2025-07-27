@@ -21,6 +21,8 @@ export const metadata = {
   keywords: [
     "manga oku",
     "monomanga",
+    "mono manga",
+    "mono manga oku",
     "monomanga.com.tr",
     "monomanga.com",
     "ücretsiz manga",
@@ -33,7 +35,7 @@ export const metadata = {
     "türkçe manhwa",
     "türkçe çizgi roman",
     "türkçe light novel",
-    "türkçe webnovel",   
+    "türkçe webnovel",
     "türkçe manga oku",
     "popüler manga",
     "yeni manga",
@@ -103,9 +105,7 @@ export const metadata = {
     title: "Manga Oku | En Yeni, Popüler ve Ücretsiz Mangalar - Monomanga",
     description:
       "Monomanga ile en yeni, popüler ve ücretsiz manga, webtoon, manhwa ve webnovel'leri çevrimiçi okuyun. Mobil uyumlu, reklamsız ve hızlı okuma deneyimi.",
-    images: [
-      process.env.NEXT_PUBLIC_BASE_URL + "/og-image.png",
-    ],
+    images: [process.env.NEXT_PUBLIC_BASE_URL + "/og-image.png"],
     site: "@monomanga",
     creator: "@monomanga",
     domain: "monomanga.com.tr",
@@ -154,14 +154,12 @@ export default async function RootLayout({ children, params: { locale } }) {
     notFound();
   }
 
-  const randomNumber = Math.floor(Math.random() * 2);
+  // const randomNumber = Math.floor(Math.random() * 2);
 
   return (
     <html
       lang={locale}
-      className={`dark dark-theme ${
-        randomNumber === 0 ? "bg-dot-white/[0.08]" : "bg-grid-white/[0.02]"
-      }`}
+      className={`dark dark-theme bg-grid-white/[0.02]`}
       suppressHydrationWarning
     >
       <NextIntlClientProvider locale={locale} messages={messages}>
