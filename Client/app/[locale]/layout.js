@@ -1,5 +1,4 @@
 import Navbar from "@/components/Navbar";
-import ErrorBoundary from "@/components/ErrorBoundary";
 import { dark } from "@clerk/themes";
 import "./globals.css";
 import "@/styles/background.css";
@@ -158,31 +157,29 @@ export default async function RootLayout({ children, params: { locale } }) {
   return (
     <html lang={locale} className="dark dark-theme bg-grid-white/[0.02]">
       <body>
-        <ErrorBoundary>
-          <NextIntlClientProvider locale={locale} messages={messages}>
-            <ClerkProvider
-              appearance={{
-                baseTheme: dark,
-              }}
-              localization={locale === "en" ? enUS : trTR}
-            >
-              <Providers>
-                <Navbar />
-                <main>{children}</main>
-                <Toaster
-                  toastOptions={{
-                    style: {
-                      background: "#333",
-                      color: "#fff",
-                    },
-                  }}
-                />
-              </Providers>
-              <SpeedInsights />
-              <Analytics />
-            </ClerkProvider>
-          </NextIntlClientProvider>
-        </ErrorBoundary>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <ClerkProvider
+            appearance={{
+              baseTheme: dark,
+            }}
+            localization={locale === "en" ? enUS : trTR}
+          >
+            <Providers>
+              <Navbar />
+              <main>{children}</main>
+              <Toaster
+                toastOptions={{
+                  style: {
+                    background: "#333",
+                    color: "#fff",
+                  },
+                }}
+              />
+            </Providers>
+            <SpeedInsights />
+            <Analytics />
+          </ClerkProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
