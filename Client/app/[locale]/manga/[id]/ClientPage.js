@@ -659,6 +659,75 @@ export default function Manga({ params }) {
                   </dd>
                 </div>
 
+                {manga.status && (
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <dt className="text-lg font-semibold text-gray-300 min-w-24">
+                      Durum
+                    </dt>
+                    <dd>
+                      <Chip
+                        color={
+                          manga.status === "completed" ||
+                          manga.status === "güncel"
+                            ? "success"
+                            : manga.status === "dropped"
+                            ? "danger"
+                            : manga.status === "hiatus"
+                            ? "warning"
+                            : "primary"
+                        }
+                        variant="flat"
+                        size="sm"
+                      >
+                        {manga.status === "ongoing" && "Devam Ediyor"}
+                        {manga.status === "completed" && "Tamamlandı"}
+                        {manga.status === "dropped" && "Bırakıldı"}
+                        {manga.status === "hiatus" && "Ara Verildi"}
+                        {manga.status === "güncel" && "Güncel"}
+                      </Chip>
+                    </dd>
+                  </div>
+                )}
+
+                {manga.releaseYear && (
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <dt className="text-lg font-semibold text-gray-300 min-w-24">
+                      Çıkış Yılı
+                    </dt>
+                    <dd className="font-medium text-gray-300">
+                      {manga.releaseYear}
+                    </dd>
+                  </div>
+                )}
+
+                {manga.isAdult && (
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <dt className="text-lg font-semibold text-gray-300 min-w-24">
+                      İçerik
+                    </dt>
+                    <dd>
+                      <Chip color="danger" variant="flat" size="sm">
+                        +18 Yetişkin İçeriği
+                      </Chip>
+                    </dd>
+                  </div>
+                )}
+
+                {manga.otherNames && manga.otherNames.length > 0 && (
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                    <dt className="text-lg font-semibold text-gray-300 min-w-24">
+                      Diğer İsimler
+                    </dt>
+                    <dd className="space-y-1">
+                      {manga.otherNames.map((name, index) => (
+                        <div key={index} className="text-gray-300">
+                          {name}
+                        </div>
+                      ))}
+                    </dd>
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
                   <dt className="text-lg font-semibold text-gray-300 min-w-24">
                     {t("summary")}
@@ -751,11 +820,13 @@ export default function Manga({ params }) {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-              {reversedChapters.map((chapter) => (
+              {reversedChapters.map((chapter, index) => (
                 <MemoizedChapterCard
                   key={chapter._id}
                   readedChapters={readedChapters}
                   chapter={chapter}
+                  mangaStatus={manga?.status}
+                  isLastChapter={index === 0} // First item in reversed array is the latest chapter
                 />
               ))}
             </div>

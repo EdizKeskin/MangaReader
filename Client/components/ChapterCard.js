@@ -1,12 +1,17 @@
 "use client";
-import { Card, CardBody, Checkbox } from "@nextui-org/react";
+import { Card, CardBody, Checkbox, Chip } from "@nextui-org/react";
 import { usePathname } from "next/navigation";
 import React, { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next13-progressbar";
 import { dateForChapters } from "@/utils";
 import { TbClock, TbEye } from "react-icons/tb";
 
-export default function ChapterCard({ chapter, readedChapters }) {
+export default function ChapterCard({
+  chapter,
+  readedChapters,
+  mangaStatus,
+  isLastChapter,
+}) {
   const [checked, setChecked] = useState(readedChapters.includes(chapter._id));
 
   const router = useRouter();
@@ -67,6 +72,21 @@ export default function ChapterCard({ chapter, readedChapters }) {
               >
                 {chapter.title}
               </h3>
+
+              {/* Status Tags for Last Chapter */}
+              {isLastChapter &&
+                (mangaStatus === "güncel" || mangaStatus === "completed") && (
+                  <div className="mb-1">
+                    <Chip
+                      size="sm"
+                      variant="flat"
+                      color={mangaStatus === "güncel" ? "success" : "secondary"}
+                      className="h-5 px-2 py-1 text-xs"
+                    >
+                      {mangaStatus === "güncel" ? "Güncel" : "Final"}
+                    </Chip>
+                  </div>
+                )}
             </div>
 
             <Checkbox

@@ -9,19 +9,19 @@ export default function FAQ({ params }) {
 
   const questionsTr = [
     {
-      question: "Bu site nedir niye var?",
+      question: "MonoManga hakkında",
       answer:
-        "Siteyi tamamen kendi keyfime göre yaptım. Sitedeki içeriklerin tamamı örnek amacıyla başka sitelernden alınmıştır. Daha fazla teknik bilgi veya sorularınız için benimle iletişime geçebilirsiniz.",
+        "eklenecek",
     },
     {
-      question: "Sitede belli hatalar var, neden?",
+      question: "Site hakkında",
       answer:
-        "Çünkü tek başına hem geliştiriyor hem de test etmeye çalışıyorum bu yüzden belli yerlerde hatalar olabilir (özellikle yazım veya çeviri hatası). Hataları bana bildirirseniz sevinirim.",
+        "Siteyi tamamen sıfırdan yaptım bu yüzden bir çok hata ile karşılaşabilirsiniz. Hataları discord yada github üzerinden bildirebilirsiniz.",
     },
     {
       question: "Katkıda bulunabilir miyim?",
       answer:
-        "Yakın zamanda siteyi açık kaynak olarak paylaşacağım. Bu sayede istediğiniz gibi katkıda bulunabilirsiniz.",
+        "Sitenın geliştirilmesi için katkıda bulunmak istiyorsanız discord üzerinden bana ulaşabilirsiniz(shrp4) veya github üzerinden pr açabilirsiniz. Sitedeki seriler için katkıda bulunmak istiyorsanız discord adresimize gelip detaylı bilgi alabilirsiniz.",
     },
   ];
 

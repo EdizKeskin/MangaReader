@@ -46,11 +46,13 @@ export default function MangaList() {
   const cacheRef = useRef(new Map());
   const abortControllerRef = useRef(null);
 
-  const filteredMangas = useMemo(() => {
+  {
+    /* const filteredMangas = useMemo(() => {
     return data.filter(
       (manga) => manga.lastTwoChapters && manga.lastTwoChapters.length > 0
     );
-  }, [data]);
+  }, [data]);*/
+  }
 
   const fetchData = useCallback(async (pageNumber) => {
     if (abortControllerRef.current) {
@@ -144,8 +146,8 @@ export default function MangaList() {
         className="grid grid-cols-2 gap-5 mx-6 transition-all duration-300 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 lg:gap-8 justify-items-center"
         id="mangas"
       >
-        {filteredMangas.length > 0 ? (
-          filteredMangas.map((item, i) => (
+        {data.length > 0 ? (
+          data.map((item, i) => (
             <MotionDiv
               key={`${item.id || item.slug}-${i}`}
               i={i}
@@ -182,7 +184,7 @@ export default function MangaList() {
         </div>
       )}
 
-      {filteredMangas.length > 8 && (
+      {data.length > 8 && (
         <div className="fixed z-30 bottom-6 right-6 lg:hidden">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}

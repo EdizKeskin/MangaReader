@@ -13,6 +13,20 @@ const chapterSchema = new mongoose.Schema({
   uploader: String,
   novelContent: Object,
   publishDate: { type: Date, default: Date.now },
+  // Yeni özellikler
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  isAdult: {
+    type: Boolean,
+    default: false,
+  },
+  chapterType: {
+    type: String,
+    enum: ["manga", "novel", "webtoon"],
+    default: "manga",
+  },
   slug: {
     type: String,
     default: function () {

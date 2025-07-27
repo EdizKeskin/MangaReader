@@ -130,7 +130,17 @@
     "uploadingImages": "Resimler depolamaya yükleniyor...",
     "selectMangaFirst": "Resim yüklemeden önce lütfen bir manga seçin",
     "addChapter": "Bölüm Ekle",
-    "updateChapter": "Bölüm Güncelle"
+    "updateChapter": "Bölüm Güncelle",
+    "chapterSettings": "Bölüm Ayarları",
+    "activeStatus": "Bölüm Aktif",
+    "activeStatusDesc": "Pasif bölümler sitede gözükmez",
+    "adultContent": "+18 İçerik",
+    "adultContentDesc": "Yetişkin içeriği olarak işaretle",
+    "chapterType": "Bölüm Tipi",
+    "chapterTypeDesc": "Bölüm tipini seçin",
+    "batchUploadSettings": "Toplu Yükleme Ayarları",
+    "batchActiveStatusDesc": "Tüm bölümler aktif olarak yüklenecek",
+    "batchAdultContentDesc": "Tüm bölümler +18 olarak işaretlenecek"
   },
   "CustomTable": {
     "deleting": "Benden günah gitti..",
@@ -235,7 +245,23 @@
     "summaryPlaceholder": "Manga özetini buraya yazın...",
     "coverImage": "Kapak Resmi",
     "categoryName": "Kategori Adı",
-    "update": "Güncelle"
+    "update": "Güncelle",
+    "isActive": "Aktif",
+    "isAdult": "Yetişkin İçeriği",
+    "status": "Durum",
+    "selectStatus": "Durum seçin",
+    "ongoing": "Devam Ediyor",
+    "completed": "Tamamlandı",
+    "dropped": "Bırakıldı",
+    "hiatus": "Ara Verildi",
+    "güncel": "Güncel",
+    "releaseYear": "Çıkış Yılı",
+    "releaseYearPlaceholder": "örn. 2023",
+    "releaseYearMin": "Çıkış yılı 1900'den önce olamaz",
+    "releaseYearMax": "Çıkış yılı mevcut yıl + 10'dan sonra olamaz",
+    "otherNames": "Diğer İsimler",
+    "otherNamePlaceholder": "Alternatif isim",
+    "addOtherName": "Başka İsim Ekle"
   },
   "StatsCard": {
     "manga": "Manga Sayısı",

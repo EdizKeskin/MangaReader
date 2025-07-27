@@ -7,7 +7,7 @@ const { deleteFromR2, parseFileKeyFromURL } = require("../utils/r2-client");
 
 router.get("/list", async (req, res) => {
   try {
-    const mangaList = await Manga.find();
+    const mangaList = await Manga.find({ isActive: true });
     const mangaListWithLastTwoChapters = await Promise.all(
       mangaList.map(async (manga) => {
         let lastTwoChapters = await Chapter.find({ manga: manga._id })
@@ -54,12 +54,15 @@ router.get("/list/home", async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 16;
 
-    const totalMangaCount = await Manga.countDocuments();
+    const totalMangaCount = await Manga.countDocuments({ isActive: true });
     const totalPages = Math.ceil(totalMangaCount / limit);
-    const mangaList = await Manga.find();
+    const mangaList = await Manga.find({ isActive: true });
     const mangaListWithLastTwoChapters = await Promise.all(
       mangaList.map(async (manga) => {
-        let lastTwoChapters = await Chapter.find({ manga: manga._id })
+        let lastTwoChapters = await Chapter.find({
+          manga: manga._id,
+          isActive: true, // Sadece aktif bölümler
+        })
           .sort({ chapterNumber: -1 })
           .limit(2)
           .select("_id chapterNumber title uploadDate publishDate slug")
@@ -117,7 +120,7 @@ router.get("/author", async (req, res) => {
   try {
     const author = req.query.author;
 
-    const mangasByAuthor = await Manga.find({ author: author });
+    const mangasByAuthor = await Manga.find({ author: author, isActive: true });
 
     if (mangasByAuthor.length === 0 || !mangasByAuthor) {
       return res.json({
@@ -136,7 +139,7 @@ router.get("/artist", async (req, res) => {
   try {
     const artist = req.query.artist;
 
-    const mangasByArtist = await Manga.find({ artist: artist });
+    const mangasByArtist = await Manga.find({ artist: artist, isActive: true });
 
     if (mangasByArtist.length === 0 || !mangasByArtist) {
       return res.json({
@@ -210,7 +213,7 @@ router.get("/:id", async (req, res) => {
 
 router.get("/slug/:slug", async (req, res) => {
   try {
-    const manga = await Manga.findOne({ slug: req.params.slug })
+    const manga = await Manga.findOne({ slug: req.params.slug, isActive: true })
       .select("-content")
       .sort({ chapterNumber: -1 })
       .exec();
@@ -224,7 +227,10 @@ router.get("/:id/chapters", async (req, res) => {
   try {
     const mangaId = req.params.id;
 
-    const chapters = await Chapter.find({ manga: mangaId })
+    const chapters = await Chapter.find({
+      manga: mangaId,
+      isActive: true, // Sadece aktif bölümler
+    })
       .select("-content")
       .sort({ chapterNumber: -1 })
       .exec();
@@ -254,6 +260,7 @@ router.get("/slug/:slug/chapters", async (req, res) => {
     const currentDate = new Date();
     const chapters = await Chapter.find({
       manga: mangaId,
+      isActive: true, // Sadece aktif bölümler
     })
       .select("-content")
       .sort({ chapterNumber: 1 })
@@ -277,7 +284,9 @@ router.get("/slug/:slug/chapters", async (req, res) => {
 
 router.get("/list/name", async (req, res) => {
   try {
-    const mangaList = await Manga.find().select("name _id type");
+    const mangaList = await Manga.find({ isActive: true }).select(
+      "name _id type"
+    );
     res.json(mangaList);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -305,7 +314,21 @@ router.delete("/:id", async (req, res) => {
 router.patch("/:id", async (req, res) => {
   try {
     const mangaId = req.params.id;
-    const { name, author, genres, summary, uploader, type, artist, coverImageUrl } = req.body;
+    const {
+      name,
+      author,
+      genres,
+      summary,
+      uploader,
+      type,
+      artist,
+      coverImageUrl,
+      isActive,
+      isAdult,
+      status,
+      otherNames,
+      releaseYear,
+    } = req.body;
 
     const existingManga = await Manga.findById(mangaId);
 
@@ -317,7 +340,9 @@ router.patch("/:id", async (req, res) => {
     const updatedManga = {
       name,
       author,
-      genres: Array.isArray(genres) ? genres : genres.split(",").map((genre) => genre.trim()),
+      genres: Array.isArray(genres)
+        ? genres
+        : genres.split(",").map((genre) => genre.trim()),
       summary,
       type,
       uploader,
@@ -325,15 +350,25 @@ router.patch("/:id", async (req, res) => {
       slug: slug,
     };
 
+    // Handle new fields with proper defaults
+    if (isActive !== undefined) updatedManga.isActive = isActive;
+    if (isAdult !== undefined) updatedManga.isAdult = isAdult;
+    if (status !== undefined) updatedManga.status = status;
+    if (otherNames !== undefined)
+      updatedManga.otherNames = Array.isArray(otherNames) ? otherNames : [];
+    if (releaseYear !== undefined) updatedManga.releaseYear = releaseYear;
+
     // If new cover image URL is provided and different from existing
     if (coverImageUrl && coverImageUrl !== existingManga.coverImage) {
       // Delete old image from R2
       const oldCoverImageURL = existingManga.coverImage;
       const oldFileKey = parseFileKeyFromURL(oldCoverImageURL);
       if (oldFileKey) {
-        await deleteFromR2(oldFileKey).catch(err => console.error("Error deleting old image:", err));
+        await deleteFromR2(oldFileKey).catch((err) =>
+          console.error("Error deleting old image:", err)
+        );
       }
-      
+
       updatedManga.coverImage = coverImageUrl;
     }
 
@@ -356,13 +391,29 @@ router.patch("/:id", async (req, res) => {
 
 router.post("/add", async (req, res) => {
   try {
-    const { name, author, genres, summary, uploader, type, artist, coverImageUrl } = req.body;
+    const {
+      name,
+      author,
+      genres,
+      summary,
+      uploader,
+      type,
+      artist,
+      coverImageUrl,
+      isActive,
+      isAdult,
+      status,
+      otherNames,
+      releaseYear,
+    } = req.body;
 
     if (!coverImageUrl) {
       return res.status(400).json({ error: "Cover image is required." });
     }
 
-    const genreNames = Array.isArray(genres) ? genres : genres.split(",").map((genre) => genre.trim());
+    const genreNames = Array.isArray(genres)
+      ? genres
+      : genres.split(",").map((genre) => genre.trim());
     const uploadDate = new Date();
     const slug = slugify(name, { lower: true });
 
@@ -377,6 +428,11 @@ router.post("/add", async (req, res) => {
       type,
       slug: slug,
       coverImage: coverImageUrl,
+      isActive: isActive !== undefined ? isActive : true,
+      isAdult: isAdult !== undefined ? isAdult : false,
+      status: status || "ongoing",
+      otherNames: Array.isArray(otherNames) ? otherNames : [],
+      releaseYear: releaseYear,
     });
 
     await manga.save();
@@ -390,7 +446,9 @@ router.post("/add", async (req, res) => {
 
 router.get("/list/search", async (req, res) => {
   try {
-    const mangaList = await Manga.find().select("name _id coverImage type");
+    const mangaList = await Manga.find({ isActive: true }).select(
+      "name _id coverImage type"
+    );
     res.json(mangaList);
   } catch (error) {
     res.status(500).json({ error: error.message });

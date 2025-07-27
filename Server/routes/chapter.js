@@ -3,7 +3,10 @@ const router = express.Router();
 const Chapter = require("../models/Chapter");
 const Manga = require("../models/Manga");
 const { default: slugify } = require("slugify");
-const { deleteMultipleFromR2, parseFileKeyFromURL } = require("../utils/r2-client");
+const {
+  deleteMultipleFromR2,
+  parseFileKeyFromURL,
+} = require("../utils/r2-client");
 
 router.get("/count", async (req, res) => {
   try {
@@ -19,6 +22,7 @@ router.get("/unpublished", async (req, res) => {
   try {
     const chapters = await Chapter.find({
       publishDate: { $gt: today },
+      isActive: true, // Sadece aktif bölümler
     })
       .select("-content")
       .exec();
@@ -104,8 +108,11 @@ router.patch("/:id", async (req, res) => {
       mangaType,
       publishDate,
       imageUrls, // Now comes as array directly from frontend JSON
+      isActive, // Yeni alanlar
+      isAdult,
+      chapterType,
     } = req.body;
-    
+
     // No need to JSON.parse since it's already an array from JSON request
     const chapterId = req.params.id;
     const existingChapter = await Chapter.findOne({ manga, title });
@@ -115,7 +122,7 @@ router.patch("/:id", async (req, res) => {
         .status(400)
         .json({ error: "Bu başlık daha önce kullanılmıştır." });
     }
-    
+
     let currentChapterNumber = chapterNumber;
     if (!chapterNumber) {
       const currentChapter = await Chapter.findById(chapterId);
@@ -134,7 +141,7 @@ router.patch("/:id", async (req, res) => {
         if (oldChapter && oldChapter.content && oldChapter.content.length > 0) {
           const result = extractIdAndTextFromUrl(oldChapter.content[0]);
           const folderPath = `chapters/${result.id}/${result.text}`;
-          
+
           try {
             await deleteMultipleFromR2(folderPath);
             console.log(`Klasör başarıyla silindi: ${folderPath}`);
@@ -170,6 +177,11 @@ router.patch("/:id", async (req, res) => {
       uploadDate: new Date(),
     };
 
+    // Yeni alanları sadece tanımlıysa ekle (var olan bölümler için uyumluluk)
+    if (isActive !== undefined) updatedChapter.isActive = isActive;
+    if (isAdult !== undefined) updatedChapter.isAdult = isAdult;
+    if (chapterType !== undefined) updatedChapter.chapterType = chapterType;
+
     await Chapter.findByIdAndUpdate(chapterId, updatedChapter);
 
     res.json({ message: "Chapter başarıyla güncellendi" });
@@ -190,8 +202,11 @@ router.post("/add", async (req, res) => {
       mangaType,
       publishDate,
       imageUrls, // Now comes as array directly from frontend JSON
+      isActive = true, // Yeni alan - default true
+      isAdult = false, // Yeni alan - default false
+      chapterType = "manga", // Yeni alan - default manga
     } = req.body;
-    
+
     // No need to JSON.parse since it's already an array from JSON request
 
     const existingChapter = await Chapter.findOne({ manga, title });
@@ -223,7 +238,7 @@ router.post("/add", async (req, res) => {
     if (!publishDate) {
       publishDate = new Date();
     }
-    
+
     const slug = slugify(title, { lower: true });
     const chapter = new Chapter({
       manga,
@@ -235,6 +250,9 @@ router.post("/add", async (req, res) => {
       content: finalImageUrls.length > 0 ? finalImageUrls : null,
       uploadDate: new Date(),
       publishDate: publishDate,
+      isActive, // Yeni alanlar
+      isAdult,
+      chapterType,
     });
 
     await chapter.save();
@@ -255,7 +273,7 @@ router.delete("/:id", async (req, res) => {
       const oldImages = oldChapter.content;
       const result = extractIdAndTextFromUrl(oldImages[0]);
       const folderPath = `chapters/${result.id}/${result.text}`;
-      
+
       try {
         await deleteMultipleFromR2(folderPath);
         console.log(`Klasör başarıyla silindi: ${folderPath}`);

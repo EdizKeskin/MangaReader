@@ -15,9 +15,8 @@ const nextConfig = {
     serverActions: true,
   },
   swcMinify: true,
-  reactStrictMode: false, // Temporarily disable to prevent double rendering issues
+  reactStrictMode: false,
   compiler: {
-    // Remove console logs in production
     removeConsole: process.env.NODE_ENV === "production",
   },
 };

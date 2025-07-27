@@ -130,7 +130,17 @@
     "uploadingImages": "Uploading images to storage...",
     "selectMangaFirst": "Please select a manga first before uploading images",
     "addChapter": "Add Chapter",
-    "updateChapter": "Update Chapter"
+    "updateChapter": "Update Chapter",
+    "chapterSettings": "Chapter Settings",
+    "activeStatus": "Chapter Active",
+    "activeStatusDesc": "Inactive chapters won't be visible on the site",
+    "adultContent": "+18 Content",
+    "adultContentDesc": "Mark as adult content",
+    "chapterType": "Chapter Type",
+    "chapterTypeDesc": "Select chapter type",
+    "batchUploadSettings": "Batch Upload Settings",
+    "batchActiveStatusDesc": "All chapters will be uploaded as active",
+    "batchAdultContentDesc": "All chapters will be marked as +18"
   },
   "CustomTable": {
     "deleting": "It's your funeral...",
@@ -235,7 +245,23 @@
     "summaryPlaceholder": "Write manga summary here...",
     "coverImage": "Cover Image",
     "categoryName": "Category Name",
-    "update": "Update"
+    "update": "Update",
+    "isActive": "Active",
+    "isAdult": "Adult Content",
+    "status": "Status",
+    "selectStatus": "Select status",
+    "ongoing": "Ongoing",
+    "completed": "Completed",
+    "dropped": "Dropped",
+    "hiatus": "Hiatus",
+    "güncel": "Up to date",
+    "releaseYear": "Release Year",
+    "releaseYearPlaceholder": "e.g. 2023",
+    "releaseYearMin": "Release year cannot be earlier than 1900",
+    "releaseYearMax": "Release year cannot be later than current year + 10",
+    "otherNames": "Other Names",
+    "otherNamePlaceholder": "Alternative name",
+    "addOtherName": "Add Another Name"
   },
   "StatsCard": {
     "manga": "Total Manga",

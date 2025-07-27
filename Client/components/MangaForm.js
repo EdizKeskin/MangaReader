@@ -63,7 +63,7 @@ export default function MangaForm({ update, mangaId, username, email }) {
       setShowGenreDropdown(false);
     } else {
       const availableGenres = getAvailableGenres(values);
-      const filtered = availableGenres.filter(genre => 
+      const filtered = availableGenres.filter((genre) =>
         genre.name.toLowerCase().includes(value.toLowerCase())
       );
       setFilteredGenres(filtered);
@@ -74,7 +74,9 @@ export default function MangaForm({ update, mangaId, username, email }) {
   // Get available genres (excluding already selected ones)
   const getAvailableGenres = (values) => {
     const selectedGenreIds = Array.isArray(values.genres) ? values.genres : [];
-    return genres?.filter(genre => !selectedGenreIds.includes(genre._id)) || [];
+    return (
+      genres?.filter((genre) => !selectedGenreIds.includes(genre._id)) || []
+    );
   };
 
   // Handle clicking outside to close dropdown
@@ -105,8 +107,11 @@ export default function MangaForm({ update, mangaId, username, email }) {
   // Highlight search text in genre name
   const highlightSearchText = (text, search) => {
     if (!search) return text;
-    const pattern = new RegExp(`(${search})`, 'gi');
-    return text.replace(pattern, `<b class="text-primary font-semibold">$1</b>`);
+    const pattern = new RegExp(`(${search})`, "gi");
+    return text.replace(
+      pattern,
+      `<b class="text-primary font-semibold">$1</b>`
+    );
   };
 
   // Handle clear search
@@ -144,11 +149,18 @@ export default function MangaForm({ update, mangaId, username, email }) {
       .min(1, t("categoryRequired"))
       .required(t("categoryRequired")),
     summary: Yup.string().required(t("summaryRequired")),
-    coverImage: Yup.string().nullable().when('$isUpdate', {
-      is: false,
-      then: (schema) => schema.required(t("coverRequired")),
-      otherwise: (schema) => schema.nullable(),
-    }),
+    coverImage: Yup.string()
+      .nullable()
+      .when("$isUpdate", {
+        is: false,
+        then: (schema) => schema.required(t("coverRequired")),
+        otherwise: (schema) => schema.nullable(),
+      }),
+    releaseYear: Yup.number()
+      .min(1900, t("releaseYearMin"))
+      .max(new Date().getFullYear() + 10, t("releaseYearMax"))
+      .nullable(),
+    otherNames: Yup.array().of(Yup.string()),
   });
 
   useEffect(() => {
@@ -167,10 +179,8 @@ export default function MangaForm({ update, mangaId, username, email }) {
   const handleImageChange = async (event, setFieldValue) => {
     const file = event.target.files[0];
     if (file) {
-
-
       // Validate file type
-      if (!file.type.startsWith('image/')) {
+      if (!file.type.startsWith("image/")) {
         toast.error(t("fileTypeError"));
         return;
       }
@@ -179,7 +189,7 @@ export default function MangaForm({ update, mangaId, username, email }) {
         toast.loading(t("processingImage"));
         // Convert to WebP and create preview
         const webpFile = await convertToWebP(file);
-        
+
         const reader = new FileReader();
         reader.onloadend = () => {
           setCoverImagePreview(reader.result);
@@ -189,11 +199,11 @@ export default function MangaForm({ update, mangaId, username, email }) {
         // Store the WebP file for later upload
         setSelectedImageFile(webpFile);
         setFieldValue("coverImage", "selected");
-        
+
         toast.dismiss();
         toast.success(t("imageSelected") + " (WebP)");
       } catch (error) {
-        console.error('Image processing error:', error);
+        console.error("Image processing error:", error);
         toast.dismiss();
         toast.error(t("imageProcessError"));
         setCoverImagePreview(null);
@@ -210,12 +220,15 @@ export default function MangaForm({ update, mangaId, username, email }) {
 
   const addNewGenre = async () => {
     if (newGenre === "" || !newGenre) return;
-    
+
     try {
       setLoading(true);
       const result = await addGenre({ name: newGenre });
-      
-      const newGenreData = { name: result.newGenre.name, _id: result.newGenre._id };
+
+      const newGenreData = {
+        name: result.newGenre.name,
+        _id: result.newGenre._id,
+      };
       setGenres([...genres, newGenreData]);
       setNewGenre("");
       toast.success(t("added"));
@@ -228,15 +241,28 @@ export default function MangaForm({ update, mangaId, username, email }) {
   };
 
   const handleSubmit = async (values, { resetForm, setFieldValue }) => {
-    const { name, author, artist, genres, summary, coverImage, type } = values;
-    
+    const {
+      name,
+      author,
+      artist,
+      genres,
+      summary,
+      coverImage,
+      type,
+      isActive,
+      isAdult,
+      status,
+      otherNames,
+      releaseYear,
+    } = values;
+
     let finalCoverImage = coverImageUrl || (update ? coverImage : null);
-    
+
     // If we have a selected image file, upload it to R2 first
     if (selectedImageFile) {
       setUploading(true);
       setUploadProgress(0);
-      
+
       try {
         toast.loading(t("uploadingImage"));
         setUploadProgress(25);
@@ -245,17 +271,17 @@ export default function MangaForm({ update, mangaId, username, email }) {
         const timestamp = Date.now();
         const fileName = `${timestamp}_${selectedImageFile.name}`;
         const fileKey = `coverImages/${fileName}`;
-        
+
         setUploadProgress(50);
         const publicUrl = await uploadFileToR2(selectedImageFile, fileKey);
         finalCoverImage = publicUrl;
         setCoverImageUrl(publicUrl);
-        
+
         setUploadProgress(100);
         toast.dismiss();
         toast.success(t("imageUploaded"));
       } catch (error) {
-        console.error('Image upload error:', error);
+        console.error("Image upload error:", error);
         toast.dismiss();
         toast.error(t("imageUploadError"));
         setUploading(false);
@@ -263,13 +289,13 @@ export default function MangaForm({ update, mangaId, username, email }) {
         return;
       }
     }
-    
+
     if (!finalCoverImage && !update) {
       toast.error(t("coverRequired"));
       setUploading(false);
       return;
     }
-    
+
     const submitData = {
       name,
       author,
@@ -279,6 +305,13 @@ export default function MangaForm({ update, mangaId, username, email }) {
       coverImageUrl: finalCoverImage,
       uploader: username || email,
       type,
+      isActive: isActive !== undefined ? isActive : true,
+      isAdult: isAdult !== undefined ? isAdult : false,
+      status: status || "ongoing",
+      otherNames: Array.isArray(otherNames)
+        ? otherNames.filter((name) => name.trim() !== "")
+        : [],
+      releaseYear: releaseYear || null,
     };
 
     if (update) {
@@ -317,7 +350,8 @@ export default function MangaForm({ update, mangaId, username, email }) {
 
   const isSubmitDisabled = (values, isSubmitting) => {
     if (isSubmitting || uploading || updating) return true;
-    if (!update && !selectedImageFile && !coverImageUrl && !values.coverImage) return true;
+    if (!update && !selectedImageFile && !coverImageUrl && !values.coverImage)
+      return true;
     return false;
   };
 
@@ -331,11 +365,11 @@ export default function MangaForm({ update, mangaId, username, email }) {
 
   return (
     <>
-      <Card className="gap-6 p-6 md:p-8 m-4 md:m-8">
+      <Card className="gap-6 p-6 m-4 md:p-8 md:m-8">
         <div className="text-xl font-semibold text-center">
           {update ? t("updateManga") : t("addManga")}
         </div>
-        
+
         <Formik
           initialValues={{
             name: manga?.name || "",
@@ -345,6 +379,11 @@ export default function MangaForm({ update, mangaId, username, email }) {
             summary: manga?.summary || "",
             coverImage: manga?.coverImage || null,
             type: manga?.type || "manga",
+            isActive: manga?.isActive !== undefined ? manga.isActive : true,
+            isAdult: manga?.isAdult !== undefined ? manga.isAdult : false,
+            status: manga?.status || "ongoing",
+            otherNames: manga?.otherNames || [],
+            releaseYear: manga?.releaseYear || null,
           }}
           validationSchema={validationSchema}
           validationContext={{ isUpdate: update }}
@@ -378,11 +417,11 @@ export default function MangaForm({ update, mangaId, username, email }) {
                 variant="bordered"
                 classNames={{
                   input: "text-base",
-                  inputWrapper: "h-12"
+                  inputWrapper: "h-12",
                 }}
               />
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Input
                   name="author"
                   label={t("author")}
@@ -399,7 +438,7 @@ export default function MangaForm({ update, mangaId, username, email }) {
                   variant="bordered"
                   classNames={{
                     input: "text-base",
-                    inputWrapper: "h-12"
+                    inputWrapper: "h-12",
                   }}
                 />
                 <Input
@@ -418,14 +457,14 @@ export default function MangaForm({ update, mangaId, username, email }) {
                   variant="bordered"
                   classNames={{
                     input: "text-base",
-                    inputWrapper: "h-12"
+                    inputWrapper: "h-12",
                   }}
                 />
               </div>
-              
-              <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
+
+              <div className="flex flex-col items-start gap-4 md:flex-row md:items-end">
                 <div className="flex-1 w-full">
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block mb-2 text-sm font-medium">
                     {t("categories")}
                   </label>
                   <div className="space-y-3">
@@ -434,18 +473,23 @@ export default function MangaForm({ update, mangaId, username, email }) {
                         <Input
                           classNames={{
                             input: "text-base",
-                            inputWrapper: "h-12"
+                            inputWrapper: "h-12",
                           }}
                           placeholder={t("searchCategories")}
                           value={genreSearch}
-                          onChange={(e) => handleGenreInputChange(e.target.value, values)}
+                          onChange={(e) =>
+                            handleGenreInputChange(e.target.value, values)
+                          }
                           onFocus={() => {
                             if (genres && genres.length > 0) {
                               if (genreSearch === "") {
                                 // Show all available genres when input is focused and empty
-                                const availableGenres = getAvailableGenres(values);
+                                const availableGenres =
+                                  getAvailableGenres(values);
                                 setFilteredGenres(availableGenres);
-                                setShowGenreDropdown(availableGenres.length > 0);
+                                setShowGenreDropdown(
+                                  availableGenres.length > 0
+                                );
                               } else {
                                 setShowGenreDropdown(filteredGenres.length > 0);
                               }
@@ -463,28 +507,37 @@ export default function MangaForm({ update, mangaId, username, email }) {
                           onClear={handleClearSearch}
                           isDisabled={isSubmitting || uploading}
                         />
-                        
+
                         {showGenreDropdown && filteredGenres.length > 0 && (
-                          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                          <div className="absolute z-50 w-full mt-1 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg dark:bg-zinc-800 dark:border-gray-600 max-h-60">
                             {filteredGenres.map((genre) => (
                               <div
                                 key={genre._id}
-                                className="p-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
-                                onClick={() => handleGenreSelect(genre, setFieldValue, values)}
+                                className="p-3 transition-colors border-b border-gray-100 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 dark:border-gray-700 last:border-b-0"
+                                onClick={() =>
+                                  handleGenreSelect(
+                                    genre,
+                                    setFieldValue,
+                                    values
+                                  )
+                                }
                               >
-                                <span 
+                                <span
                                   className="text-sm text-gray-900 dark:text-gray-100"
-                                  dangerouslySetInnerHTML={{ 
-                                    __html: highlightSearchText(genre.name, genreSearch) 
-                                  }} 
+                                  dangerouslySetInnerHTML={{
+                                    __html: highlightSearchText(
+                                      genre.name,
+                                      genreSearch
+                                    ),
+                                  }}
                                 />
                               </div>
                             ))}
                           </div>
                         )}
-                        
+
                         {genreSearch && filteredGenres.length === 0 && (
-                          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg p-3">
+                          <div className="absolute z-50 w-full p-3 mt-1 bg-white border border-gray-300 rounded-md shadow-lg dark:bg-zinc-800 dark:border-gray-600">
                             <p className="text-sm text-gray-500 dark:text-gray-400">
                               {t("noCategoriesFound")}
                             </p>
@@ -492,22 +545,28 @@ export default function MangaForm({ update, mangaId, username, email }) {
                         )}
                       </div>
                     )}
-                    
+
                     {/* Selected genres display */}
                     {values.genres && values.genres.length > 0 && (
                       <div className="space-y-2">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">{t("selectedCategories")}:</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          {t("selectedCategories")}:
+                        </span>
                         <div className="flex flex-wrap gap-2">
                           {values.genres.map((genreId, index) => {
-                            const genre = genres?.find(g => g._id === genreId);
+                            const genre = genres?.find(
+                              (g) => g._id === genreId
+                            );
                             return genre ? (
-                              <Chip 
-                                key={index} 
-                                size="sm" 
-                                variant="flat" 
+                              <Chip
+                                key={index}
+                                size="sm"
+                                variant="flat"
                                 color="primary"
                                 onClose={() => {
-                                  const newGenres = values.genres.filter(id => id !== genreId);
+                                  const newGenres = values.genres.filter(
+                                    (id) => id !== genreId
+                                  );
                                   setFieldValue("genres", newGenres);
                                 }}
                               >
@@ -519,20 +578,22 @@ export default function MangaForm({ update, mangaId, username, email }) {
                       </div>
                     )}
                   </div>
-                  {errors.genres && <p className="text-danger text-sm mt-1">{errors.genres}</p>}
+                  {errors.genres && (
+                    <p className="mt-1 text-sm text-danger">{errors.genres}</p>
+                  )}
                 </div>
-                
-         <div className="flex self-start md:self-center">
-         <Button 
-                  onClick={onOpen} 
-                  variant="bordered" 
-                  color="primary"
-                  isDisabled={isSubmitting || uploading}
-                  className="shrink-0"
-                >
-                  {t("addCategory")}
-                </Button>
-         </div>
+
+                <div className="flex self-start md:self-center">
+                  <Button
+                    onClick={onOpen}
+                    variant="bordered"
+                    color="primary"
+                    isDisabled={isSubmitting || uploading}
+                    className="shrink-0"
+                  >
+                    {t("addCategory")}
+                  </Button>
+                </div>
               </div>
 
               <Textarea
@@ -552,15 +613,17 @@ export default function MangaForm({ update, mangaId, username, email }) {
                 variant="bordered"
                 minRows={4}
                 classNames={{
-                  input: "text-base"
+                  input: "text-base",
                 }}
               />
 
               {uploading && (
-                <div className="flex flex-col gap-3 p-4 bg-primary/10 rounded-lg">
+                <div className="flex flex-col gap-3 p-4 rounded-lg bg-primary/10">
                   <div className="flex items-center gap-2">
                     <Spinner size="sm" />
-                    <span className="text-sm font-medium">{t("uploadingImage")}</span>
+                    <span className="text-sm font-medium">
+                      {t("uploadingImage")}
+                    </span>
                   </div>
                   <Progress value={uploadProgress} color="primary" />
                 </div>
@@ -568,23 +631,25 @@ export default function MangaForm({ update, mangaId, username, email }) {
 
               {(coverImagePreview || values.coverImage) && !uploading ? (
                 <div className="flex flex-col gap-3">
-                  <label className="text-sm font-medium">{t("coverImage")}</label>
-                  <div className="flex flex-col md:flex-row gap-4 items-start">
+                  <label className="text-sm font-medium">
+                    {t("coverImage")}
+                  </label>
+                  <div className="flex flex-col items-start gap-4 md:flex-row">
                     <NextUIImage
                       src={coverImagePreview || values.coverImage}
                       alt="Cover Image Preview"
-                      className="w-32 h-48 object-cover rounded-lg border"
+                      className="object-cover w-32 h-48 border rounded-lg"
                     />
-                    
+
                     <div className="flex flex-col gap-2">
                       {selectedImageFile && (
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-success font-medium">
+                          <span className="text-sm font-medium text-success">
                             ✓ {t("imageReady")}
                           </span>
                         </div>
                       )}
-                      
+
                       <Button
                         color="danger"
                         variant="light"
@@ -604,13 +669,15 @@ export default function MangaForm({ update, mangaId, username, email }) {
                 </div>
               ) : !uploading ? (
                 <div className="flex flex-col gap-3">
-                  <label className="text-sm font-medium">{t("coverImage")}</label>
-                  
+                  <label className="text-sm font-medium">
+                    {t("coverImage")}
+                  </label>
+
                   {/* Desktop Upload Area */}
                   <div className="hidden md:block">
                     <label
                       htmlFor="coverImage"
-                      className="flex flex-col items-center justify-center w-full h-48 bg-transparent border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+                      className="flex flex-col items-center justify-center w-full h-48 transition-colors bg-transparent border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
                     >
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <TbUpload className="w-10 h-10 mb-3 text-gray-400" />
@@ -637,21 +704,21 @@ export default function MangaForm({ update, mangaId, username, email }) {
                       />
                     </label>
                   </div>
-                  
+
                   {/* Mobile Upload Input */}
                   <input
                     type="file"
                     name="coverImage"
                     accept="image/*"
-                    className="block md:hidden w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
+                    className="block w-full text-sm text-gray-500 md:hidden file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
                     onChange={(event) => {
                       handleImageChange(event, setFieldValue);
                     }}
                     disabled={uploading || isSubmitting}
                   />
-                  
+
                   {errors.coverImage && (
-                    <p className="text-danger text-sm">{errors.coverImage}</p>
+                    <p className="text-sm text-danger">{errors.coverImage}</p>
                   )}
                 </div>
               ) : null}
@@ -662,27 +729,175 @@ export default function MangaForm({ update, mangaId, username, email }) {
                   aria-label="Advanced Settings"
                   title={t("advanced")}
                   classNames={{
-                    title: "text-sm font-medium"
+                    title: "text-sm font-medium",
                   }}
                 >
-                  <RadioGroup
-                    label={t("type")}
-                    color="primary"
-                    defaultValue="manga"
-                    orientation="horizontal"
-                    value={values.type}
-                    onValueChange={(value) => {
-                      setFieldValue("type", value);
-                    }}
-                    isDisabled={isSubmitting || uploading}
-                  >
-                    <Radio value="manga">Manga</Radio>
-                    <Radio value="webtoon">Webtoon</Radio>
-                    <Radio value="novel">Novel</Radio>
-                  </RadioGroup>
+                  <div className="space-y-6">
+                    <RadioGroup
+                      label={t("type")}
+                      color="primary"
+                      defaultValue="manga"
+                      orientation="horizontal"
+                      value={values.type}
+                      onValueChange={(value) => {
+                        setFieldValue("type", value);
+                      }}
+                      isDisabled={isSubmitting || uploading}
+                    >
+                      <Radio value="manga">Manga</Radio>
+                      <Radio value="webtoon">Webtoon</Radio>
+                      <Radio value="novel">Novel</Radio>
+                    </RadioGroup>
+
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          id="isActive"
+                          checked={values.isActive}
+                          onChange={(e) =>
+                            setFieldValue("isActive", e.target.checked)
+                          }
+                          disabled={isSubmitting || uploading}
+                          className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary focus:ring-primary focus:ring-2"
+                        />
+                        <label
+                          htmlFor="isActive"
+                          className="text-sm font-medium"
+                        >
+                          {t("isActive")}
+                        </label>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          id="isAdult"
+                          checked={values.isAdult}
+                          onChange={(e) =>
+                            setFieldValue("isAdult", e.target.checked)
+                          }
+                          disabled={isSubmitting || uploading}
+                          className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary focus:ring-primary focus:ring-2"
+                        />
+                        <label
+                          htmlFor="isAdult"
+                          className="text-sm font-medium"
+                        >
+                          {t("isAdult")} (+18)
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <Select
+                        label={t("status")}
+                        placeholder={t("selectStatus")}
+                        selectedKeys={values.status ? [values.status] : []}
+                        onSelectionChange={(keys) => {
+                          const selectedKey = Array.from(keys)[0];
+                          setFieldValue("status", selectedKey);
+                        }}
+                        isDisabled={isSubmitting || uploading}
+                        variant="bordered"
+                      >
+                        <SelectItem key="ongoing" value="ongoing">
+                          {t("ongoing")}
+                        </SelectItem>
+                        <SelectItem key="completed" value="completed">
+                          {t("completed")}
+                        </SelectItem>
+                        <SelectItem key="dropped" value="dropped">
+                          {t("dropped")}
+                        </SelectItem>
+                        <SelectItem key="hiatus" value="hiatus">
+                          {t("hiatus")}
+                        </SelectItem>
+                        <SelectItem key="güncel" value="güncel">
+                          {t("güncel")}
+                        </SelectItem>
+                      </Select>
+
+                      <Input
+                        label={t("releaseYear")}
+                        type="number"
+                        placeholder={t("releaseYearPlaceholder")}
+                        value={values.releaseYear || ""}
+                        onChange={(e) => {
+                          const year = e.target.value
+                            ? parseInt(e.target.value)
+                            : null;
+                          setFieldValue("releaseYear", year);
+                        }}
+                        isDisabled={isSubmitting || uploading}
+                        variant="bordered"
+                        min={1900}
+                        max={new Date().getFullYear() + 10}
+                        validationState={
+                          errors.releaseYear && touched.releaseYear
+                            ? "invalid"
+                            : "valid"
+                        }
+                        errorMessage={errors.releaseYear}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block mb-2 text-sm font-medium">
+                        {t("otherNames")}
+                      </label>
+                      <div className="space-y-2">
+                        {values.otherNames.map((name, index) => (
+                          <div key={index} className="flex gap-2">
+                            <Input
+                              placeholder={t("otherNamePlaceholder")}
+                              value={name}
+                              onChange={(e) => {
+                                const newOtherNames = [...values.otherNames];
+                                newOtherNames[index] = e.target.value;
+                                setFieldValue("otherNames", newOtherNames);
+                              }}
+                              isDisabled={isSubmitting || uploading}
+                              variant="bordered"
+                              size="lg"
+                            />
+                            <Button
+                              color="danger"
+                              variant="light"
+                              size="lg"
+                              isIconOnly
+                              onClick={() => {
+                                const newOtherNames = values.otherNames.filter(
+                                  (_, i) => i !== index
+                                );
+                                setFieldValue("otherNames", newOtherNames);
+                              }}
+                              isDisabled={isSubmitting || uploading}
+                            >
+                              ✕
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          color="primary"
+                          variant="bordered"
+                          size="sm"
+                          onClick={() => {
+                            setFieldValue("otherNames", [
+                              ...values.otherNames,
+                              "",
+                            ]);
+                          }}
+                          isDisabled={isSubmitting || uploading}
+                        >
+                          + {t("addOtherName")}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </AccordionItem>
               </Accordion>
-              
+
               <Button
                 type="submit"
                 size="lg"
@@ -698,7 +913,7 @@ export default function MangaForm({ update, mangaId, username, email }) {
           )}
         </Formik>
       </Card>
-      
+
       <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="center">
         <ModalContent>
           {(onClose) => (
