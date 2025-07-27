@@ -13,12 +13,15 @@ import {
   CardBody,
   Input,
   Progress,
+  Switch,
+  Tabs,
+  Tab,
 } from "@nextui-org/react";
 import { Formik } from "formik";
 import React, { useEffect, useState } from "react";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
-import { TbFileTypeZip, TbUpload } from "react-icons/tb";
+import { TbFileTypeZip, TbUpload, TbTrash } from "react-icons/tb";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
@@ -50,6 +53,13 @@ export default function ChapterForm({ update, chapterId, username, email }) {
   const [imageUrls, setImageUrls] = useState([]);
   const [extractedImages, setExtractedImages] = useState([]); // Store extracted images before upload
   const [zipFileName, setZipFileName] = useState(""); // Store ZIP file name
+  
+  // Batch upload states
+  const [isBatchMode, setIsBatchMode] = useState(false);
+  const [batchFiles, setBatchFiles] = useState([]); // Array of {file, extractedImages, metadata}
+  const [batchProgress, setBatchProgress] = useState(0);
+  const [batchUploading, setBatchUploading] = useState(false);
+  
   const searchParams = useSearchParams();
   const search = searchParams.get("mangaId");
   const t = useTranslations("ChapterForm");
@@ -178,6 +188,175 @@ export default function ChapterForm({ update, chapterId, username, email }) {
     }
   };
 
+  // Batch file handling
+  const handleBatchFilesChange = async (event) => {
+    const selectedFiles = Array.from(event.target.files);
+    setBatchUploading(true);
+    setBatchProgress(0);
+    
+    try {
+      const processedFiles = [];
+      
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        setBatchProgress((i / selectedFiles.length) * 50);
+        
+        if (file.name.endsWith('.zip') && mangaType !== "novel") {
+          try {
+            const zip = new JSZip();
+            const zipContent = await zip.loadAsync(file);
+            
+            const imageFiles = [];
+            const fileEntries = Object.keys(zipContent.files).filter(filename => {
+              const fileObj = zipContent.files[filename];
+              return !fileObj.dir && /\.(jpg|jpeg|png|gif|webp)$/i.test(filename);
+            });
+
+            if (fileEntries.length === 0) {
+              toast.error(`${file.name} ZIP dosyasında geçerli resim dosyası bulunamadı`);
+              continue;
+            }
+
+            fileEntries.sort((a, b) => a.localeCompare(b));
+
+            for (const filename of fileEntries) {
+              const fileObj = zipContent.files[filename];
+              const blob = await fileObj.async('blob');
+              const imageFile = new File([blob], filename, { 
+                type: blob.type || 'image/jpeg' 
+              });
+              
+              try {
+                const webpFile = await convertToWebP(imageFile);
+                imageFiles.push(webpFile);
+              } catch (error) {
+                console.error(`WebP conversion failed for ${filename}:`, error);
+                imageFiles.push(imageFile);
+              }
+            }
+
+            processedFiles.push({
+              file: file,
+              extractedImages: imageFiles,
+              fileName: file.name.replace('.zip', ''),
+              metadata: {
+                title: file.name.replace('.zip', ''),
+                chapterNumber: null, // Will be set by user
+              }
+            });
+          } catch (error) {
+            console.error(`Error processing ${file.name}:`, error);
+            toast.error(`${file.name} dosyası işlenirken hata oluştu`);
+          }
+        }
+      }
+      
+      setBatchFiles(processedFiles);
+      setBatchProgress(100);
+      toast.success(`${processedFiles.length} dosya başarıyla işlendi`);
+    } catch (error) {
+      console.error('Batch processing error:', error);
+      toast.error('Dosyalar işlenirken hata oluştu');
+    } finally {
+      setBatchUploading(false);
+      setBatchProgress(0);
+    }
+  };
+
+  const updateBatchFileMetadata = (index, field, value) => {
+    setBatchFiles(prev => 
+      prev.map((item, i) => 
+        i === index 
+          ? { ...item, metadata: { ...item.metadata, [field]: value } }
+          : item
+      )
+    );
+  };
+
+  const removeBatchFile = (index) => {
+    setBatchFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleBatchSubmit = async (manga, publishDate) => {
+    if (!manga) {
+      toast.error("Lütfen bir manga seçin");
+      return;
+    }
+
+    if (batchFiles.length === 0) {
+      toast.error("Yüklenecek dosya bulunamadı");
+      return;
+    }
+
+    // Validate all files have required metadata
+    for (let i = 0; i < batchFiles.length; i++) {
+      if (!batchFiles[i].metadata.title) {
+        toast.error(`${i + 1}. dosya için başlık gerekli`);
+        return;
+      }
+    }
+
+    setBatchUploading(true);
+    setBatchProgress(0);
+
+    try {
+      const totalFiles = batchFiles.length;
+      let successCount = 0;
+      let failCount = 0;
+
+      for (let i = 0; i < batchFiles.length; i++) {
+        const batchFile = batchFiles[i];
+        setBatchProgress((i / totalFiles) * 100);
+
+        try {
+          // Upload images to R2
+          const basePath = `chapters/${manga}/${batchFile.fileName}`;
+          const imageUrls = await uploadMultipleFilesToR2(batchFile.extractedImages, basePath);
+
+          // Prepare chapter data
+          const submitData = {
+            manga,
+            chapterNumber: batchFile.metadata.chapterNumber,
+            title: batchFile.metadata.title,
+            novelContent: "",
+            uploader: username || email,
+            mangaType,
+            publishDate: publishDate || new Date(),
+            imageUrls: imageUrls,
+          };
+
+          // Submit chapter
+          await addChapter(submitData);
+          successCount++;
+          
+        } catch (error) {
+          console.error(`Error uploading ${batchFile.fileName}:`, error);
+          failCount++;
+        }
+      }
+
+      setBatchProgress(100);
+      
+      if (successCount > 0 && failCount === 0) {
+        toast.success(`${successCount} bölüm başarıyla yüklendi`);
+      } else if (successCount > 0 && failCount > 0) {
+        toast.success(`${successCount} bölüm başarıyla yüklendi, ${failCount} bölüm başarısız`);
+      } else {
+        toast.error("Hiçbir bölüm yüklenemedi");
+      }
+
+      // Reset batch state
+      setBatchFiles([]);
+      
+    } catch (error) {
+      console.error('Batch upload error:', error);
+      toast.error('Toplu yükleme sırasında hata oluştu');
+    } finally {
+      setBatchUploading(false);
+      setBatchProgress(0);
+    }
+  };
+
   const handleSubmit = async (values, { resetForm, setFieldValue }) => {
     const { manga, chapterNumber, title, publishDate } = values;
     
@@ -275,7 +454,184 @@ export default function ChapterForm({ update, chapterId, username, email }) {
     <>
       <Card className={`${expanded && "min-h-screen"} m-10`}>
         <CardBody className="gap-10 p-10">
-          <Formik
+          {/* Mode Selection */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-4">
+              <h2 className="text-xl font-bold">
+                {update ? t("updateChapter") : t("addChapter")}
+              </h2>
+              {!update && (
+                <Switch
+                  isSelected={isBatchMode}
+                  onValueChange={setIsBatchMode}
+                  color="primary"
+                >
+                  Toplu Yükleme
+                </Switch>
+              )}
+            </div>
+          </div>
+
+          {isBatchMode && !update ? (
+            // Batch Upload Mode
+            <div className="flex flex-col gap-6">
+              {/* Manga Selection for Batch */}
+              <Autocomplete
+                label={t("selectManga")}
+                labelPlacement="outside"
+                selectedKeys={selectedManga}
+                inputValue={mangaValue}
+                onInputChange={(value) => {
+                  setMangaValue(value);
+                }}
+                onSelectionChange={(selected) => {
+                  setSelectedManga(selected);
+                  if (selected) {
+                    setMangaType(
+                      mangaList.find((manga) => manga._id === selected).type
+                    );
+                  }
+                }}
+                isRequired
+              >
+                {mangaList.map((manga) => (
+                  <AutocompleteItem key={manga._id} value={manga._id}>
+                    {manga.name}
+                  </AutocompleteItem>
+                ))}
+              </Autocomplete>
+
+              {/* Batch File Upload */}
+              {mangaType && mangaType !== "novel" && (
+                <>
+                  {batchUploading && (
+                    <div className="flex flex-col gap-3">
+                      <p className="text-sm">Dosyalar işleniyor...</p>
+                      <Progress value={batchProgress} color="primary" />
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-4">
+                    <div className="items-center justify-center hidden w-full sm:flex">
+                      <label
+                        htmlFor="batchFiles"
+                        className="flex flex-col items-center justify-center w-full bg-transparent border-2 border-gray-600 border-dashed rounded-lg cursor-pointer h-52 hover:bg-zinc-800 hover:border-gray-500"
+                      >
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <TbUpload className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
+                          <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                            <span className="font-semibold">
+                              Birden fazla ZIP dosyası seçin
+                            </span>{" "}
+                            veya sürükleyip bırakın
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            ZIP dosyaları (birden fazla seçebilirsiniz)
+                          </p>
+                        </div>
+                        <input
+                          type="file"
+                          id="batchFiles"
+                          accept=".zip"
+                          multiple
+                          className="hidden"
+                          onChange={handleBatchFilesChange}
+                          disabled={batchUploading || !selectedManga}
+                        />
+                      </label>
+                    </div>
+                    <input
+                      type="file"
+                      id="batchFilesMobile"
+                      accept=".zip"
+                      multiple
+                      className="block sm:hidden"
+                      onChange={handleBatchFilesChange}
+                      disabled={batchUploading || !selectedManga}
+                    />
+
+                    {!selectedManga && (
+                      <p className="text-sm text-orange-500">
+                        Önce bir manga seçin
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Batch Files List */}
+                  {batchFiles.length > 0 && (
+                    <div className="flex flex-col gap-4">
+                      <h3 className="text-lg font-semibold">
+                        Yüklenecek Bölümler ({batchFiles.length})
+                      </h3>
+                      <div className="space-y-4">
+                        {batchFiles.map((batchFile, index) => (
+                          <Card key={index} className="p-4">
+                            <div className="flex flex-col gap-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <TbFileTypeZip className="text-blue-400" size="1.5em" />
+                                  <span className="font-medium">{batchFile.file.name}</span>
+                                  <span className="text-sm text-gray-400">
+                                    ({batchFile.extractedImages.length} resim)
+                                  </span>
+                                </div>
+                                <Button
+                                  isIconOnly
+                                  color="danger"
+                                  variant="light"
+                                  onClick={() => removeBatchFile(index)}
+                                >
+                                  <TbTrash />
+                                </Button>
+                              </div>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Input
+                                  label="Bölüm Başlığı"
+                                  value={batchFile.metadata.title}
+                                  onChange={(e) => updateBatchFileMetadata(index, 'title', e.target.value)}
+                                  isRequired
+                                />
+                                <Input
+                                  label="Bölüm Numarası"
+                                  type="number"
+                                  value={batchFile.metadata.chapterNumber || ''}
+                                  onChange={(e) => updateBatchFileMetadata(index, 'chapterNumber', e.target.value ? parseInt(e.target.value) : null)}
+                                  description="Boş bırakılırsa otomatik atanır"
+                                />
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+
+                      {/* Batch Upload Button */}
+                      <Button
+                        color="primary"
+                        size="lg"
+                        isLoading={batchUploading}
+                        onClick={() => handleBatchSubmit(selectedManga, new Date())}
+                        isDisabled={batchFiles.length === 0}
+                      >
+                        {batchUploading ? `Yükleniyor... (%${Math.round(batchProgress)})` : `${batchFiles.length} Bölümü Yükle`}
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {mangaType === "novel" && (
+                <div className="p-4 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+                  <p className="text-orange-800 dark:text-orange-200">
+                    Novel türündeki mangalar için toplu yükleme desteklenmemektedir. 
+                    Lütfen tek tek yükleme modunu kullanın.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            // Single Upload Mode
+            <Formik
             initialValues={{
               manga: chapter?.manga || search || "",
               chapterNumber: chapter?.chapterNumber || "",
@@ -532,8 +888,9 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                   {update ? t("update") : t("add")}
                 </Button>
               </>
-            )}
+                        )}
           </Formik>
+          )}
         </CardBody>
       </Card>
     </>

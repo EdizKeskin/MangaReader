@@ -128,7 +128,9 @@
     "imagesUploaded": "resim başarıyla yüklendi",
     "imagesReady": "resim yüklenmeye hazır",
     "uploadingImages": "Resimler depolamaya yükleniyor...",
-    "selectMangaFirst": "Resim yüklemeden önce lütfen bir manga seçin"
+    "selectMangaFirst": "Resim yüklemeden önce lütfen bir manga seçin",
+    "addChapter": "Bölüm Ekle",
+    "updateChapter": "Bölüm Güncelle"
   },
   "CustomTable": {
     "deleting": "Benden günah gitti..",

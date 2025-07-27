@@ -80,7 +80,7 @@ export default function MovingCards({
         {items.map((item, idx) => (
           <Link href={`/manga/${item.slug}`} key={idx}>
             <li
-              className="w-[350px] min-w-[350px] max-w-full relative rounded-2xl  flex-shrink-0  px-8 py-6 md:w-[450px] md:min-w-[450px] cursor-pointer"
+              className="h-[170px]  w-[350px] min-w-[350px] max-w-full relative rounded-2xl  flex-shrink-0  px-8 py-6 md:w-[450px] md:min-w-[450px] cursor-pointer"
               style={{
                 background:
                   "linear-gradient(135deg, rgb(0 0 0 / 0.9) 0%, rgb(0 0 0 / 0.5) 100%), url(" +

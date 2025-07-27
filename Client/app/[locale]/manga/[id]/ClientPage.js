@@ -670,11 +670,11 @@ export default function Manga({ params }) {
                     onClick={handleToggleSummary}
                   >
                     {manga.summary}
-                    {!showFullSummary && (
+                    {/* {!showFullSummary && (
                       <span className="ml-2 text-purple-400 hover:text-purple-300">
                         Devamını oku...
                       </span>
-                    )}
+                    )} */}
                   </dd>
                 </div>
               </div>

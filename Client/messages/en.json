@@ -128,7 +128,9 @@
     "imagesUploaded": "images uploaded successfully",
     "imagesReady": "images ready for upload",
     "uploadingImages": "Uploading images to storage...",
-    "selectMangaFirst": "Please select a manga first before uploading images"
+    "selectMangaFirst": "Please select a manga first before uploading images",
+    "addChapter": "Add Chapter",
+    "updateChapter": "Update Chapter"
   },
   "CustomTable": {
     "deleting": "It's your funeral...",
