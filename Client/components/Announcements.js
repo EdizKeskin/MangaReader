@@ -14,7 +14,12 @@ export default function Announcements() {
   const [isLoading, setIsLoading] = useState(true);
 
   const handleRoute = (announcement) => {
-    if (announcement.link !== "" && announcement.link !== null) {
+    if (
+      announcement.link &&
+      announcement.link !== "undefined" &&
+      announcement.link !== "" &&
+      announcement.link !== null
+    ) {
       window.open(announcement.link, "_blank");
     } else {
       router.push(`/announcements?id=${announcement._id}`);
