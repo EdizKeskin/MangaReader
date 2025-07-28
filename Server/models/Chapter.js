@@ -30,9 +30,29 @@ const chapterSchema = new mongoose.Schema({
   slug: {
     type: String,
     default: function () {
-      return slugify(this.title, { lower: true });
+      const titleWithDashes = this.title.replace(/\./g, "-");
+      return slugify(titleWithDashes, { lower: true, strict: true });
     },
   },
+});
+
+// Pre-save middleware to update slug when title changes
+chapterSchema.pre("save", function (next) {
+  if (this.isModified("title") || this.isNew) {
+    const titleWithDashes = this.title.replace(/\./g, "-");
+    this.slug = slugify(titleWithDashes, { lower: true, strict: true });
+  }
+  next();
+});
+
+// Pre-findOneAndUpdate middleware for PATCH requests
+chapterSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+  if (update.title) {
+    const titleWithDashes = update.title.replace(/\./g, "-");
+    update.slug = slugify(titleWithDashes, { lower: true, strict: true });
+  }
+  next();
 });
 
 const Chapter = mongoose.model("Chapter", chapterSchema);

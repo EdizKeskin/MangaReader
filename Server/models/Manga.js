@@ -21,7 +21,8 @@ const mangaSchema = new mongoose.Schema({
   slug: {
     type: String,
     default: function () {
-      return slugify(this.name, { lower: true });
+      const nameWithDashes = this.name.replace(/\./g, "-");
+      return slugify(nameWithDashes, { lower: true, strict: true });
     },
   },
   // New fields
@@ -47,6 +48,25 @@ const mangaSchema = new mongoose.Schema({
     min: 1900,
     max: new Date().getFullYear() + 10,
   },
+});
+
+// Pre-save middleware to update slug when name changes
+mangaSchema.pre("save", function (next) {
+  if (this.isModified("name") || this.isNew) {
+    const nameWithDashes = this.name.replace(/\./g, "-");
+    this.slug = slugify(nameWithDashes, { lower: true, strict: true });
+  }
+  next();
+});
+
+// Pre-findOneAndUpdate middleware for PATCH requests
+mangaSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+  if (update.name) {
+    const nameWithDashes = update.name.replace(/\./g, "-");
+    update.slug = slugify(nameWithDashes, { lower: true, strict: true });
+  }
+  next();
 });
 
 const Manga = mongoose.model("Manga", mangaSchema);
