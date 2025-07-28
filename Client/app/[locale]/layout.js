@@ -11,15 +11,16 @@ import { notFound } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
+import { Inter } from "next/font/google";
 
+const inter = Inter({ subsets: ["latin"], weight: "400" });
 export const metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_BASE_URL || "https://monomanga.com.tr/"
   ),
-  title:
-    "Manga Oku MonoManga | En Yeni, Popüler ve Ücretsiz Mangalar - Mono Manga",
+  title: "Manga Oku Mono Manga | En Yeni, Popüler ve Ücretsiz Mangalar",
   description:
-    "Monomanga ile en yeni, popüler ve ücretsiz manga, webtoon ve webnovel'leri çevrimiçi okuyun. Türkçe ve İngilizce manga arşivi, güncel bölümler, favori seriler, anime, manhwa, çizgi roman, light novel ve çok daha fazlası. Mono Manga ile Mobil uyumlu, hızlı ve reklamsız okuma deneyimi.",
+    "Monomanga ile en yeni, popüler ve ücretsiz manga, webtoon ve webnovel'leri çevrimiçi okuyun. Mono Manga ile Mobil uyumlu, hızlı ve reklamsız okuma deneyimi.",
   keywords: [
     // Primary brand keywords (8)
     "manga oku",
@@ -160,7 +161,10 @@ export default async function RootLayout({ children, params: { locale } }) {
   }
 
   return (
-    <html lang={locale} className="dark dark-theme bg-grid-white/[0.02]">
+    <html
+      lang={locale}
+      className={`dark dark-theme bg-grid-white/[0.02] ${inter.className}`}
+    >
       <Script
         src="https://static.cloudflareinsights.com/beacon.min.js"
         data-cf-beacon='{"token": "cf8527de489342f2862a8ede5a55769a"}'
