@@ -6,7 +6,6 @@ const chapterSchema = new mongoose.Schema({
   chapterNumber: Number,
   title: {
     type: String,
-    unique: true,
   },
   content: [{ type: String }],
   uploadDate: { type: Date, default: Date.now },
@@ -54,6 +53,9 @@ chapterSchema.pre("findOneAndUpdate", function (next) {
   }
   next();
 });
+
+// Compound unique index to ensure title is unique per manga
+chapterSchema.index({ manga: 1, title: 1 }, { unique: true });
 
 const Chapter = mongoose.model("Chapter", chapterSchema);
 
