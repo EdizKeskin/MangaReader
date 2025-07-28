@@ -63,11 +63,11 @@ export default function MangaRead({ params }) {
   const slug = params.id;
   const t = useTranslations("Chapter");
 
-  useEffect(() => {
-    toast("This is a sample chapter, not related to the manga.", {
-      duration: 5000,
-    });
-  }, []);
+  // useEffect(() => {
+  //   toast("This is a sample chapter, not related to the manga.", {
+  //     duration: 5000,
+  //   });
+  // }, []);
 
   const [readChapters, setReadChapters] = useState([]);
 

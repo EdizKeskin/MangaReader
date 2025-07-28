@@ -346,5 +346,38 @@
   "Artist": {
     "notFound": "Bu çizere ait bir seri yok.",
     "error": "Çizer bulunurken bir hata oluştu."
+  },
+  "DMCA": {
+    "title": "DMCA Kaldırma Bildirimi",
+    "copyrightNotification": "Telif Hakkı İhlali Bildirimi",
+    "copyrightText": "Başkalarının fikri mülkiyet haklarına saygı gösteriyor ve kullanıcılarımızın da aynısını yapmasını bekliyoruz. 1998 Dijital Milenyum Telif Hakkı Yasası (DMCA) uyarınca, hizmetimizi kullanarak işlenen telif hakkı ihlali iddialarına hızla yanıt vereceğiz.",
+    "filingNotice": "DMCA Kaldırma Bildirimi Başvurusu",
+    "filingText": "Telif hakkı sahibi iseniz veya böyle birinin adına hareket etmeye yetkili iseniz ve telif hakkı sahibi materyalin telif hakkı ihlali teşkil edecek şekilde kopyalandığına inanıyorsanız, lütfen aşağıdaki bilgilerle birlikte iddialarınızı belirlenmiş temsilcimize e-posta yoluyla gönderin:",
+    "requiredInfo": "Gerekli Bilgiler:",
+    "signatureReq": "Telif hakkı sahibinin veya yetkili temsilcinin fiziksel veya elektronik imzası",
+    "workIdentification": "İhlal edildiği iddia edilen telif hakkı sahibi eserin tanımlanması",
+    "materialIdentification": "İhlal ettiği iddia edilen materyalin web sitemizdeki konumu dahil olmak üzere tanımlanması",
+    "contactInfo": "İletişim bilgileriniz (adres, telefon numarası ve e-posta adresi)",
+    "goodFaithStatement": "Kullanımın telif hakkı sahibi tarafından yetkilendirilmediğine dair iyi niyetli bir inancınız olduğuna dair beyan",
+    "accuracyStatement": "Bildirimdeki bilgilerin doğru olduğu ve telif hakkı sahibi adına hareket etmeye yetkili olduğunuza dair beyan",
+    "contactInfoTitle": "İletişim Bilgileri",
+    "designatedAgent": "Belirlenmiş Temsilci:",
+    "agentName": "DMCA Temsilcisi",
+    "email": "E-posta:",
+    "dmcaDisclaimer": "DMCA'nın 512(f) bölümü uyarınca, bir materyalin ihlal ettiğini bilerek yanlış bir şekilde beyan eden herhangi bir kişinin sorumluluğa tabi olabileceğini lütfen unutmayın.",
+    "counterNotification": "Karşı Bildirim Süreci",
+    "counterText": "Gönderdiğiniz materyalin yanlışlık veya yanlış tanımlama nedeniyle kaldırıldığına veya devre dışı bırakıldığına inanıyorsanız, aşağıdaki bilgileri sağlayarak bize karşı bildirim gönderebilirsiniz:",
+    "counterSignature": "Fiziksel veya elektronik imzanız",
+    "removedMaterial": "Kaldırılan materyalin ve kaldırılmadan önceki konumunun tanımlanması",
+    "penaltyStatement": "Materyalin yanlışlık nedeniyle kaldırıldığına dair iyi niyetli bir inancınız olduğuna dair yeminli beyan",
+    "counterContact": "Adınız, adresiniz ve telefon numaranız",
+    "jurisdictionStatement": "Bölgenizdeki federal mahkemenin yargı yetkisini kabul ettiğinize dair beyan",
+    "repeatInfringer": "Tekrarlayan İhlalci Politikası",
+    "repeatText": "Uygun durumlarda, tekrarlayan ihlalci olarak kabul edilen kullanıcıları sonlandırma politikası benimsedik. Ayrıca kendi takdirimizle, tekrarlanan ihlal olsun olmasın, başkalarının fikri mülkiyet haklarını ihlal eden kullanıcıların hizmetimize erişimini sınırlayabilir ve/veya hesaplarını sonlandırabiliriz.",
+    "responseTime": "Yanıt Süresi",
+    "responseText": "İddia edilen ihlal bildirimlerini işleyecek ve soruşturacağız, DMCA ve diğer geçerli fikri mülkiyet yasaları kapsamında uygun önlemleri alacağız. DMCA'ya uygun bildirimlerin alınması üzerine, iddia edilen ihlal eden materyale erişimi hızla kaldıracak veya devre dışı bırakacağız. Genellikle, bildirim alındıktan sonra 24 ila 48 saat içinde bu işlemi gerçekleştireceğiz.",
+    "fairUse": "Adil Kullanım Bildirimi",
+    "fairUseText": "Bu web sitesi, kullanımı her zaman telif hakkı sahibi tarafından özel olarak yetkilendirilmemiş telif hakkı sahibi materyal içerebilir. Bunun, ABD Telif Hakkı Yasası'nın 107. bölümünde belirtilen adil kullanım teşkil ettiğine inanıyoruz. Bu siteden telif hakkı sahibi materyali adil kullanımın ötesine geçen kendi amaçlarınız için kullanmak istiyorsanız, telif hakkı sahibinden izin almanız gerekir.",
+    "lastUpdated": "Son Güncelleme: Temmuz 2025"
   }
 }

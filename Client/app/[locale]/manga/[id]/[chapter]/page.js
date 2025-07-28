@@ -1,8 +1,4 @@
-import {
-  getChapterBySlug,
-  getChaptersByMangaSlug,
-  getMangaBySlug,
-} from "@/functions";
+import { getChapterBySlug, getMangaBySlug } from "@/functions";
 
 import ClientPage from "./ClientPage";
 

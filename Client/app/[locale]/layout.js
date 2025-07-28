@@ -10,6 +10,7 @@ import { enUS, trTR } from "@clerk/localizations";
 import { notFound } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
+import Script from "next/script";
 
 export const metadata = {
   metadataBase: new URL(
@@ -160,6 +161,11 @@ export default async function RootLayout({ children, params: { locale } }) {
 
   return (
     <html lang={locale} className="dark dark-theme bg-grid-white/[0.02]">
+      <Script
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon='{"token": "cf8527de489342f2862a8ede5a55769a"}'
+        strategy="afterInteractive"
+      />
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ClerkProvider

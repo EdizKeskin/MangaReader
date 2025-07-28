@@ -345,5 +345,38 @@
   "Artist": {
     "notFound": "There is no series in this artist.",
     "error": "An error occurred while getting the artist."
+  },
+  "DMCA": {
+    "title": "DMCA Takedown Notice",
+    "copyrightNotification": "Copyright Infringement Notification",
+    "copyrightText": "We respect the intellectual property rights of others and expect our users to do the same. In accordance with the Digital Millennium Copyright Act of 1998 (DMCA), we will respond expeditiously to claims of copyright infringement committed using our service.",
+    "filingNotice": "Filing a DMCA Takedown Notice",
+    "filingText": "If you are a copyright owner, or authorized to act on behalf of one, and believe that copyrighted material has been copied in a way that constitutes copyright infringement, please submit your claim via email to our designated agent with the following information:",
+    "requiredInfo": "Required Information:",
+    "signatureReq": "A physical or electronic signature of the copyright owner or authorized representative",
+    "workIdentification": "Identification of the copyrighted work claimed to have been infringed",
+    "materialIdentification": "Identification of the material that is claimed to be infringing, including its location on our website",
+    "contactInfo": "Your contact information (address, telephone number, and email address)",
+    "goodFaithStatement": "A statement that you have a good faith belief that the use is not authorized by the copyright owner",
+    "accuracyStatement": "A statement that the information in the notification is accurate and that you are authorized to act on behalf of the copyright owner",
+    "contactInfoTitle": "Contact Information",
+    "designatedAgent": "Designated Agent:",
+    "agentName": "DMCA Agent",
+    "email": "Email:",
+    "dmcaDisclaimer": "Please note that under Section 512(f) of the DMCA, any person who knowingly materially misrepresents that material is infringing may be subject to liability.",
+    "counterNotification": "Counter-Notification Process",
+    "counterText": "If you believe that material you posted was removed or disabled by mistake or misidentification, you may file a counter-notification with us by providing the following information:",
+    "counterSignature": "Your physical or electronic signature",
+    "removedMaterial": "Identification of the material that was removed and its location before removal",
+    "penaltyStatement": "A statement under penalty of perjury that you have a good faith belief the material was removed by mistake",
+    "counterContact": "Your name, address, and telephone number",
+    "jurisdictionStatement": "A statement that you consent to the jurisdiction of the federal court in your district",
+    "repeatInfringer": "Repeat Infringer Policy",
+    "repeatText": "We have adopted a policy of terminating, in appropriate circumstances, users who are deemed to be repeat infringers. We may also, at our sole discretion, limit access to our service and/or terminate accounts of any users who infringe any intellectual property rights of others, whether or not there is any repeat infringement.",
+    "responseTime": "Response Time",
+    "responseText": "We will process and investigate notices of alleged infringement and will take appropriate actions under the DMCA and other applicable intellectual property laws. Upon receipt of notices complying with the DMCA, we will act expeditiously to remove or disable access to the allegedly infringing material. Typically, this will be done within 24 to 48 hours of receiving the notice.",
+    "fairUse": "Fair Use Notice",
+    "fairUseText": "This website may contain copyrighted material the use of which has not always been specifically authorized by the copyright owner. We believe this constitutes fair use of any such copyrighted material as provided for in section 107 of the US Copyright Law. If you wish to use copyrighted material from this site for purposes of your own that go beyond fair use, you must obtain permission from the copyright owner.",
+    "lastUpdated": "Last Updated: July 2025"
   }
 }

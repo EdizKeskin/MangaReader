@@ -29,9 +29,13 @@ export default function Footer() {
             <span className="sr-only">GitHub</span>
             <BsGithub className="w-6 h-6" />
           </Link>
-          <Link href="#" className="text-gray-400 hover:text-secondary">
+          <Link href="discord" className="text-gray-400 hover:text-secondary">
             <span className="sr-only">Discord</span>
             <BsDiscord className="w-6 h-6" />
+          </Link>
+          <Link href="/dmca" className="text-gray-400 hover:text-secondary">
+            <span className="sr-only">DMCA</span>
+            <span className="text-xl font-bold ">DMCA</span>
           </Link>
         </div>
         <p className="mt-8 text-base leading-6 text-center text-gray-400">
