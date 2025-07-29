@@ -128,12 +128,12 @@ export default function Navbar() {
           className="text-white transition-colors duration-200 lg:hidden hover:text-purple-400"
         />
         <NavbarBrand>
-          <div
+          <h1
             className="font-bold text-transparent transition-all duration-300 transform cursor-pointer bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 bg-clip-text hover:from-purple-300 hover:via-pink-400 hover:to-purple-500 hover:scale-105"
             onClick={handleHomeClick}
           >
             {websiteTitle}
-          </div>
+          </h1>
         </NavbarBrand>
       </NavbarContent>
 
