@@ -77,9 +77,11 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: manga.name,
       description: manga.summary,
-      images: [manga.coverImage],
+      images: [{ url: manga.coverImage, alt: manga.name }],
       url: `${process.env.NEXT_PUBLIC_BASE_URL}/${params.id}`,
-      siteName: "MangaOku",
+      siteName: "Monomanga",
     },
+    locale: "tr_TR",
+    type: "website",
   };
 }

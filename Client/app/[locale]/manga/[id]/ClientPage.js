@@ -23,8 +23,17 @@ import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import "@/styles/bookmark.css";
 import { useWindowSize } from "@/hooks/useWindowSize";
-import { TbShare, TbStar, TbStarFilled, TbBook, TbEye } from "react-icons/tb";
+import {
+  TbShare,
+  TbStar,
+  TbStarFilled,
+  TbBook,
+  TbEye,
+  TbEdit,
+  TbPlus,
+} from "react-icons/tb";
 import { BsTwitter, BsFacebook, BsWhatsapp, BsLink45Deg } from "react-icons/bs";
+import { useUser } from "@clerk/nextjs";
 
 const MemoizedChapterCard = memo(ChapterCard);
 const MemoizedDisqusComments = memo(DisqusComments);
@@ -377,11 +386,16 @@ export default function Manga({ params }) {
   const pathname = usePathname();
   const lg = width > 1024;
   const slug = params.id;
+  const { user } = useUser();
 
   const { isBookmarked, toggleBookmark } = useBookmarkManager();
   const { getReadChapters } = useReadingProgress();
 
   const readedChapters = useMemo(() => getReadChapters(), [getReadChapters]);
+
+  const isAdmin = useMemo(() => {
+    return user?.publicMetadata?.isAdmin === true;
+  }, [user?.publicMetadata?.isAdmin]);
 
   const genres = useMemo(() => {
     if (!manga || !genreNames.length) return [];
@@ -427,6 +441,18 @@ export default function Manga({ params }) {
       router.push(`/artist?artist=${manga.artist}`);
     }
   }, [manga?.artist, router]);
+
+  const handleAddChapterClick = useCallback(() => {
+    if (manga?._id) {
+      router.push(`/admin/chapters/add?mangaId=${manga._id}`);
+    }
+  }, [manga?._id, router]);
+
+  const handleEditMangaClick = useCallback(() => {
+    if (manga?._id) {
+      router.push(`/admin/mangas/${manga._id}`);
+    }
+  }, [manga?._id, router]);
 
   const updateCursor = useCallback(
     ({ clientX: x, clientY: y }) => {
@@ -550,7 +576,7 @@ export default function Manga({ params }) {
 
   return (
     <div className="min-h-screen overflow-hidden">
-      <div className="container px-4 mx-auto">
+      <div className="container flex-col px-4 mx-auto">
         {/* Hero Section */}
         <div className="grid grid-cols-1 gap-6 my-8 lg:grid-cols-4 lg:gap-10">
           {/* Cover Image */}
@@ -578,6 +604,36 @@ export default function Manga({ params }) {
 
                 <div className="flex items-center gap-3">
                   <ShareButtons manga={manga} pathname={pathname} />
+
+                  {/* Admin Buttons */}
+                  {isAdmin && (
+                    <>
+                      <Tooltip content="Bölüm Ekle" placement="top">
+                        <Button
+                          isIconOnly
+                          color="primary"
+                          variant="bordered"
+                          onClick={handleAddChapterClick}
+                          className="border-blue-600 hover:border-blue-400"
+                        >
+                          <TbPlus size={20} />
+                        </Button>
+                      </Tooltip>
+
+                      <Tooltip content="Mangayı Düzenle" placement="top">
+                        <Button
+                          isIconOnly
+                          color="warning"
+                          variant="bordered"
+                          onClick={handleEditMangaClick}
+                          className="border-orange-600 hover:border-orange-400"
+                        >
+                          <TbEdit size={20} />
+                        </Button>
+                      </Tooltip>
+                    </>
+                  )}
+
                   <Tooltip
                     content={
                       bookmarkStatus ? t("removeBookmark") : t("addBookmark")

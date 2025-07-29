@@ -1,4 +1,4 @@
-const websiteTitle = "MonoManga";
+const websiteTitle = "Mono Manga";
 const discordUrl = "https://discord.gg/frt8mh2teH";
 const discordIframe =
   "https://discord.com/widget?id=1392264588069703750&theme=dark";

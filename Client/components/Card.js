@@ -5,6 +5,7 @@ import {
   CardBody,
   CardFooter,
   Image,
+  Chip,
 } from "@nextui-org/react";
 import { useRouter } from "next13-progressbar";
 import "@/styles/glow.css";
@@ -66,6 +67,7 @@ export default function Card({ item, chapterless }) {
   }, []);
 
   document.body.addEventListener("pointermove", updateCursor);
+
   return (
     <div className="relative h-full group">
       <NextCard
@@ -83,6 +85,31 @@ export default function Card({ item, chapterless }) {
               chapterless ? "h-[250px]" : "h-[200px]"
             }  rounded-t-xl`}
           >
+            {/* Status Tag */}
+            {item.status && item.status !== "ongoing" && (
+              <div className="absolute z-20 top-2 right-2">
+                <Chip
+                  size="sm"
+                  variant="solid"
+                  radius="sm"
+                  color={
+                    item.status === "completed"
+                      ? "success"
+                      : item.status === "hiatus"
+                      ? "warning"
+                      : item.status === "güncel"
+                      ? "primary"
+                      : "default"
+                  }
+                  className="text-xs font-medium shadow-md"
+                >
+                  {item.status === "completed" && "Final"}
+                  {item.status === "hiatus" && "Ara"}
+                  {item.status === "güncel" && "Güncel"}
+                </Chip>
+              </div>
+            )}
+
             {!imageLoaded && !imageError && (
               <div className="absolute inset-0 flex items-center justify-center animate-pulse">
                 <div className="w-8 h-8 border-2 border-purple-500 rounded-full border-t-transparent animate-spin"></div>
