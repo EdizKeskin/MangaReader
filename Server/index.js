@@ -24,14 +24,18 @@ admin.initializeApp({
   credential: admin.credential.cert(key),
   storageBucket: process.env.STORAGE_BUCKET,
 });
-app.use(cors());
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URL);
+    const conn = await mongoose.connect(process.env.MONGODB_URL, {
+      maxPoolSize: 10, // Aynı anda açılacak bağlantı sayısı (pool)
+      minPoolSize: 5, // Minimum açık bağlantı
+      serverSelectionTimeoutMS: 5000, // Timeout süresi
+    });
+
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.log(error);
+    console.error("MongoDB connection error:", error);
     process.exit(1);
   }
 };
