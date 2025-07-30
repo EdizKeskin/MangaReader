@@ -67,7 +67,7 @@ export default async function Admin() {
     <div className="relative min-h-screen">
       <div className="relative z-20 pt-8">
         <div className="flex items-center self-center justify-center mb-12">
-          <h1 className="mb-4 text-5xl font-bold ">
+          <h1 className="mx-6 mb-4 text-2xl font-bold md:mx-0 md:text-5xl ">
             <Title text="admin" />
           </h1>
         </div>

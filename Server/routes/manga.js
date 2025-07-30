@@ -69,9 +69,6 @@ router.get("/list/home", async (req, res) => {
           .exec();
 
         const now = new Date();
-        lastTwoChapters = lastTwoChapters.filter((chapter) => {
-          return chapter.publishDate <= now;
-        });
 
         return {
           ...manga._doc,
@@ -92,7 +89,7 @@ router.get("/list/home", async (req, res) => {
           return -1;
         }
 
-        return bLastChapter.publishDate - aLastChapter.publishDate;
+        return bLastChapter.uploadDate - aLastChapter.uploadDate;
       })
       .slice((page - 1) * limit, page * limit);
     if (page > totalPages) {

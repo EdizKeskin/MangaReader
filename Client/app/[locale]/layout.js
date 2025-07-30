@@ -144,7 +144,7 @@ export const metadata = {
   alternates: {
     canonical: process.env.NEXT_PUBLIC_BASE_URL || "https://monomanga.com.tr/",
     languages: {
-      tr: process.env.NEXT_PUBLIC_BASE_URL + "/tr",
+      tr: process.env.NEXT_PUBLIC_BASE_URL,
       en: process.env.NEXT_PUBLIC_BASE_URL + "/en",
     },
   },

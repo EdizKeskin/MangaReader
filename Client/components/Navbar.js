@@ -41,7 +41,7 @@ export default function Navbar() {
   const menuItems = useMemo(
     () => [
       { name: t("calendar"), href: "/calendar" },
-      { name: t("categories"), href: "/category" },
+      { name: t("series"), href: "/manga" },
       { name: t("bookmarks"), href: "/bookmarks" },
       { name: t("announcements"), href: "/announcements" },
       { name: t("faq"), href: "/faq" },
@@ -62,9 +62,29 @@ export default function Navbar() {
     }
   }, [locale, pathname, intlRouter]);
 
-  const handleHomeClick = useCallback(() => {
-    router.push("/");
-  }, [router]);
+  const handleHomeClick = useCallback((event) => {
+    event.preventDefault();
+    
+    // Middle mouse button (wheel click) - open in new tab
+    if (event.button === 1) {
+      window.open("/", "_blank", "noopener,noreferrer");
+      return;
+    }
+    
+    // Left mouse button
+    if (event.button === 0) {
+      // Check if we're on the home page
+      const isHomePage = pathname === "/" || pathname === "/en" || pathname === "/tr";
+      
+      if (isHomePage) {
+        // Refresh the page if we're already on home
+        window.location.reload();
+      } else {
+        // Navigate to home page if we're not on home
+        router.push("/");
+      }
+    }
+  }, [router, pathname]);
 
   const handleMenuItemClick = useCallback(
     (href) => {
@@ -130,7 +150,7 @@ export default function Navbar() {
         <NavbarBrand>
           <h1
             className="font-bold text-transparent transition-all duration-300 transform cursor-pointer bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 bg-clip-text hover:from-purple-300 hover:via-pink-400 hover:to-purple-500 hover:scale-105"
-            onClick={handleHomeClick}
+            onMouseDown={handleHomeClick}
           >
             {websiteTitle}
           </h1>

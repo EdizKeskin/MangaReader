@@ -69,6 +69,10 @@ export default function middleware(req) {
       "/:locale/logo.png",
       "/dmca",
       "/:locale/dmca",
+      "/pricing",
+      "/:locale/pricing",
+      "/manga",
+      "/:locale/manga",
     ],
 
     beforeAuth: (req) => intlMiddleware(req),

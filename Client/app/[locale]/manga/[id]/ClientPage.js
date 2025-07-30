@@ -425,7 +425,7 @@ export default function Manga({ params }) {
 
   const handleGenreClick = useCallback(
     (genreId) => {
-      router.push(`/category?id=${genreId}`);
+      router.push(`/manga?id=${genreId}`);
     },
     [router]
   );

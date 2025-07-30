@@ -13,7 +13,8 @@
     "calendar": "Takvim",
     "announcements": "Duyurular",
     "mobile": "M. Uygulama",
-    "faq": "S.S.S"
+    "faq": "S.S.S",
+    "series": "Seriler"
   },
   "Hero": {
     "gotoseries": "Seriye Git"
@@ -23,7 +24,7 @@
   },
   "Title": {
     "newSeries": "Yeni eklenenler",
-    "admin": "Admin Paneline hoşgeldiniz",
+    "admin": "Admin Paneline Hoşgeldiniz",
     "announcements": "Duyurular",
     "featured": "Öne Çıkanlar",
     "categories": "Kategoriler"

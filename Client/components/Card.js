@@ -106,6 +106,7 @@ export default function Card({ item, chapterless }) {
                   {item.status === "completed" && "Final"}
                   {item.status === "hiatus" && "Ara"}
                   {item.status === "güncel" && "Güncel"}
+                  {item.status === "dropped" && "Bırakıldı"}
                 </Chip>
               </div>
             )}
@@ -152,21 +153,37 @@ export default function Card({ item, chapterless }) {
             {/* Chapters */}
             <div className="flex flex-col w-full gap-2">
               {item.lastTwoChapters &&
-                item.lastTwoChapters.map((chapter, i) => (
-                  <div
-                    key={`${chapter.id || chapter.slug}-${i}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleChapterClick(chapter.slug);
-                    }}
-                    className="w-full transition-all duration-200 border rounded-md cursor-pointer bg-gray-700/50 hover:bg-purple-600/80 hover:scale-105 border-gray-600/50 hover:border-purple-500/50 backdrop-blur-sm group/chip"
-                    variant="flat"
-                  >
-                    <span className="text-xs font-medium text-gray-200 truncate group-hover/chip:text-white">
-                      {chapter.title}
-                    </span>
-                  </div>
-                ))}
+                item.lastTwoChapters.map((chapter, i) => {
+                  const isLatestChapter = i === 0;
+                  const isRecent =
+                    isLatestChapter &&
+                    chapter.uploadDate &&
+                    new Date() - new Date(chapter.uploadDate) <
+                      24 * 60 * 60 * 1000;
+
+                  // Check if publish date is in the future (VIP content)
+                  const isVIP =
+                    chapter.publishDate &&
+                    new Date(chapter.publishDate) > new Date();
+
+                  return (
+                    <div
+                      key={`${chapter.id || chapter.slug}-${i}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleChapterClick(chapter.slug);
+                      }}
+                      className="w-full transition-all duration-200 border rounded-md cursor-pointer bg-gray-700/50 hover:bg-purple-600/80 hover:scale-105 border-gray-600/50 hover:border-purple-500/50 backdrop-blur-sm group/chip"
+                      variant="flat"
+                    >
+                      <span className="text-xs font-medium text-gray-200 truncate group-hover/chip:text-white">
+                        {chapter.title}
+                        {!isVIP && isRecent && "  🔥"}
+                        {isVIP && "  🔒"}
+                      </span>
+                    </div>
+                  );
+                })}
             </div>
           </CardFooter>
         )}

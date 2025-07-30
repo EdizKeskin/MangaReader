@@ -13,7 +13,8 @@
     "calendar": "Calendar",
     "announcements": "Announcements",
     "mobile": "Mobile",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "series": "Series"
   },
   "Hero": {
     "gotoseries": "Read now"

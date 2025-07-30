@@ -12,7 +12,7 @@ export default function Sidebar({ genres }) {
         <div className="flex flex-row flex-wrap gap-5">
           {genres.map((category, i) => (
             <Chip
-              onClick={() => router.push(`/category?id=${category._id}`)}
+              onClick={() => router.push(`/manga?id=${category._id}`)}
               key={i}
               variant="bordered"
               className="hover:cursor-pointer hover:bg-secondary hover:text-white"

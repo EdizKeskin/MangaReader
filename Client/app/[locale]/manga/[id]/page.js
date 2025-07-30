@@ -71,11 +71,11 @@ export async function generateMetadata({ params }) {
     .slice(0, 50); // Limit to 50 keywords maximum
 
   return {
-    title: manga.name,
-    description: manga.summary,
+    title: `${manga.name} Oku- Mono manga`,
+    description: `Mono Manga'da ${manga.name} manga serisini ücretsiz ve reklamsız olarak okuyun."}`,
     keywords: keywords,
     openGraph: {
-      title: manga.name,
+      title: `${manga.name} Oku | Mono Manga`,
       description: manga.summary,
       images: [{ url: manga.coverImage, alt: manga.name }],
       url: `${process.env.NEXT_PUBLIC_BASE_URL}/${params.id}`,
@@ -83,5 +83,9 @@ export async function generateMetadata({ params }) {
     },
     locale: "tr_TR",
     type: "website",
+    Canonical: `${process.env.NEXT_PUBLIC_BASE_URL}/${params.id}`,
+    alternates: {
+      en: `${process.env.NEXT_PUBLIC_BASE_URL}/en/${params.id}`,
+    },
   };
 }

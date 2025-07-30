@@ -29,18 +29,20 @@ const ChaptersTable = React.memo(
           uid: "uploadDate",
           sortable: true,
         },
+        { name: "Uploader", uid: "uploader", sortable: true },
         {
           name: locale === "en" ? "Publish Date" : "Yayınlanma Tarihi",
           uid: "publishDate",
           sortable: true,
         },
+
         { name: "ACTIONS", uid: "actions" },
       ],
       [locale]
     );
 
     const visibleColumns = useMemo(
-      () => ["manga", "title", "uploadDate", "actions"],
+      () => ["manga", "title", "uploader", "uploadDate", "actions"],
       []
     );
 

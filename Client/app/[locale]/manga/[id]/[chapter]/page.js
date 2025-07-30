@@ -15,7 +15,7 @@ export async function generateMetadata({ params }) {
   const chapter = await getChapterBySlug(params.chapter, params.id);
 
   return {
-    title: manga.name + " - " + chapter.chapter.title,
+    title: manga.name + " - " + chapter.chapter.title + " oku | Mono Manga",
     description: manga.summary,
     keywords: [
       manga.name,
@@ -30,11 +30,15 @@ export async function generateMetadata({ params }) {
       "webnovel",
     ],
     openGraph: {
-      title: manga.name,
+      title: `${manga.name} - ${chapter.chapter.title} oku | Mono Manga`,
       description: manga.name + " - " + chapter.chapter.title,
       images: [manga.coverImage],
       url: `${process.env.NEXT_PUBLIC_BASE_URL}/${params.id}/${params.chapter}`,
       siteName: "MangaOku",
+    },
+    canonical: `${process.env.NEXT_PUBLIC_BASE_URL}/${params.id}/${params.chapter}`,
+    alternates: {
+      en: `${process.env.NEXT_PUBLIC_BASE_URL}/en/${params.id}/${params.chapter}`,
     },
   };
 }

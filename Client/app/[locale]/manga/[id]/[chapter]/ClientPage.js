@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useMemo,
   useRef,
+  startTransition,
 } from "react";
 import { Button, Image, Select, SelectItem } from "@nextui-org/react";
 import { usePathname } from "next/navigation";
@@ -98,47 +99,66 @@ export default function MangaRead({ params }) {
     setImageLoading(true);
 
     setNovelTheme(localStorage.getItem("NovelTheme") ?? "dark");
-    try {
-      getChaptersByMangaSlug(slug).then((res) => {
-        setAllChapters(res.chapters);
-        setMangaName(res.mangaName.name);
-        setMangaType(res.mangaType.type);
-      });
 
-      getChapterBySlug(id, slug).then((response) => {
-        const date = new Date(response.chapter.publishDate);
+    const loadChapterData = async () => {
+      try {
+        // Her iki API çağrısını parallel olarak yap
+        const [chaptersResult, chapterResult] = await Promise.all([
+          getChaptersByMangaSlug(slug),
+          getChapterBySlug(id, slug),
+        ]);
+
+        // Chapters verilerini set et
+        setAllChapters(chaptersResult.chapters);
+        setMangaName(chaptersResult.mangaName.name);
+        setMangaType(chaptersResult.mangaType.type);
+
+        // Chapter verilerini kontrol et ve set et
+        const date = new Date(chapterResult.chapter.publishDate);
         if (date > new Date()) {
           if (user && isSignedIn) {
-            getSubscriber(user.id).then((res) => {
-              if (res !== null && new Date(res.expireAt) > new Date()) {
-                setChapter(response);
-                setSelected(new Set([response.chapter._id]));
-                setReaded(response.chapter._id);
-                setLoading(false);
-              } else if (isLoaded) {
-                toast.error(t("notPublished"));
-                router.replace(`/subscribe`);
-              }
-            });
+            const subscriber = await getSubscriber(user.id);
+            if (
+              subscriber !== null &&
+              new Date(subscriber.expireAt) > new Date()
+            ) {
+              setChapter(chapterResult);
+              setSelected(new Set([chapterResult.chapter._id]));
+              setReaded(chapterResult.chapter._id);
+            } else if (isLoaded) {
+              toast.error(t("notPublished"));
+              router.replace(`/pricing`);
+              return;
+            }
           }
         } else {
-          setChapter(response);
-          setSelected(new Set([response.chapter._id]));
-          setReaded(response.chapter._id);
-          setLoading(false);
+          setChapter(chapterResult);
+          setSelected(new Set([chapterResult.chapter._id]));
+          setReaded(chapterResult.chapter._id);
         }
-      });
 
-      setReadStyle(
-        new Set([JSON.parse(localStorage?.getItem("readStyle")) ?? "List"])
-      );
-      setReadStyleName(JSON.parse(localStorage.getItem("readStyle")) ?? "List");
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+        // Read style verilerini set et
+        const savedReadStyle =
+          JSON.parse(localStorage.getItem("readStyle")) ?? "List";
+        setReadStyle(new Set([savedReadStyle]));
+        setReadStyleName(savedReadStyle);
 
+        // List mode'da image loading'i false yap çünkü lazy loading kullanıyoruz
+        if (savedReadStyle === "List") {
+          setImageLoading(false);
+        }
+      } catch (error) {
+        console.error("Error loading chapter data:", error);
+        toast.error("Failed to load chapter data");
+      } finally {
+        // Loading'i sadece burada false yap
+        setLoading(false);
+      }
+    };
+
+    loadChapterData();
+
+    // Observer cleanup
     if (observerRef.current) {
       observerRef.current.disconnect();
       observerRef.current = null;
@@ -148,7 +168,18 @@ export default function MangaRead({ params }) {
   }, [id, slug, user]);
 
   useEffect(() => {
-    setImageLoading(true);
+    // Sadece Paged mode'da sayfa değiştiğinde image loading'i aktif et
+    if (readStyleName === "Paged") {
+      setImageLoading(true);
+
+      // Mevcut sayfa için resim zaten yüklendiyse, loading'i false yap
+      if (
+        chapter?.chapter?.content &&
+        loadedImages.has(chapter.chapter.content[page])
+      ) {
+        setImageLoading(false);
+      }
+    }
 
     setFailedImages(new Set());
 
@@ -156,7 +187,7 @@ export default function MangaRead({ params }) {
       observerRef.current.disconnect();
       observerRef.current = null;
     }
-  }, [page]);
+  }, [page, readStyleName, chapter, loadedImages]);
 
   useEffect(() => {
     let lastScrollPosition =
@@ -186,34 +217,63 @@ export default function MangaRead({ params }) {
     };
   }, []);
 
-  const chapterNavigation = useMemo(() => {
+  // Optimized navigation state with memoization
+  const navigationState = useMemo(() => {
     if (!chapter || !allChapters) return null;
 
     const currentIndex = allChapters.findIndex(
       (ch) => ch._id === chapter.chapter._id
     );
 
+    const totalPages = chapter.chapter.content?.length || 0;
+
     return {
+      // Chapter navigation
+      currentChapterIndex: currentIndex,
       isFirstChapter: currentIndex === 0,
       isLastChapter: currentIndex === allChapters.length - 1,
-      currentIndex,
       previousChapter: currentIndex > 0 ? allChapters[currentIndex - 1] : null,
       nextChapter:
         currentIndex < allChapters.length - 1
           ? allChapters[currentIndex + 1]
           : null,
-    };
-  }, [chapter, allChapters]);
 
-  const pageNavigation = useMemo(() => {
-    if (!chapter) return null;
+      // Page navigation
+      currentPage: page,
+      isFirstPage: page === 0,
+      isLastPage: page === totalPages - 1,
+      totalPages,
+    };
+  }, [chapter, allChapters, page]);
+
+  // Memoized button states for performance
+  const buttonStates = useMemo(() => {
+    if (!navigationState) return null;
+
+    const isListMode = readStyleName === "List";
+    const isPagedMode = readStyleName === "Paged";
+    const isNovelMode = mangaType === "novel";
 
     return {
-      isFirstPage: page === 0,
-      isLastPage: chapter.chapter.content.length - 1 === page,
-      totalPages: chapter.chapter.content.length,
+      // Previous button disabled state
+      isPreviousDisabled: isNovelMode
+        ? navigationState.isFirstChapter
+        : isListMode
+        ? navigationState.isFirstChapter
+        : navigationState.isFirstPage && navigationState.isFirstChapter,
+
+      // Next button disabled state
+      isNextDisabled: isNovelMode
+        ? navigationState.isLastChapter
+        : isListMode
+        ? navigationState.isLastChapter
+        : navigationState.isLastPage && navigationState.isLastChapter,
+
+      // Button sizes and icons
+      buttonSize: isMobile ? "md" : "lg",
+      iconSize: isMobile ? "1em" : "1.2em",
     };
-  }, [chapter, page]);
+  }, [navigationState, readStyleName, mangaType, isMobile]);
 
   const getImageWidth = useCallback(() => {
     if (isMobile) return "100%";
@@ -221,6 +281,7 @@ export default function MangaRead({ params }) {
     return "80%";
   }, [isMobile, isTablet]);
 
+  // Optimized scroll functions
   const scrollToTop = useCallback(() => {
     window.scrollTo({
       top: 0,
@@ -233,56 +294,126 @@ export default function MangaRead({ params }) {
     comments?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  // Optimized chapter navigation with better performance
+  const navigateToChapter = useCallback(
+    (direction) => {
+      if (!navigationState) return;
+
+      const targetChapter =
+        direction === "previous"
+          ? navigationState.previousChapter
+          : navigationState.nextChapter;
+
+      if (targetChapter) {
+        router.replace(`/manga/${slug}/${targetChapter.slug}`);
+      }
+    },
+    [navigationState, router, slug]
+  );
+
   const goToPreviousChapter = useCallback(() => {
-    if (chapterNavigation?.previousChapter) {
-      router.replace(
-        `/manga/${slug}/${chapterNavigation.previousChapter.slug}`
-      );
-    }
-  }, [chapterNavigation, router, slug]);
+    navigateToChapter("previous");
+  }, [navigateToChapter]);
 
   const goToNextChapter = useCallback(() => {
-    if (chapterNavigation?.nextChapter) {
-      router.replace(`/manga/${slug}/${chapterNavigation.nextChapter.slug}`);
-    }
-  }, [chapterNavigation, router, slug]);
+    navigateToChapter("next");
+  }, [navigateToChapter]);
+
+  // Optimized page navigation with state batching
+  const navigateToPage = useCallback(
+    (direction) => {
+      if (!navigationState) return;
+
+      if (direction === "previous") {
+        if (navigationState.isFirstPage) {
+          goToPreviousChapter();
+        } else {
+          const newPage = Math.max(0, page - 1);
+          // Batch state updates for better performance
+          startTransition(() => {
+            setPage(newPage);
+            setSelectedPage(new Set([newPage.toString()]));
+          });
+        }
+      } else {
+        if (navigationState.isLastPage) {
+          goToNextChapter();
+        } else {
+          const newPage = Math.min(navigationState.totalPages - 1, page + 1);
+          // Batch state updates for better performance
+          startTransition(() => {
+            setPage(newPage);
+            setSelectedPage(new Set([newPage.toString()]));
+          });
+        }
+      }
+    },
+    [navigationState, page, goToPreviousChapter, goToNextChapter]
+  );
 
   const goToPreviousPage = useCallback(() => {
-    if (pageNavigation?.isFirstPage) {
-      goToPreviousChapter();
-    } else {
-      const newPage = page - 1;
-      setSelectedPage(new Set([newPage.toString()]));
-      setPage(newPage);
-    }
-  }, [pageNavigation, page, goToPreviousChapter]);
+    navigateToPage("previous");
+  }, [navigateToPage]);
 
   const goToNextPage = useCallback(() => {
-    if (pageNavigation?.isLastPage) {
-      goToNextChapter();
-    } else {
-      const newPage = page + 1;
-      setSelectedPage(new Set([newPage.toString()]));
-      setPage(newPage);
-    }
-  }, [pageNavigation, page, goToNextChapter]);
+    navigateToPage("next");
+  }, [navigateToPage]);
 
   const styles = ["Paged", "List"];
-  const changeReadStyle = useCallback((style) => {
-    localStorage.setItem("readStyle", JSON.stringify(style));
-    setReadStyleName(style);
-  }, []);
+  const changeReadStyle = useCallback(
+    (style) => {
+      localStorage.setItem("readStyle", JSON.stringify(style));
+      setReadStyleName(style);
 
-  const handleImageLoad = useCallback((imageUrl) => {
-    setLoadedImages((prev) => new Set([...prev, imageUrl]));
-    setImageLoading(false);
-  }, []);
+      // Read style değiştiğinde image loading state'ini yönet
+      if (style === "List") {
+        // List mode'da lazy loading kullanıldığı için image loading'i false yap
+        setImageLoading(false);
+      } else if (style === "Paged") {
+        // Paged mode'a geçince mevcut sayfa için loading kontrolü yap
+        if (
+          chapter?.chapter?.content &&
+          !loadedImages.has(chapter.chapter.content[page])
+        ) {
+          setImageLoading(true);
+        } else {
+          setImageLoading(false);
+        }
+      }
+    },
+    [chapter, page, loadedImages]
+  );
 
-  const handleImageError = useCallback((imageUrl) => {
-    console.error("Image failed to load:", imageUrl);
-    setFailedImages((prev) => new Set([...prev, imageUrl]));
-    setImageLoading(false);
-  }, []);
+  const handleImageLoad = useCallback(
+    (imageUrl) => {
+      setLoadedImages((prev) => new Set([...prev, imageUrl]));
+      // Image loading state'ini sadece paged mode'da ve mevcut sayfanın resmiyse false yap
+      if (
+        readStyleName === "Paged" &&
+        chapter?.chapter?.content &&
+        chapter.chapter.content[page] === imageUrl
+      ) {
+        setImageLoading(false);
+      }
+    },
+    [readStyleName, chapter, page]
+  );
+
+  const handleImageError = useCallback(
+    (imageUrl) => {
+      console.error("Image failed to load:", imageUrl);
+      setFailedImages((prev) => new Set([...prev, imageUrl]));
+      // Image loading state'ini sadece paged mode'da ve mevcut sayfanın resmiyse false yap
+      if (
+        readStyleName === "Paged" &&
+        chapter?.chapter?.content &&
+        chapter.chapter.content[page] === imageUrl
+      ) {
+        setImageLoading(false);
+      }
+    },
+    [readStyleName, chapter, page]
+  );
 
   const observerRef = useRef(null);
 
@@ -318,116 +449,57 @@ export default function MangaRead({ params }) {
     };
   }, []);
 
+  // Optimized image click handler with better performance
   const handleImageClick = useCallback(
     (e) => {
+      // Prevent unnecessary calculations if disabled
+      if (!navigationState || !buttonStates) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
       const rect = e.currentTarget.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
-      const imageWidth = rect.width;
+      const isRightSide = clickX > rect.width * 0.5;
 
-      if (clickX > imageWidth / 2) {
-        goToNextPage();
+      // Use direct navigation functions for better performance
+      if (isRightSide) {
+        if (!buttonStates.isNextDisabled) {
+          navigateToPage("next");
+        }
       } else {
-        goToPreviousPage();
+        if (!buttonStates.isPreviousDisabled) {
+          navigateToPage("previous");
+        }
       }
     },
-    [goToNextPage, goToPreviousPage]
+    [navigationState, buttonStates, navigateToPage]
   );
 
-  const Buttons = ({ child }) => {
-    return (
-      <div className="flex flex-row items-center justify-center gap-2 sm:gap-4">
-        {mangaType !== "novel" ? (
-          <>
-            <Button
-              isDisabled={
-                (readStyleName === "List" &&
-                  chapterNavigation?.isFirstChapter) ||
-                (readStyleName === "Paged" &&
-                  pageNavigation?.isFirstPage &&
-                  chapterNavigation?.isFirstChapter)
-              }
-              onClick={
-                readStyleName === "List"
-                  ? goToPreviousChapter
-                  : goToPreviousPage
-              }
-              isIconOnly
-              size={isMobile ? "md" : "lg"}
-              className="min-w-unit-10 sm:min-w-unit-12"
-            >
-              <AiOutlineDoubleLeft size={isMobile ? "1em" : "1.2em"} />
-            </Button>
+  // Optimized page selector with memoization
+  const handlePageSelection = useCallback(
+    (keys) => {
+      const newPage = parseInt(keys.currentKey);
+      if (newPage !== page) {
+        startTransition(() => {
+          setSelectedPage(keys);
+          setPage(newPage);
+        });
+      }
+    },
+    [page]
+  );
 
-            {readStyleName === "Paged" && (
-              <Select
-                label={t("selectPage")}
-                variant="bordered"
-                className="min-w-[100px] sm:min-w-[120px]"
-                size={isMobile ? "sm" : "md"}
-                selectedKeys={selectedPage}
-                disabledKeys={selectedPage}
-                onSelectionChange={(keys) => {
-                  setSelectedPage(keys);
-                  setPage(parseInt(keys.currentKey));
-                }}
-              >
-                {chapter.chapter.content.map((item, key) => (
-                  <SelectItem
-                    key={key}
-                    value={key}
-                    textValue={(key + 1).toString()}
-                  >
-                    {key + 1}
-                  </SelectItem>
-                ))}
-              </Select>
-            )}
+  // Memoized page options for Select component
+  const pageOptions = useMemo(() => {
+    if (!chapter?.chapter?.content) return [];
 
-            {child}
-
-            <Button
-              isDisabled={
-                (readStyleName === "List" &&
-                  chapterNavigation?.isLastChapter) ||
-                (readStyleName === "Paged" &&
-                  pageNavigation?.isLastPage &&
-                  chapterNavigation?.isLastChapter)
-              }
-              onClick={
-                readStyleName === "List" ? goToNextChapter : goToNextPage
-              }
-              isIconOnly
-              size={isMobile ? "md" : "lg"}
-              className="min-w-unit-10 sm:min-w-unit-12"
-            >
-              <AiOutlineDoubleRight size={isMobile ? "1em" : "1.2em"} />
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              isDisabled={chapterNavigation?.isFirstChapter}
-              onClick={goToPreviousChapter}
-              size={isMobile ? "md" : "lg"}
-              className="flex items-center gap-2"
-            >
-              <AiOutlineDoubleLeft size={isMobile ? "1em" : "1.2em"} />
-              {!isMobile && <span>Previous</span>}
-            </Button>
-            <Button
-              isDisabled={chapterNavigation?.isLastChapter}
-              onClick={goToNextChapter}
-              size={isMobile ? "md" : "lg"}
-              className="flex items-center gap-2"
-            >
-              {!isMobile && <span>Next</span>}
-              <AiOutlineDoubleRight size={isMobile ? "1em" : "1.2em"} />
-            </Button>
-          </>
-        )}
-      </div>
-    );
-  };
+    return chapter.chapter.content.map((_, index) => ({
+      key: index,
+      value: index,
+      label: (index + 1).toString(),
+    }));
+  }, [chapter?.chapter?.content]);
 
   if (!chapter || !allChapters || loading) return <Loading />;
   return (
@@ -490,7 +562,97 @@ export default function MangaRead({ params }) {
             </Select>
           </div>
 
-          <Buttons />
+          {/* First Navigation Button Group */}
+          <div className="flex flex-row items-center justify-center gap-2 sm:gap-4">
+            {mangaType !== "novel" ? (
+              <>
+                {/* Previous Button */}
+                <Button
+                  isDisabled={buttonStates?.isPreviousDisabled}
+                  onClick={
+                    readStyleName === "List"
+                      ? goToPreviousChapter
+                      : goToPreviousPage
+                  }
+                  isIconOnly
+                  size={buttonStates?.buttonSize}
+                  className="z-60 min-w-unit-10 sm:min-w-unit-12"
+                  aria-label={
+                    readStyleName === "List"
+                      ? "Previous Chapter"
+                      : "Previous Page"
+                  }
+                >
+                  <AiOutlineDoubleLeft size={buttonStates?.iconSize} />
+                </Button>
+
+                {/* Page Selector for Paged Mode */}
+                {readStyleName === "Paged" && (
+                  <Select
+                    label={t("selectPage")}
+                    variant="bordered"
+                    className="min-w-[100px] sm:min-w-[120px]"
+                    size={isMobile ? "sm" : "md"}
+                    selectedKeys={selectedPage}
+                    disabledKeys={selectedPage}
+                    onSelectionChange={handlePageSelection}
+                    aria-label="Select Page"
+                  >
+                    {pageOptions.map((option) => (
+                      <SelectItem
+                        key={option.key}
+                        value={option.value}
+                        textValue={option.label}
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                )}
+
+                {/* Next Button */}
+                <Button
+                  isDisabled={buttonStates?.isNextDisabled}
+                  onClick={
+                    readStyleName === "List" ? goToNextChapter : goToNextPage
+                  }
+                  isIconOnly
+                  size={buttonStates?.buttonSize}
+                  className="z-60 min-w-unit-10 sm:min-w-unit-12"
+                  aria-label={
+                    readStyleName === "List" ? "Next Chapter" : "Next Page"
+                  }
+                >
+                  <AiOutlineDoubleRight size={buttonStates?.iconSize} />
+                </Button>
+              </>
+            ) : (
+              // Novel Mode Navigation
+              <>
+                <Button
+                  isDisabled={buttonStates?.isPreviousDisabled}
+                  onClick={goToPreviousChapter}
+                  size={buttonStates?.buttonSize}
+                  className="flex items-center gap-2"
+                  aria-label="Previous Chapter"
+                >
+                  <AiOutlineDoubleLeft size={buttonStates?.iconSize} />
+                  {!isMobile && <span>Previous</span>}
+                </Button>
+
+                <Button
+                  isDisabled={buttonStates?.isNextDisabled}
+                  onClick={goToNextChapter}
+                  size={buttonStates?.buttonSize}
+                  className="flex items-center gap-2"
+                  aria-label="Next Chapter"
+                >
+                  {!isMobile && <span>Next</span>}
+                  <AiOutlineDoubleRight size={buttonStates?.iconSize} />
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -656,7 +818,7 @@ export default function MangaRead({ params }) {
               </div>
 
               <div className="absolute px-3 py-1 text-sm text-white transform -translate-x-1/2 rounded-full bottom-4 left-1/2 bg-black/50 backdrop-blur-sm">
-                {page + 1} / {pageNavigation?.totalPages}
+                {page + 1} / {navigationState?.totalPages}
               </div>
             </div>
           </div>
@@ -671,10 +833,101 @@ export default function MangaRead({ params }) {
           </div>
         )}
 
-        <div className="col-span-12 m-4 sm:m-6 lg:m-10">
-          <Buttons />
+        {/* Second Navigation Button Group */}
+        <div className="block col-span-12 m-4 sm:m-6 lg:m-10">
+          <div className="flex flex-row items-center justify-center gap-2 sm:gap-4">
+            {mangaType !== "novel" ? (
+              <>
+                {/* Previous Button */}
+                <Button
+                  isDisabled={buttonStates?.isPreviousDisabled}
+                  onClick={
+                    readStyleName === "List"
+                      ? goToPreviousChapter
+                      : goToPreviousPage
+                  }
+                  isIconOnly
+                  size={buttonStates?.buttonSize}
+                  className="z-60 min-w-unit-10 sm:min-w-unit-12"
+                  aria-label={
+                    readStyleName === "List"
+                      ? "Previous Chapter"
+                      : "Previous Page"
+                  }
+                >
+                  <AiOutlineDoubleLeft size={buttonStates?.iconSize} />
+                </Button>
+
+                {/* Page Selector for Paged Mode */}
+                {readStyleName === "Paged" && (
+                  <Select
+                    label={t("selectPage")}
+                    variant="bordered"
+                    className="min-w-[100px] sm:min-w-[120px]"
+                    size={isMobile ? "sm" : "md"}
+                    selectedKeys={selectedPage}
+                    disabledKeys={selectedPage}
+                    onSelectionChange={handlePageSelection}
+                    aria-label="Select Page"
+                  >
+                    {pageOptions.map((option) => (
+                      <SelectItem
+                        key={option.key}
+                        value={option.value}
+                        textValue={option.label}
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                )}
+
+                {/* Next Button */}
+                <Button
+                  isDisabled={buttonStates?.isNextDisabled}
+                  onClick={
+                    readStyleName === "List" ? goToNextChapter : goToNextPage
+                  }
+                  isIconOnly
+                  size={buttonStates?.buttonSize}
+                  className="z-60 min-w-unit-10 sm:min-w-unit-12"
+                  aria-label={
+                    readStyleName === "List" ? "Next Chapter" : "Next Page"
+                  }
+                >
+                  <AiOutlineDoubleRight size={buttonStates?.iconSize} />
+                </Button>
+              </>
+            ) : (
+              // Novel Mode Navigation
+              <>
+                <Button
+                  isDisabled={buttonStates?.isPreviousDisabled}
+                  onClick={goToPreviousChapter}
+                  size={buttonStates?.buttonSize}
+                  className="flex items-center gap-2"
+                  aria-label="Previous Chapter"
+                >
+                  <AiOutlineDoubleLeft size={buttonStates?.iconSize} />
+                  {!isMobile && <span>Previous</span>}
+                </Button>
+
+                <Button
+                  isDisabled={buttonStates?.isNextDisabled}
+                  onClick={goToNextChapter}
+                  size={buttonStates?.buttonSize}
+                  className="flex items-center gap-2"
+                  aria-label="Next Chapter"
+                >
+                  {!isMobile && <span>Next</span>}
+                  <AiOutlineDoubleRight size={buttonStates?.iconSize} />
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
+        {/* Floating Navigation Button Group */}
         {isVisible && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -682,26 +935,132 @@ export default function MangaRead({ params }) {
             transition={{ type: "spring", duration: 0.8, bounce: 0.6 }}
             className="fixed z-50 flex flex-col items-center justify-center gap-2 p-2 rounded-lg shadow-lg bottom-4 right-4 sm:bg-gray-900/80 md:bg-transparent bg-white/85 backdrop-blur-md "
           >
-            <Buttons
-              child={
-                <div className="flex gap-2">
+            <div className="flex flex-row items-center justify-center gap-2 sm:gap-4">
+              {mangaType !== "novel" ? (
+                <>
+                  {/* Previous Button */}
                   <Button
-                    onClick={scrollToTop}
-                    size={isMobile ? "md" : "lg"}
+                    isDisabled={buttonStates?.isPreviousDisabled}
+                    onClick={
+                      readStyleName === "List"
+                        ? goToPreviousChapter
+                        : goToPreviousPage
+                    }
                     isIconOnly
+                    size={buttonStates?.buttonSize}
+                    className="z-60 min-w-unit-10 sm:min-w-unit-12"
+                    aria-label={
+                      readStyleName === "List"
+                        ? "Previous Chapter"
+                        : "Previous Page"
+                    }
                   >
-                    <BsArrowUp size={isMobile ? "1.2em" : "1.5em"} />
+                    <AiOutlineDoubleLeft size={buttonStates?.iconSize} />
                   </Button>
+
+                  {/* Page Selector for Paged Mode */}
+                  {readStyleName === "Paged" && (
+                    <Select
+                      label={t("selectPage")}
+                      variant="bordered"
+                      className="min-w-[100px] sm:min-w-[120px]"
+                      size={isMobile ? "sm" : "md"}
+                      selectedKeys={selectedPage}
+                      disabledKeys={selectedPage}
+                      onSelectionChange={handlePageSelection}
+                      aria-label="Select Page"
+                    >
+                      {pageOptions.map((option) => (
+                        <SelectItem
+                          key={option.key}
+                          value={option.value}
+                          textValue={option.label}
+                        >
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                  )}
+
+                  {/* Scroll Buttons */}
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={scrollToTop}
+                      size={isMobile ? "md" : "lg"}
+                      isIconOnly
+                    >
+                      <BsArrowUp size={isMobile ? "1.2em" : "1.5em"} />
+                    </Button>
+                    <Button
+                      onClick={scrollToComments}
+                      size={isMobile ? "md" : "lg"}
+                      isIconOnly
+                    >
+                      <FaRegComments size={isMobile ? "1.2em" : "1.5em"} />
+                    </Button>
+                  </div>
+
+                  {/* Next Button */}
                   <Button
-                    onClick={scrollToComments}
-                    size={isMobile ? "md" : "lg"}
+                    isDisabled={buttonStates?.isNextDisabled}
+                    onClick={
+                      readStyleName === "List" ? goToNextChapter : goToNextPage
+                    }
                     isIconOnly
+                    size={buttonStates?.buttonSize}
+                    className="z-60 min-w-unit-10 sm:min-w-unit-12"
+                    aria-label={
+                      readStyleName === "List" ? "Next Chapter" : "Next Page"
+                    }
                   >
-                    <FaRegComments size={isMobile ? "1.2em" : "1.5em"} />
+                    <AiOutlineDoubleRight size={buttonStates?.iconSize} />
                   </Button>
-                </div>
-              }
-            />
+                </>
+              ) : (
+                // Novel Mode Navigation
+                <>
+                  <Button
+                    isDisabled={buttonStates?.isPreviousDisabled}
+                    onClick={goToPreviousChapter}
+                    size={buttonStates?.buttonSize}
+                    className="flex items-center gap-2"
+                    aria-label="Previous Chapter"
+                  >
+                    <AiOutlineDoubleLeft size={buttonStates?.iconSize} />
+                    {!isMobile && <span>Previous</span>}
+                  </Button>
+
+                  {/* Scroll Buttons */}
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={scrollToTop}
+                      size={isMobile ? "md" : "lg"}
+                      isIconOnly
+                    >
+                      <BsArrowUp size={isMobile ? "1.2em" : "1.5em"} />
+                    </Button>
+                    <Button
+                      onClick={scrollToComments}
+                      size={isMobile ? "md" : "lg"}
+                      isIconOnly
+                    >
+                      <FaRegComments size={isMobile ? "1.2em" : "1.5em"} />
+                    </Button>
+                  </div>
+
+                  <Button
+                    isDisabled={buttonStates?.isNextDisabled}
+                    onClick={goToNextChapter}
+                    size={buttonStates?.buttonSize}
+                    className="flex items-center gap-2"
+                    aria-label="Next Chapter"
+                  >
+                    {!isMobile && <span>Next</span>}
+                    <AiOutlineDoubleRight size={buttonStates?.iconSize} />
+                  </Button>
+                </>
+              )}
+            </div>
           </motion.div>
         )}
 

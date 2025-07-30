@@ -72,18 +72,28 @@ export default function ChapterCard({
               >
                 {chapter.title}
               </h3>
-
-              {/* Status Tags for Last Chapter */}
               {isLastChapter &&
-                (mangaStatus === "güncel" || mangaStatus === "completed") && (
+                (mangaStatus === "güncel" ||
+                  mangaStatus === "completed" ||
+                  mangaStatus === "dropped") && (
                   <div className="mb-1">
                     <Chip
                       size="sm"
                       variant="flat"
-                      color={mangaStatus === "güncel" ? "success" : "secondary"}
+                      color={
+                        mangaStatus === "güncel"
+                          ? "success"
+                          : mangaStatus === "dropped"
+                          ? "default"
+                          : "secondary"
+                      }
                       className="h-5 px-2 py-1 text-xs"
                     >
-                      {mangaStatus === "güncel" ? "Güncel" : "Final"}
+                      {mangaStatus === "güncel"
+                        ? "Güncel"
+                        : mangaStatus === "dropped"
+                        ? "Bırakıldı"
+                        : "Final"}
                     </Chip>
                   </div>
                 )}

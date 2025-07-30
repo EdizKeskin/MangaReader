@@ -1,3 +1,5 @@
+"use client";
+import { Button } from "@nextui-org/react";
 import React from "react";
 
 export default function PricingCard({ data, bordered }) {
@@ -48,12 +50,9 @@ export default function PricingCard({ data, bordered }) {
         ))}
       </ul>
 
-      <a
-        href="#"
-        className="block px-12 py-3 mt-8 text-sm font-medium text-center text-white bg-indigo-600 border border-indigo-600 rounded-full hover:bg-indigo-700 hover:ring-1 hover:ring-indigo-700 focus:outline-none focus:ring active:text-indigo-500"
-      >
+      <Button className="w-full mt-6" color="secondary" isDisabled>
         Satın al
-      </a>
+      </Button>
     </div>
   );
 }
