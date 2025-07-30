@@ -67,11 +67,21 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-const corsOptions = {
-  origin: "http://localhost:3000",
-};
-
-app.use(cors(corsOptions));
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://monomanga.com.tr",
+  "https://www.monomanga.com.tr",
+  "https://manga-server-7g7v.onrender.com",
+  "https://manga-server-7g7v.onrender.com/",
+  "https://manga-3356.vercel.app/",
+];
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true,
+  })
+);
 
 const PORT = process.env.PORT || 3000;
 
