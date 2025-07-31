@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
+  experimental: {
+    appDir: true,
+  },
   images: {
     domains: [
       "motionbgs.com",
@@ -19,9 +23,6 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
-  output: "standalone",
 };
-
-module.exports = nextConfig;
 
 module.exports = nextConfig;
