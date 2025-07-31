@@ -7,7 +7,7 @@ export async function GET() {
   let urls = [`${baseUrl}/`];
 
   for (const { slug } of mangas) {
-    const mangaUrl = `${baseUrl}/${slug}`;
+    const mangaUrl = `${baseUrl}/manga/${slug}`;
     urls.push(mangaUrl);
 
     const chapters = await getChaptersSlugs(slug);
