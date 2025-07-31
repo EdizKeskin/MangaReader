@@ -62,29 +62,33 @@ export default function Navbar() {
     }
   }, [locale, pathname, intlRouter]);
 
-  const handleHomeClick = useCallback((event) => {
-    event.preventDefault();
-    
-    // Middle mouse button (wheel click) - open in new tab
-    if (event.button === 1) {
-      window.open("/", "_blank", "noopener,noreferrer");
-      return;
-    }
-    
-    // Left mouse button
-    if (event.button === 0) {
-      // Check if we're on the home page
-      const isHomePage = pathname === "/" || pathname === "/en" || pathname === "/tr";
-      
-      if (isHomePage) {
-        // Refresh the page if we're already on home
-        window.location.reload();
-      } else {
-        // Navigate to home page if we're not on home
-        router.push("/");
+  const handleHomeClick = useCallback(
+    (event) => {
+      event.preventDefault();
+
+      // Middle mouse button (wheel click) - open in new tab
+      if (event.button === 1) {
+        window.open("/", "_blank", "noopener,noreferrer");
+        return;
       }
-    }
-  }, [router, pathname]);
+
+      // Left mouse button
+      if (event.button === 0) {
+        // Check if we're on the home page
+        const isHomePage =
+          pathname === "/" || pathname === "/en" || pathname === "/tr";
+
+        if (isHomePage) {
+          // Refresh the page if we're already on home
+          window.location.reload();
+        } else {
+          // Navigate to home page if we're not on home
+          router.push("/");
+        }
+      }
+    },
+    [router, pathname]
+  );
 
   const handleMenuItemClick = useCallback(
     (href) => {

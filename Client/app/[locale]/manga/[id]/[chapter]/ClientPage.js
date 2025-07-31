@@ -510,13 +510,16 @@ export default function MangaRead({ params }) {
           variant="light"
           size={isMobile ? "sm" : "md"}
         >
-          <b>{t("goManga")}:</b> {mangaName}
+          <b>{t("goManga")}:</b>{" "}
+          {isMobile && mangaName && mangaName.length > 25
+            ? mangaName.substring(0, 25) + "..."
+            : mangaName}
         </Button>
       </div>
 
       <div className="col-span-12 m-4 sm:m-6 lg:m-10">
         <div className="flex flex-col items-center justify-between gap-4 lg:flex-row">
-          <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-4">
+          <div className="flex flex-row items-center w-full gap-2 md:w-auto sm:gap-4">
             {mangaType !== "novel" && (
               <Select
                 label={t("readStyle")}

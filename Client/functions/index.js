@@ -403,6 +403,21 @@ export const getMangaByGenreId = async (id) => {
   }
 };
 
+export const getMangaByStatus = async (status) => {
+  try {
+    const response = await axios.get(
+      process.env.NEXT_PUBLIC_MONGO_DB_URL + "manga/list/status/" + status
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    if (error.response && error.response.status === 404) {
+      return 404;
+    }
+    throw error;
+  }
+};
+
 export const getGenreById = async (id) => {
   try {
     const response = await axios.get(
@@ -553,6 +568,18 @@ export const getChaptersSlugs = async (slug) => {
     return response.data.chapters.map((chapter) => ({
       slug: chapter.slug,
     }));
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const fetchRandomChapters = async (limit = 15) => {
+  try {
+    const response = await axios.get(
+      process.env.NEXT_PUBLIC_MONGO_DB_URL + "manga/random-chapters?limit=" + limit
+    );
+    return response.data;
   } catch (error) {
     console.error(error);
     throw error;

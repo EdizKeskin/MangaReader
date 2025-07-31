@@ -5,6 +5,7 @@ import {
   fetchGenres,
   getMangaByGenreId,
   fetchMangaListHome,
+  getMangaByStatus,
 } from "@/functions";
 import { Card as NextCard, Chip, Pagination } from "@nextui-org/react";
 import { useTranslations } from "next-intl";
@@ -24,10 +25,22 @@ export default function Manga() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedGenreId, setSelectedGenreId] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [showByStatus, setShowByStatus] = useState(false);
   const searchParams = useSearchParams();
   const t = useTranslations("Category");
 
+  // Status options
+  const statusOptions = [
+    { key: "ongoing", label: "Devam Ediyor", color: "success" },
+    { key: "completed", label: "Tamamlandı", color: "primary" },
+    { key: "dropped", label: "Bırakıldı", color: "danger" },
+    { key: "hiatus", label: "Ara", color: "warning" },
+    { key: "güncel", label: "Güncel", color: "secondary" },
+  ];
+
   const search = searchParams.get("id");
+  const statusParam = searchParams.get("status");
 
   // Function to fetch all mangas with pagination
   const fetchAllMangas = useCallback(async (pageNumber = 1) => {
@@ -40,7 +53,9 @@ export default function Manga() {
       setPage(pageNumber);
       setCategory("Tüm Mangalar");
       setShowAllMangas(true);
+      setShowByStatus(false);
       setSelectedGenreId(null);
+      setSelectedStatus(null);
     } catch (err) {
       setError("Manga listesi yüklenirken hata oluştu");
       console.error("Fetch error:", err);
@@ -79,7 +94,39 @@ export default function Manga() {
 
       setCategory(genre.name);
       setShowAllMangas(false);
+      setShowByStatus(false);
       setSelectedGenreId(genre._id);
+      setSelectedStatus(null);
+      setPage(1);
+      setTotalPages(1);
+    } catch (err) {
+      setError("Manga listesi yüklenirken hata oluştu");
+      console.error("Fetch error:", err);
+    } finally {
+      setMangaLoading(false);
+    }
+  };
+
+  const getMangasByStatus = async (status) => {
+    setMangaLoading(true);
+    setError("");
+    try {
+      const res = await getMangaByStatus(status.key);
+
+      console.log(res);
+      if (res === 404 || (res.mangaList && res.mangaList.length === 0)) {
+        setError(`${status.label} statüsünde manga bulunamadı`);
+        setMangas([]);
+      } else {
+        setError("");
+        setMangas(res);
+      }
+
+      setCategory(status.label);
+      setShowAllMangas(false);
+      setShowByStatus(true);
+      setSelectedGenreId(null);
+      setSelectedStatus(status.key);
       setPage(1);
       setTotalPages(1);
     } catch (err) {
@@ -106,6 +153,14 @@ export default function Manga() {
         if (searchGenre) {
           getMangas(searchGenre);
         }
+      } else if (statusParam) {
+        const status = statusOptions.find((s) => s.key === statusParam);
+        if (status) {
+          getMangasByStatus(status);
+        } else {
+          // If invalid status, load all mangas
+          fetchAllMangas(1);
+        }
       } else {
         // Load all mangas by default
         fetchAllMangas(1);
@@ -114,7 +169,7 @@ export default function Manga() {
 
     getGenres();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, fetchAllMangas]);
+  }, [search, statusParam, fetchAllMangas]);
 
   if (loading) {
     return <Loading />;
@@ -125,8 +180,10 @@ export default function Manga() {
       <NextCard
         className={"flex justify-center items-center w-fit mx-10 mt-10 p-10"}
       >
-        <p className="mb-5 ml-8 text-3xl font-bold">{t("title")}</p>
-        <div className="flex flex-row flex-wrap items-center justify-center gap-4">
+        <p className="mb-5  text-3xl font-bold">{t("title")}</p>
+        
+        {/* All Mangas Button */}
+        <div className="flex flex-row flex-wrap items-center justify-center gap-4 mb-4">
           <Chip
             color={showAllMangas ? "primary" : "secondary"}
             className="cursor-pointer"
@@ -134,16 +191,40 @@ export default function Manga() {
           >
             Tüm Mangalar
           </Chip>
-          {genres.map((genre) => (
-            <Chip
-              color={selectedGenreId === genre._id ? "primary" : "secondary"}
-              className="cursor-pointer"
-              onClick={() => getMangas(genre)}
-              key={genre._id}
-            >
-              {genre.name}
-            </Chip>
-          ))}
+        </div>
+
+        {/* Status Filters */}
+        <div className="mb-4">
+          <p className="mb-3 text-lg font-semibold text-center">Duruma Göre Filtrele</p>
+          <div className="flex flex-row flex-wrap items-center justify-center gap-4">
+            {statusOptions.map((status) => (
+              <Chip
+                color={selectedStatus === status.key ? status.color : "default"}
+                className="cursor-pointer"
+                onClick={() => getMangasByStatus(status)}
+                key={status.key}
+              >
+                {status.label}
+              </Chip>
+            ))}
+          </div>
+        </div>
+
+        {/* Genre Filters */}
+        <div>
+          <p className="mb-3 text-lg font-semibold text-center">Türe Göre Filtrele</p>
+          <div className="flex flex-row flex-wrap items-center justify-center gap-4">
+            {genres.map((genre) => (
+              <Chip
+                color={selectedGenreId === genre._id ? "primary" : "secondary"}
+                className="cursor-pointer"
+                onClick={() => getMangas(genre)}
+                key={genre._id}
+              >
+                {genre.name}
+              </Chip>
+            ))}
+          </div>
         </div>
       </NextCard>
 
@@ -157,9 +238,16 @@ export default function Manga() {
           </h3>
           <p className="max-w-md text-red-400">{error}</p>
           <button
-            onClick={() =>
-              showAllMangas ? fetchAllMangas(page) : fetchAllMangas(1)
-            }
+            onClick={() => {
+              if (showAllMangas) {
+                fetchAllMangas(page);
+              } else if (showByStatus && selectedStatus) {
+                const status = statusOptions.find(s => s.key === selectedStatus);
+                if (status) getMangasByStatus(status);
+              } else {
+                fetchAllMangas(1);
+              }
+            }}
             className="px-6 py-3 font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 hover:scale-105 hover:shadow-purple-500/25"
           >
             🔄 Tekrar Dene

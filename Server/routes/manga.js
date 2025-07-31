@@ -199,6 +199,70 @@ router.get("/count", async (req, res) => {
   }
 });
 
+router.get("/random-chapters", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 15;
+    
+    // Get all active manga IDs
+    const activeMangas = await Manga.find({ isActive: true }).select("_id name coverImage slug author artist type summary");
+    
+    if (activeMangas.length === 0) {
+      return res.json([]);
+    }
+    
+    const currentDate = new Date();
+    
+    // For each manga, get one random published chapter
+    const mangaWithRandomChapter = await Promise.all(
+      activeMangas.map(async (manga) => {
+        // Get one random chapter for this manga
+        const chapters = await Chapter.find({
+          manga: manga._id,
+          isActive: true,
+          publishDate: { $lte: currentDate }
+        }).select("_id chapterNumber title uploadDate publishDate slug");
+        
+        if (chapters.length === 0) {
+          return null; // No published chapters for this manga
+        }
+        
+        // Select random chapter from this manga
+        const randomChapter = chapters[Math.floor(Math.random() * chapters.length)];
+        
+        return {
+          _id: randomChapter._id,
+          chapterNumber: randomChapter.chapterNumber,
+          title: randomChapter.title,
+          uploadDate: randomChapter.uploadDate,
+          publishDate: randomChapter.publishDate,
+          chapterSlug: randomChapter.slug,
+          manga: manga,
+          // Add manga fields for compatibility with MovingCards
+          slug: manga.slug, // Use manga slug for MovingCards link
+          name: manga.name,
+          coverImage: manga.coverImage,
+          author: manga.author,
+          artist: manga.artist,
+          type: manga.type,
+          summary: manga.summary
+        };
+      })
+    );
+    
+    // Filter out nulls (mangas with no published chapters)
+    const validMangaChapters = mangaWithRandomChapter.filter(item => item !== null);
+    
+    // Randomly shuffle and select the requested number
+    const shuffledResults = validMangaChapters.sort(() => 0.5 - Math.random());
+    const finalResults = shuffledResults.slice(0, Math.min(limit, shuffledResults.length));
+    
+    res.json(finalResults);
+  } catch (error) {
+    console.error("Random chapters error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get("/:id", async (req, res) => {
   try {
     const manga = await Manga.findById(req.params.id);
@@ -447,6 +511,74 @@ router.get("/list/search", async (req, res) => {
       "name _id coverImage type"
     );
     res.json(mangaList);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get("/list/status/:status", async (req, res) => {
+  try {
+    const status = req.params.status;
+    const validStatuses = ["ongoing", "completed", "dropped", "hiatus", "güncel"];
+    
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ 
+        message: "Geçersiz statü. Geçerli statüler: " + validStatuses.join(", ") 
+      });
+    }
+
+    const mangaList = await Manga.find({ 
+      status: status, 
+      isActive: true 
+    });
+    
+    const mangaListWithLastTwoChapters = await Promise.all(
+      mangaList.map(async (manga) => {
+        let lastTwoChapters = await Chapter.find({ 
+          manga: manga._id,
+          isActive: true 
+        })
+          .sort({ chapterNumber: -1 })
+          .limit(2)
+          .select("_id chapterNumber title uploadDate publishDate slug")
+          .exec();
+
+        const now = new Date();
+        lastTwoChapters = lastTwoChapters.filter((chapter) => {
+          return chapter.publishDate <= now;
+        });
+
+        return {
+          ...manga._doc,
+          lastTwoChapters,
+        };
+      })
+    );
+
+    const sortedMangaListWithLastTwoChapters =
+      mangaListWithLastTwoChapters.sort((a, b) => {
+        const aLastChapter = a.lastTwoChapters[0];
+        const bLastChapter = b.lastTwoChapters[0];
+        if (!aLastChapter) {
+          return 1;
+        }
+
+        if (!bLastChapter) {
+          return -1;
+        }
+
+        return bLastChapter.publishDate - aLastChapter.publishDate;
+      });
+
+    if (sortedMangaListWithLastTwoChapters.length === 0) {
+      return res.json({
+        message: `${status} statüsünde manga bulunamadı.`,
+        status: 404,
+        mangaList: []
+      });
+    }
+
+    res.json(sortedMangaListWithLastTwoChapters);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

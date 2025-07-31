@@ -2,7 +2,7 @@ import React from "react";
 import Hero from "@/components/Hero";
 import Sidebar from "@/components/Sidebar";
 import Title from "@/components/Title";
-import { fetchGenres, fetchMangaListHome } from "@/functions";
+import { fetchGenres, fetchRandomChapters } from "@/functions";
 import Announcements from "@/components/Announcements";
 import Footer from "@/components/Footer";
 import MangaListArea from "@/sections/MangaListArea";
@@ -12,14 +12,15 @@ import { discordIframe } from "@/config";
 
 export default async function Index() {
   const genres = await fetchGenres();
-  const mangas = await fetchMangaListHome();
+  const randomChapters1 = await fetchRandomChapters(15);
+  const randomChapters2 = await fetchRandomChapters(15);
 
   return (
     <div className="z-20 overflow-hidden">
       <Hero />
 
       <div className="pb-5 mt-20 ">
-        <TopContent data={mangas} />
+        <TopContent data={{ mangaList1: randomChapters1, mangaList2: randomChapters2 }} />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-8 ">
           <MangaListArea />
           <div className="hidden my-6 md:block">

@@ -667,14 +667,14 @@ export default function Manga({ params }) {
               <Divider className="my-6 bg-zinc-700" />
 
               {/* Metadata */}
-              <div className="space-y-4">
+              <div className="flex flex-col gap-2 space-y-4">
                 {manga.author && (
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <dt className="text-lg font-semibold text-gray-300 min-w-24">
-                      {t("author")}
+                    <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
+                      {t("author")}:
                     </dt>
                     <dd
-                      className="font-medium text-purple-400 transition-colors duration-200 cursor-pointer hover:text-purple-300"
+                      className="text-lg font-medium text-purple-400 transition-colors duration-200 cursor-pointer hover:text-purple-300"
                       onClick={handleAuthorClick}
                     >
                       {manga.author}
@@ -684,11 +684,11 @@ export default function Manga({ params }) {
 
                 {manga.artist && (
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <dt className="text-lg font-semibold text-gray-300 min-w-24">
-                      {t("artist")}
+                    <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
+                      {t("artist")}:
                     </dt>
                     <dd
-                      className="font-medium text-purple-400 transition-colors duration-200 cursor-pointer hover:text-purple-300"
+                      className="text-lg font-medium text-purple-400 transition-colors duration-200 cursor-pointer hover:text-purple-300"
                       onClick={handleArtistClick}
                     >
                       {manga.artist}
@@ -697,8 +697,8 @@ export default function Manga({ params }) {
                 )}
 
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                  <dt className="text-lg font-semibold text-gray-300 min-w-24">
-                    {t("categories")}
+                  <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
+                    {t("categories")}:
                   </dt>
                   <dd className="flex flex-wrap gap-2">
                     {genres.map((genre) => (
@@ -717,8 +717,8 @@ export default function Manga({ params }) {
 
                 {manga.status && (
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <dt className="text-lg font-semibold text-gray-300 min-w-24">
-                      Durum
+                    <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
+                      Durum:
                     </dt>
                     <dd>
                       <Chip
@@ -734,6 +734,10 @@ export default function Manga({ params }) {
                         }
                         variant="flat"
                         size="sm"
+                        className="cursor-pointer"
+                        onClick={() =>
+                          router.push(`/manga?status=${manga.status}`)
+                        }
                       >
                         {manga.status === "ongoing" && "Devam Ediyor"}
                         {manga.status === "completed" && "Tamamlandı"}
@@ -747,10 +751,10 @@ export default function Manga({ params }) {
 
                 {manga.releaseYear && (
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <dt className="text-lg font-semibold text-gray-300 min-w-24">
-                      Çıkış Yılı
+                    <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
+                      Çıkış Yılı:
                     </dt>
-                    <dd className="font-medium text-gray-300">
+                    <dd className="text-lg font-medium text-gray-300">
                       {manga.releaseYear}
                     </dd>
                   </div>
@@ -758,7 +762,7 @@ export default function Manga({ params }) {
 
                 {manga.isAdult && (
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <dt className="text-lg font-semibold text-gray-300 min-w-24">
+                    <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
                       İçerik
                     </dt>
                     <dd>
@@ -771,12 +775,12 @@ export default function Manga({ params }) {
 
                 {manga.otherNames && manga.otherNames.length > 0 && (
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                    <dt className="text-lg font-semibold text-gray-300 min-w-24">
-                      Diğer İsimler
+                    <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
+                      Diğer İsimler:
                     </dt>
                     <dd className="space-y-1">
                       {manga.otherNames.map((name, index) => (
-                        <div key={index} className="text-gray-300">
+                        <div key={index} className="text-lg text-gray-300">
                           {name}
                         </div>
                       ))}
@@ -784,22 +788,24 @@ export default function Manga({ params }) {
                   </div>
                 )}
 
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                  <dt className="text-lg font-semibold text-gray-300 min-w-24">
-                    {t("summary")}
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
+                    {t("summary")}:
                   </dt>
                   <dd
-                    className={`text-gray-300 leading-relaxed cursor-pointer transition-all duration-300 ${
-                      showFullSummary ? "" : "line-clamp-3"
-                    }`}
+                    className="text-gray-300 text-lg leading-relaxed cursor-pointer transition-all duration-300"
                     onClick={handleToggleSummary}
                   >
-                    {manga.summary}
-                    {/* {!showFullSummary && (
-                      <span className="ml-2 text-purple-400 hover:text-purple-300">
-                        Devamını oku...
-                      </span>
-                    )} */}
+                    {manga.summary && manga.summary.length > 200 ? (
+                      <>
+                        {showFullSummary ? manga.summary : `${manga.summary.substring(0, 200)}...`}
+                        <span className="ml-2 text-purple-400 hover:text-purple-300">
+                          {showFullSummary ? "Daha az göster" : "Devamını oku..."}
+                        </span>
+                      </>
+                    ) : (
+                      manga.summary
+                    )}
                   </dd>
                 </div>
               </div>
