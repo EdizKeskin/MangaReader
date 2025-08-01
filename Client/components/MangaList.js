@@ -15,7 +15,7 @@ import { fetchMangaListHome } from "@/functions";
 const MemoizedCard = memo(Card);
 
 const MangaCardSkeleton = () => (
-  <div className="w-[170px] min-w-[170px] h-full rounded-lg bg-gray-800/50 animate-pulse">
+  <div className="w-[150px] min-w-[150px] sm:w-[160px] sm:min-w-[160px] md:w-[170px] md:min-w-[170px] h-full rounded-lg bg-gray-800/50 animate-pulse">
     <div className="p-0">
       <div className="w-full h-[200px] bg-gray-700/50 rounded-md mb-3"></div>
     </div>
@@ -30,7 +30,7 @@ const MangaCardSkeleton = () => (
 );
 
 const MangaGridSkeleton = () => (
-  <div className="grid grid-cols-2 gap-5 mx-6 md:grid-cols-2 lg:grid-cols-4 lg:gap-8 justify-items-center">
+  <div className="grid grid-cols-2 gap-3 mx-3 transition-all duration-300 sm:gap-4 sm:mx-4 md:gap-5 md:mx-6 md:grid-cols-2 lg:grid-cols-4 lg:gap-8 justify-items-center">
     {Array.from({ length: 8 }, (_, i) => (
       <MangaCardSkeleton key={i} />
     ))}
@@ -141,9 +141,9 @@ export default function MangaList() {
   }
 
   return (
-    <div className="flex flex-col w-full h-full gap-6">
+    <div className="flex flex-col w-full h-full gap-6 ">
       <div
-        className="grid grid-cols-2 gap-5 mx-6 transition-all duration-300 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 lg:gap-8 justify-items-center"
+       className="grid grid-cols-2 gap-6 mx-3 transition-all duration-300 sm:gap-4 sm:mx-4 md:gap-5 md:mx-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 lg:gap-8 justify-items-center"
         id="mangas"
       >
         {data.length > 0 ? (
@@ -151,7 +151,7 @@ export default function MangaList() {
             <MotionDiv
               key={`${item.id || item.slug}-${i}`}
               i={i}
-              className="transition-all duration-300 transform hover:scale-105"
+              className="transition-all duration-300 transform md:hover:scale-105"
             >
               <MemoizedCard item={item} />
             </MotionDiv>

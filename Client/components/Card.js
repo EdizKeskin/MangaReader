@@ -74,10 +74,10 @@ export default function Card({ item, chapterless }) {
         shadow="sm"
         isPressable
         onPress={handleCardPress}
-        className="w-[170px] min-w-[170px] h-full rounded-xl  backdrop-blur-sm
+        className="w-[160px] min-w-[160px] sm:w-[170px] sm:min-w-[170px] md:w-[170px] md:min-w-[170px] h-full rounded-xl backdrop-blur-sm
                    border border-gray-700/50 transition-all duration-300
-                   hover:border-purple-500/50 hover:shadow-xl hover:shadow-purple-500/20
-                   group-hover:transform group-hover:scale-105"
+                   md:hover:border-purple-500/50 md:hover:shadow-xl md:hover:shadow-purple-500/20
+                   md:group-hover:transform md:group-hover:scale-105"
       >
         <CardBody className="p-0 overflow-visible ">
           <div
@@ -145,7 +145,7 @@ export default function Card({ item, chapterless }) {
           <CardFooter className="flex-col w-full h-full gap-3 p-4 justify- backdrop-blur-sm">
             {/* Manga title */}
             <div className="w-full text-center">
-              <h3 className="text-sm font-semibold leading-tight text-white transition-colors duration-200 line-clamp-2 group-hover:text-purple-300">
+              <h3 className="text-sm font-semibold leading-tight text-white transition-colors duration-200 line-clamp-2 md:group-hover:text-purple-300">
                 {item.name}
               </h3>
             </div>
@@ -173,10 +173,10 @@ export default function Card({ item, chapterless }) {
                         e.stopPropagation();
                         handleChapterClick(chapter.slug);
                       }}
-                      className="w-full transition-all duration-200 border rounded-md cursor-pointer bg-gray-700/50 hover:bg-purple-600/80 hover:scale-105 border-gray-600/50 hover:border-purple-500/50 backdrop-blur-sm group/chip"
+                      className="w-full transition-all duration-200 border rounded-md cursor-pointer bg-gray-700/50 md:hover:bg-purple-600/80 md:hover:scale-105 border-gray-600/50 md:hover:border-purple-500/50 backdrop-blur-sm group/chip"
                       variant="flat"
                     >
-                      <span className="text-xs font-medium text-gray-200 truncate group-hover/chip:text-white">
+                      <span className="text-xs font-medium text-gray-200 truncate md:group-hover/chip:text-white">
                         {chapter.title}
                         {!isVIP && isRecent && "  🔥"}
                         {isVIP && "  🔒"}

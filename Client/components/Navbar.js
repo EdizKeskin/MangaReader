@@ -248,7 +248,7 @@ export default function Navbar() {
         </SignedIn>
 
         <SignedOut>
-          <NavbarItem>
+          <NavbarItem className="hidden md:block">
             <Button
               onClick={handleLoginClick}
               variant="light"

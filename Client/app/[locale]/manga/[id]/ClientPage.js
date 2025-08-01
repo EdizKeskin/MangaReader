@@ -8,6 +8,10 @@ import {
   Skeleton,
   Progress,
   Divider,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  Pagination,
 } from "@nextui-org/react";
 import {
   fetchGenres,
@@ -111,8 +115,6 @@ RatingSystem.displayName = "RatingSystem";
 
 // Share Component
 const ShareButtons = memo(({ manga, pathname }) => {
-  const [showShare, setShowShare] = useState(false);
-
   const shareUrl = process.env.NEXT_PUBLIC_WEBSITE_URL + pathname;
   const shareText = `${manga.name} - Bu harika mangayı okumak ister misin?`;
 
@@ -149,43 +151,39 @@ const ShareButtons = memo(({ manga, pathname }) => {
   }, [shareUrl]);
 
   return (
-    <div className="relative">
-      <Tooltip content="Paylaş">
+    <Popover placement="bottom-end" showArrow backdrop="opaque">
+      <PopoverTrigger>
         <Button
           isIconOnly
           variant="bordered"
-          onClick={() => setShowShare(!showShare)}
           className="border-gray-600 hover:border-purple-400"
         >
           <TbShare size={20} />
         </Button>
-      </Tooltip>
-
-      {showShare && (
-        <div className="absolute right-0 z-50 p-4 space-y-3 border rounded-lg top-12 bg-zinc-800 border-zinc-700 min-w-48">
-          <p className="text-sm font-semibold text-white">Bu mangayı paylaş</p>
-          <div className="space-y-2">
-            {shareOptions.map((option) => (
-              <button
-                key={option.name}
-                onClick={() => window.open(option.url, "_blank")}
-                className="flex items-center w-full gap-3 p-2 transition-colors rounded-lg hover:bg-zinc-700"
-              >
-                <option.icon className={option.color} size={18} />
-                <span className="text-sm text-gray-300">{option.name}</span>
-              </button>
-            ))}
+      </PopoverTrigger>
+      <PopoverContent className="p-4 space-y-3 bg-zinc-900 border-zinc-700 min-w-48">
+        <p className="text-sm font-semibold text-white">Bu mangayı paylaş</p>
+        <div className="space-y-2">
+          {shareOptions.map((option) => (
             <button
-              onClick={copyToClipboard}
-              className="flex items-center w-full gap-3 p-2 transition-colors rounded-lg hover:bg-zinc-700"
+              key={option.name}
+              onClick={() => window.open(option.url, "_blank")}
+              className="flex items-center w-full gap-3 p-2 transition-colors rounded-lg hover:bg-zinc-800"
             >
-              <BsLink45Deg className="text-gray-400" size={18} />
-              <span className="text-sm text-gray-300">Linki Kopyala</span>
+              <option.icon className={option.color} size={18} />
+              <span className="text-sm text-gray-300">{option.name}</span>
             </button>
-          </div>
+          ))}
+          <button
+            onClick={copyToClipboard}
+            className="flex items-center w-full gap-3 p-2 transition-colors rounded-lg hover:bg-zinc-800"
+          >
+            <BsLink45Deg className="text-gray-400" size={18} />
+            <span className="text-sm text-gray-300">Linki Kopyala</span>
+          </button>
         </div>
-      )}
-    </div>
+      </PopoverContent>
+    </Popover>
   );
 });
 
@@ -377,10 +375,20 @@ export default function Manga({ params }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showFullSummary, setShowFullSummary] = useState(false);
-  const [showShare, setShowShare] = useState(false);
+
   const [bookmarkStatus, setBookmarkStatus] = useState(false);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { width } = useWindowSize();
+  
+  // Responsive items per page
+  const itemsPerPage = useMemo(() => {
+    if (width <= 640) return 6; // Mobile: 6 items
+    if (width <= 1024) return 9; // Tablet: 9 items
+    return 12; // Desktop: 12 items
+  }, [width]);
   const router = useRouter();
   const t = useTranslations("Manga");
   const pathname = usePathname();
@@ -406,6 +414,19 @@ export default function Manga({ params }) {
     if (!chapters) return [];
     return [...chapters].reverse();
   }, [chapters]);
+
+  // Pagination logic
+  const totalPages = useMemo(() => {
+    if (!chapters) return 0;
+    return Math.ceil(chapters.length / itemsPerPage);
+  }, [chapters, itemsPerPage]);
+
+  const paginatedChapters = useMemo(() => {
+    if (!reversedChapters.length) return [];
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return reversedChapters.slice(startIndex, endIndex);
+  }, [reversedChapters, currentPage, itemsPerPage]);
 
   const handleToggleSummary = useCallback(() => {
     setShowFullSummary(!showFullSummary);
@@ -482,13 +503,22 @@ export default function Manga({ params }) {
     }
   }, [manga, isBookmarked]);
 
+  // Reset current page when itemsPerPage changes
   useEffect(() => {
-    const handleClickOutside = () => setShowShare(false);
-    if (showShare) {
-      document.addEventListener("click", handleClickOutside);
-      return () => document.removeEventListener("click", handleClickOutside);
+    setCurrentPage(1);
+  }, [itemsPerPage]);
+
+  // Scroll to chapters section when page changes
+  useEffect(() => {
+    if (currentPage > 1) {
+      const chaptersSection = document.querySelector('#chapters-section');
+      if (chaptersSection) {
+        chaptersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
-  }, [showShare]);
+  }, [currentPage]);
+
+
 
   useEffect(() => {
     let isMounted = true;
@@ -595,14 +625,14 @@ export default function Manga({ params }) {
 
           {/* Manga Information */}
           <div className="space-y-6 lg:col-span-3">
-            <div className="p-8 border shadow-2xl bg-zinc-900/80 backdrop-blur-md rounded-2xl border-zinc-800">
+            <div className="p-4 md:p-6 lg:p-8 border shadow-2xl bg-zinc-900/80 backdrop-blur-md rounded-2xl border-zinc-800">
               {/* Title and Actions */}
-              <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-start sm:justify-between">
-                <h1 className="text-4xl font-bold text-transparent text-white lg:text-6xl bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text">
+              <div className="flex flex-col gap-3 mb-4 md:mb-6 sm:flex-row sm:items-start sm:justify-between">
+                <h1 className="text-2xl md:text-4xl lg:text-6xl font-bold text-transparent text-white bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text">
                   {manga.name}
                 </h1>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3">
                   <ShareButtons manga={manga} pathname={pathname} />
 
                   {/* Admin Buttons */}
@@ -664,17 +694,17 @@ export default function Manga({ params }) {
               {/* Rating Section */}
               {/* <RatingSystem mangaId={manga._id} mangaName={manga.name} /> */}
 
-              <Divider className="my-6 bg-zinc-700" />
+              <Divider className="my-4 md:my-6 bg-zinc-700" />
 
               {/* Metadata */}
-              <div className="flex flex-col gap-2 space-y-4">
+              <div className="flex flex-col gap-1 space-y-3 md:space-y-4">
                 {manga.author && (
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
+                    <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                       {t("author")}:
                     </dt>
                     <dd
-                      className="text-lg font-medium text-purple-400 transition-colors duration-200 cursor-pointer hover:text-purple-300"
+                      className="text-sm md:text-base lg:text-lg font-medium text-purple-400 transition-colors duration-200 cursor-pointer hover:text-purple-300"
                       onClick={handleAuthorClick}
                     >
                       {manga.author}
@@ -683,12 +713,12 @@ export default function Manga({ params }) {
                 )}
 
                 {manga.artist && (
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
+                    <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                       {t("artist")}:
                     </dt>
                     <dd
-                      className="text-lg font-medium text-purple-400 transition-colors duration-200 cursor-pointer hover:text-purple-300"
+                      className="text-sm md:text-base lg:text-lg font-medium text-purple-400 transition-colors duration-200 cursor-pointer hover:text-purple-300"
                       onClick={handleArtistClick}
                     >
                       {manga.artist}
@@ -696,17 +726,18 @@ export default function Manga({ params }) {
                   </div>
                 )}
 
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                  <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-start">
+                  <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                     {t("categories")}:
                   </dt>
-                  <dd className="flex flex-wrap gap-2">
+                  <dd className="flex flex-wrap gap-1.5 md:gap-2">
                     {genres.map((genre) => (
                       <Chip
                         key={genre._id}
-                        className="transition-transform duration-200 cursor-pointer hover:scale-105"
+                        className="transition-transform duration-200 cursor-pointer md:hover:scale-105"
                         color="secondary"
                         variant="flat"
+                        size="sm"
                         onClick={() => handleGenreClick(genre._id)}
                       >
                         {genre.name}
@@ -716,8 +747,8 @@ export default function Manga({ params }) {
                 </div>
 
                 {manga.status && (
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
+                    <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                       Durum:
                     </dt>
                     <dd>
@@ -750,20 +781,20 @@ export default function Manga({ params }) {
                 )}
 
                 {manga.releaseYear && (
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
+                    <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                       Çıkış Yılı:
                     </dt>
-                    <dd className="text-lg font-medium text-gray-300">
+                    <dd className="text-sm md:text-base lg:text-lg font-medium text-gray-300">
                       {manga.releaseYear}
                     </dd>
                   </div>
                 )}
 
                 {manga.isAdult && (
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
-                      İçerik
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
+                    <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
+                      İçerik:
                     </dt>
                     <dd>
                       <Chip color="danger" variant="flat" size="sm">
@@ -774,13 +805,13 @@ export default function Manga({ params }) {
                 )}
 
                 {manga.otherNames && manga.otherNames.length > 0 && (
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                    <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-start">
+                    <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                       Diğer İsimler:
                     </dt>
-                    <dd className="space-y-1">
+                    <dd className="space-y-0.5">
                       {manga.otherNames.map((name, index) => (
-                        <div key={index} className="text-lg text-gray-300">
+                        <div key={index} className="text-sm md:text-base lg:text-lg text-gray-300">
                           {name}
                         </div>
                       ))}
@@ -788,17 +819,17 @@ export default function Manga({ params }) {
                   </div>
                 )}
 
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <dt className="text-lg font-semibold text-gray-300 sm:min-w-36 sm:flex-shrink-0">
+                <div className="flex flex-col gap-1 sm:flex-row">
+                  <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                     {t("summary")}:
                   </dt>
                   <dd
-                    className="text-gray-300 text-lg leading-relaxed cursor-pointer transition-all duration-300"
+                    className="text-gray-300 text-sm md:text-base lg:text-lg leading-relaxed cursor-pointer transition-all duration-300"
                     onClick={handleToggleSummary}
                   >
-                    {manga.summary && manga.summary.length > 200 ? (
+                    {manga.summary && manga.summary.length > 150 ? (
                       <>
-                        {showFullSummary ? manga.summary : `${manga.summary.substring(0, 200)}...`}
+                        {showFullSummary ? manga.summary : `${manga.summary.substring(0, 150)}...`}
                         <span className="ml-2 text-purple-400 hover:text-purple-300">
                           {showFullSummary ? "Daha az göster" : "Devamını oku..."}
                         </span>
@@ -810,7 +841,7 @@ export default function Manga({ params }) {
                 </div>
               </div>
 
-              <Divider className="my-6 bg-zinc-700" />
+              <Divider className="my-4 md:my-6 bg-zinc-700" />
 
               {/* Reading Progress */}
               <ReadingProgress
@@ -819,7 +850,7 @@ export default function Manga({ params }) {
                 readedChapters={readedChapters}
               />
 
-              <Divider className="my-6 bg-zinc-700" />
+              <Divider className="my-4 md:my-6 bg-zinc-700" />
 
               {/* Action Buttons */}
               <div className="space-y-4">
@@ -849,7 +880,7 @@ export default function Manga({ params }) {
         </div>
 
         {/* Chapters Section */}
-        <div className="my-12">
+        <div id="chapters-section" className="my-12">
           <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="flex items-center gap-3 text-2xl font-bold text-white sm:text-3xl">
               <span className="text-transparent bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text">
@@ -881,16 +912,36 @@ export default function Manga({ params }) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-              {reversedChapters.map((chapter, index) => (
-                <MemoizedChapterCard
-                  key={chapter._id}
-                  readedChapters={readedChapters}
-                  chapter={chapter}
-                  mangaStatus={manga?.status}
-                  isLastChapter={index === 0} // First item in reversed array is the latest chapter
-                />
-              ))}
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+                {paginatedChapters.map((chapter, index) => {
+                  const originalIndex = reversedChapters.findIndex(ch => ch._id === chapter._id);
+                  return (
+                    <MemoizedChapterCard
+                      key={chapter._id}
+                      readedChapters={readedChapters}
+                      chapter={chapter}
+                      mangaStatus={manga?.status}
+                      isLastChapter={originalIndex === 0} // First item in reversed array is the latest chapter
+                    />
+                  );
+                })}
+              </div>
+              
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center px-6 py-4 md:justify-end">
+                  <Pagination
+                    isCompact
+                    showControls
+                    showShadow
+                    color="secondary"
+                    page={currentPage}
+                    total={totalPages}
+                    onChange={setCurrentPage}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
