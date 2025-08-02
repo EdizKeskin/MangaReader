@@ -3,7 +3,26 @@ const router = express.Router();
 const Manga = require("../models/Manga");
 const Chapter = require("../models/Chapter");
 const slugify = require("slugify");
-const { deleteFromR2, parseFileKeyFromURL } = require("../utils/r2-client");
+const { deleteFromR2, parseFileKeyFromURL, deleteMultipleFromR2 } = require("../utils/r2-client");
+
+function extractIdAndTextFromUrl(url) {
+  // Parse the file key from R2 URL
+  const fileKey = parseFileKeyFromURL(url);
+  const parts = fileKey.split("/");
+
+  let id = null;
+  let text = null;
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i] === "chapters" && i + 1 < parts.length) {
+      id = parts[i + 1];
+      i++;
+    } else if (parts[i].endsWith(".zip")) {
+      text = parts[i];
+    }
+  }
+
+  return { id, text };
+}
 
 router.get("/list", async (req, res) => {
   try {
@@ -364,9 +383,28 @@ router.delete("/:id", async (req, res) => {
       return res.status(404).json({ message: "Manga bulunamadı." });
     }
 
+    // Find all chapters for this manga to delete their images from R2
+    const chaptersToDelete = await Chapter.find({ manga: mangaId });
+    
+    // Delete R2 images for each chapter
+    for (const chapter of chaptersToDelete) {
+      if (chapter.content && chapter.content.length > 0) {
+        try {
+          const result = extractIdAndTextFromUrl(chapter.content[0]);
+          const folderPath = `chapters/${result.id}/${result.text}`;
+          
+          await deleteMultipleFromR2(folderPath);
+          console.log(`Klasör başarıyla silindi: ${folderPath}`);
+        } catch (error) {
+          console.error(`Chapter images silinirken hata oluştu: ${error}`);
+        }
+      }
+    }
+
+    // Delete all chapters
     await Chapter.deleteMany({ manga: mangaId });
 
-    res.json({ message: "Manga başarıyla silindi." });
+    res.json({ message: "Manga ve tüm bölümleri başarıyla silindi." });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

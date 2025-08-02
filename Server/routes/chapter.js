@@ -270,15 +270,17 @@ router.delete("/:id", async (req, res) => {
 
     const oldChapter = await Chapter.findById(chapterId);
     if (oldChapter) {
-      const oldImages = oldChapter.content;
-      const result = extractIdAndTextFromUrl(oldImages[0]);
-      const folderPath = `chapters/${result.id}/${result.text}`;
-
-      try {
-        await deleteMultipleFromR2(folderPath);
-        console.log(`Klasör başarıyla silindi: ${folderPath}`);
-      } catch (error) {
-        console.error(`Klasör silinirken hata oluştu: ${error}`);
+      // Delete R2 images if chapter has content
+      if (oldChapter.content && oldChapter.content.length > 0) {
+        try {
+          const result = extractIdAndTextFromUrl(oldChapter.content[0]);
+          const folderPath = `chapters/${result.id}/${result.text}`;
+          
+          await deleteMultipleFromR2(folderPath);
+          console.log(`Klasör başarıyla silindi: ${folderPath}`);
+        } catch (error) {
+          console.error(`Klasör silinirken hata oluştu: ${error}`);
+        }
       }
 
       await Chapter.findByIdAndRemove(chapterId);

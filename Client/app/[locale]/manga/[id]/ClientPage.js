@@ -731,18 +731,20 @@ export default function Manga({ params }) {
                     {t("categories")}:
                   </dt>
                   <dd className="flex flex-wrap gap-1.5 md:gap-2">
-                    {genres.map((genre) => (
-                      <Chip
-                        key={genre._id}
-                        className="transition-transform duration-200 cursor-pointer md:hover:scale-105"
-                        color="secondary"
-                        variant="flat"
-                        size="sm"
-                        onClick={() => handleGenreClick(genre._id)}
-                      >
-                        {genre.name}
-                      </Chip>
-                    ))}
+                    {genres
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((genre) => (
+                        <Chip
+                          key={genre._id}
+                          className="transition-transform duration-200 cursor-pointer md:hover:scale-105"
+                          color="secondary"
+                          variant="flat"
+                          size="sm"
+                          onClick={() => handleGenreClick(genre._id)}
+                        >
+                          {genre.name}
+                        </Chip>
+                      ))}
                   </dd>
                 </div>
 

@@ -298,6 +298,9 @@ export default function MangaRead({ params }) {
   const navigateToChapter = useCallback(
     (direction) => {
       if (!navigationState) return;
+      setLoading(true);
+      // Set loading state for images when navigating
+      setImageLoading(true);
 
       const targetChapter =
         direction === "previous"
@@ -329,6 +332,10 @@ export default function MangaRead({ params }) {
           goToPreviousChapter();
         } else {
           const newPage = Math.max(0, page - 1);
+          // Set loading state for images when navigating to a new page
+          if (readStyleName === "Paged") {
+            setImageLoading(true);
+          }
           // Batch state updates for better performance
           startTransition(() => {
             setPage(newPage);
@@ -340,6 +347,10 @@ export default function MangaRead({ params }) {
           goToNextChapter();
         } else {
           const newPage = Math.min(navigationState.totalPages - 1, page + 1);
+          // Set loading state for images when navigating to a new page
+          if (readStyleName === "Paged") {
+            setImageLoading(true);
+          }
           // Batch state updates for better performance
           startTransition(() => {
             setPage(newPage);
@@ -348,7 +359,7 @@ export default function MangaRead({ params }) {
         }
       }
     },
-    [navigationState, page, goToPreviousChapter, goToNextChapter]
+    [navigationState, page, goToPreviousChapter, goToNextChapter, readStyleName]
   );
 
   const goToPreviousPage = useCallback(() => {
@@ -358,6 +369,11 @@ export default function MangaRead({ params }) {
   const goToNextPage = useCallback(() => {
     navigateToPage("next");
   }, [navigateToPage]);
+
+  // Function to navigate back to manga main page
+  const goToMangaPage = useCallback(() => {
+    router.push(`/manga/${slug}`);
+  }, [router, slug]);
 
   const styles = ["Paged", "List"];
   const changeReadStyle = useCallback(
@@ -615,18 +631,30 @@ export default function MangaRead({ params }) {
 
                 {/* Next Button */}
                 <Button
-                  isDisabled={buttonStates?.isNextDisabled}
+                  isDisabled={false}
                   onClick={
-                    readStyleName === "List" ? goToNextChapter : goToNextPage
+                    buttonStates?.isNextDisabled
+                      ? goToMangaPage
+                      : readStyleName === "List"
+                      ? goToNextChapter
+                      : goToNextPage
                   }
-                  isIconOnly
+                  isIconOnly={!buttonStates?.isNextDisabled}
                   size={buttonStates?.buttonSize}
                   className="z-60 min-w-unit-10 sm:min-w-unit-12"
                   aria-label={
-                    readStyleName === "List" ? "Next Chapter" : "Next Page"
+                    buttonStates?.isNextDisabled
+                      ? "Go to Manga"
+                      : readStyleName === "List"
+                      ? "Next Chapter"
+                      : "Next Page"
                   }
                 >
-                  <AiOutlineDoubleRight size={buttonStates?.iconSize} />
+                  {buttonStates?.isNextDisabled ? (
+                    <span className="text-xs sm:text-sm">Seriye Dön</span>
+                  ) : (
+                    <AiOutlineDoubleRight size={buttonStates?.iconSize} />
+                  )}
                 </Button>
               </>
             ) : (
@@ -644,14 +672,20 @@ export default function MangaRead({ params }) {
                 </Button>
 
                 <Button
-                  isDisabled={buttonStates?.isNextDisabled}
-                  onClick={goToNextChapter}
+                  isDisabled={false}
+                  onClick={buttonStates?.isNextDisabled ? goToMangaPage : goToNextChapter}
                   size={buttonStates?.buttonSize}
                   className="flex items-center gap-2"
-                  aria-label="Next Chapter"
+                  aria-label={buttonStates?.isNextDisabled ? "Go to Manga" : "Next Chapter"}
                 >
-                  {!isMobile && <span>Next</span>}
-                  <AiOutlineDoubleRight size={buttonStates?.iconSize} />
+                  {buttonStates?.isNextDisabled ? (
+                    <span>Seriye Dön</span>
+                  ) : (
+                    <>
+                      {!isMobile && <span>Next</span>}
+                      <AiOutlineDoubleRight size={buttonStates?.iconSize} />
+                    </>
+                  )}
                 </Button>
               </>
             )}
@@ -887,18 +921,30 @@ export default function MangaRead({ params }) {
 
                 {/* Next Button */}
                 <Button
-                  isDisabled={buttonStates?.isNextDisabled}
+                  isDisabled={false}
                   onClick={
-                    readStyleName === "List" ? goToNextChapter : goToNextPage
+                    buttonStates?.isNextDisabled
+                      ? goToMangaPage
+                      : readStyleName === "List"
+                      ? goToNextChapter
+                      : goToNextPage
                   }
-                  isIconOnly
+                  isIconOnly={!buttonStates?.isNextDisabled}
                   size={buttonStates?.buttonSize}
                   className="z-60 min-w-unit-10 sm:min-w-unit-12"
                   aria-label={
-                    readStyleName === "List" ? "Next Chapter" : "Next Page"
+                    buttonStates?.isNextDisabled
+                      ? "Go to Manga"
+                      : readStyleName === "List"
+                      ? "Next Chapter"
+                      : "Next Page"
                   }
                 >
-                  <AiOutlineDoubleRight size={buttonStates?.iconSize} />
+                  {buttonStates?.isNextDisabled ? (
+                    <span className="text-xs sm:text-sm">Seriye Dön</span>
+                  ) : (
+                    <AiOutlineDoubleRight size={buttonStates?.iconSize} />
+                  )}
                 </Button>
               </>
             ) : (
@@ -916,14 +962,20 @@ export default function MangaRead({ params }) {
                 </Button>
 
                 <Button
-                  isDisabled={buttonStates?.isNextDisabled}
-                  onClick={goToNextChapter}
+                  isDisabled={false}
+                  onClick={buttonStates?.isNextDisabled ? goToMangaPage : goToNextChapter}
                   size={buttonStates?.buttonSize}
                   className="flex items-center gap-2"
-                  aria-label="Next Chapter"
+                  aria-label={buttonStates?.isNextDisabled ? "Go to Manga" : "Next Chapter"}
                 >
-                  {!isMobile && <span>Next</span>}
-                  <AiOutlineDoubleRight size={buttonStates?.iconSize} />
+                  {buttonStates?.isNextDisabled ? (
+                    <span>Seriye Dön</span>
+                  ) : (
+                    <>
+                      {!isMobile && <span>Next</span>}
+                      <AiOutlineDoubleRight size={buttonStates?.iconSize} />
+                    </>
+                  )}
                 </Button>
               </>
             )}
