@@ -172,7 +172,7 @@ export default async function RootLayout({ children, params: { locale } }) {
         strategy="afterInteractive"
       />
       <body>
-        <GTM gtmId={gtmId} />
+        <GTM gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ClerkProvider
             appearance={{
