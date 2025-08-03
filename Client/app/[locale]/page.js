@@ -20,7 +20,9 @@ export default async function Index() {
       <Hero />
 
       <div className="pb-5 mt-20 ">
-        <TopContent data={{ mangaList1: randomChapters1, mangaList2: randomChapters2 }} />
+        <TopContent
+          data={{ mangaList1: randomChapters1, mangaList2: randomChapters2 }}
+        />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-8 ">
           <MangaListArea />
           <div className="hidden my-6 md:block">

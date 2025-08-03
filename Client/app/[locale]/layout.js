@@ -12,6 +12,7 @@ import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import { Inter } from "next/font/google";
+import GTM from "@/components/GTM";
 
 const inter = Inter({ subsets: ["latin"], weight: "400" });
 export const metadata = {
@@ -167,10 +168,11 @@ export default async function RootLayout({ children, params: { locale } }) {
     >
       <Script
         src="https://static.cloudflareinsights.com/beacon.min.js"
-        data-cf-beacon='{"token": "cf8527de489342f2862a8ede5a55769a"}'
+        data-cf-beacon={`{"token": "${process.env.NEXT_PUBLIC_CLOUDFLARE_ANALYTICS_ID}"}`}
         strategy="afterInteractive"
       />
       <body>
+        <GTM gtmId={gtmId} />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ClerkProvider
             appearance={{
