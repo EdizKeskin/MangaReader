@@ -13,6 +13,7 @@ import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import { Inter } from "next/font/google";
 import GTM from "@/components/GTM";
+import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"], weight: "400" });
 export const metadata = {
@@ -172,7 +173,9 @@ export default async function RootLayout({ children, params: { locale } }) {
         strategy="afterInteractive"
       />
       <body>
-        <GTM gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
+        <Suspense>
+          <GTM />
+        </Suspense>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ClerkProvider
             appearance={{
