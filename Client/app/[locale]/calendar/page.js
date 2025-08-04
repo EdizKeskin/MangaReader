@@ -73,6 +73,9 @@ const Calendar = () => {
           <h2 className="text-3xl font-bold text-white">
             Yakında Çıkacak Bölümler
           </h2>
+          <p className="mt-2 text-sm text-zinc-400">
+            VIP üyelik ile tüm bölümleri erken erişimle okuyabilirsiniz.
+          </p>
         </div>
 
         {Object.keys(groupedChapters).length > 0 ? (
