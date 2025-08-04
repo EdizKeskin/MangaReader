@@ -12,7 +12,7 @@ import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import { Inter } from "next/font/google";
-import GTM from "@/components/GTM";
+import { GTM } from "@/components/GTM";
 
 const inter = Inter({ subsets: ["latin"], weight: "400" });
 export const metadata = {
