@@ -13,7 +13,6 @@ import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import { Inter } from "next/font/google";
 import GTM from "@/components/GTM";
-import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"], weight: "400" });
 export const metadata = {

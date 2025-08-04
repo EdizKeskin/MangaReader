@@ -1,6 +1,6 @@
 "use client";
 
-export function GTMNoScript() {
+export function GTM() {
   return (
     <div
       dangerouslySetInnerHTML={{
