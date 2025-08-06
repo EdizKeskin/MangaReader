@@ -61,12 +61,24 @@ export default function ChapterForm({ update, chapterId, username, email }) {
   const [batchProgress, setBatchProgress] = useState(0);
   const [batchUploading, setBatchUploading] = useState(false);
   const [batchPublishDate, setBatchPublishDate] = useState(new Date());
+  
+  // Time selection states
+  const [publishTime, setPublishTime] = useState("12:00");
+  const [batchPublishTime, setBatchPublishTime] = useState("12:00");
 
   const searchParams = useSearchParams();
   const search = searchParams.get("mangaId");
   const t = useTranslations("ChapterForm");
   const toggleExpanded = () => {
     setExpanded(!expanded);
+  };
+
+  // Helper function to combine date and time
+  const combineDateTime = (date, time) => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const combinedDate = new Date(date);
+    combinedDate.setHours(hours, minutes, 0, 0);
+    return combinedDate;
   };
 
   useEffect(() => {
@@ -103,6 +115,14 @@ export default function ChapterForm({ update, chapterId, username, email }) {
           setIsActive(chapter.chapter.isActive ?? true);
           setIsAdult(chapter.chapter.isAdult ?? false);
           setChapterType(chapter.chapter.chapterType ?? "manga");
+          
+          // Set time from existing publishDate if available
+          if (chapter.chapter.publishDate) {
+            const publishDate = new Date(chapter.chapter.publishDate);
+            const hours = publishDate.getHours().toString().padStart(2, '0');
+            const minutes = publishDate.getMinutes().toString().padStart(2, '0');
+            setPublishTime(`${hours}:${minutes}`);
+          }
 
           const foundManga = mangaList.find(
             (manga) => manga._id === chapter.chapter.manga
@@ -301,6 +321,9 @@ export default function ChapterForm({ update, chapterId, username, email }) {
       toast.error("Lütfen bir manga seçin");
       return;
     }
+    
+    // Combine date and time for batch upload
+    const finalPublishDate = combineDateTime(publishDate, batchPublishTime);
 
     if (batchFiles.length === 0) {
       toast.error("Yüklenecek dosya bulunamadı");
@@ -343,7 +366,7 @@ export default function ChapterForm({ update, chapterId, username, email }) {
             novelContent: "",
             uploader: username || email,
             mangaType,
-            publishDate: publishDate || new Date(),
+            publishDate: finalPublishDate,
             imageUrls: imageUrls,
             // Yeni alanlar
             isActive,
@@ -385,6 +408,9 @@ export default function ChapterForm({ update, chapterId, username, email }) {
 
   const handleSubmit = async (values, { resetForm, setFieldValue }) => {
     const { manga, chapterNumber, title, publishDate } = values;
+    
+    // Combine date and time
+    const finalPublishDate = combineDateTime(publishDate, publishTime);
 
     let finalImageUrls = imageUrls; // Use existing URLs if available
 
@@ -423,7 +449,7 @@ export default function ChapterForm({ update, chapterId, username, email }) {
       novelContent,
       uploader: username || email,
       mangaType,
-      publishDate,
+      publishDate: finalPublishDate,
       imageUrls: mangaType !== "novel" ? finalImageUrls : [],
       // Yeni alanlar
       isActive,
@@ -716,49 +742,65 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                         </div>
                       </div>
 
-                      {/* Batch Publish Date */}
+                      {/* Batch Publish Date and Time */}
                       <div className="flex flex-col gap-4">
                         <label className="text-lg font-semibold">
                           {t("publishDate")}
                         </label>
-                        <div className="">
-                          <DayPicker
-                            mode="single"
-                            selected={batchPublishDate}
-                            onSelect={(date) => {
-                              if (date) {
-                                setBatchPublishDate(date);
-                              }
-                            }}
-                            showOutsideDays
-                            className="rdp"
-                            classNames={{
-                              months: "rdp-months text-white",
-                              month: "rdp-month",
-                              caption: "rdp-caption text-white font-medium",
-                              caption_label: "rdp-caption_label text-lg",
-                              nav: "rdp-nav",
-                              nav_button:
-                                "rdp-nav_button text-white hover:bg-zinc-700 rounded p-2",
-                              nav_button_previous: "rdp-nav_button_previous",
-                              nav_button_next: "rdp-nav_button_next",
-                              table: "rdp-table",
-                              head_row: "rdp-head_row",
-                              head_cell:
-                                "rdp-head_cell text-gray-400 font-medium p-2",
-                              row: "rdp-row",
-                              cell: "rdp-cell",
-                              day: "rdp-day text-white hover:bg-zinc-700 rounded p-2 cursor-pointer",
-                              day_range_end: "rdp-day_range_end",
-                              day_selected:
-                                "rdp-day_selected bg-blue-600 text-white",
-                              day_today: "rdp-day_today bg-zinc-700 font-bold",
-                              day_outside: "rdp-day_outside text-gray-500",
-                              day_disabled:
-                                "rdp-day_disabled text-gray-600 cursor-not-allowed",
-                              day_hidden: "rdp-day_hidden invisible",
-                            }}
-                          />
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                          <div className="">
+                            <DayPicker
+                              mode="single"
+                              selected={batchPublishDate}
+                              onSelect={(date) => {
+                                if (date) {
+                                  setBatchPublishDate(date);
+                                }
+                              }}
+                              showOutsideDays
+                              className="rdp"
+                              classNames={{
+                                months: "rdp-months text-white",
+                                month: "rdp-month",
+                                caption: "rdp-caption text-white font-medium",
+                                caption_label: "rdp-caption_label text-lg",
+                                nav: "rdp-nav",
+                                nav_button:
+                                  "rdp-nav_button text-white hover:bg-zinc-700 rounded p-2",
+                                nav_button_previous: "rdp-nav_button_previous",
+                                nav_button_next: "rdp-nav_button_next",
+                                table: "rdp-table",
+                                head_row: "rdp-head_row",
+                                head_cell:
+                                  "rdp-head_cell text-gray-400 font-medium p-2",
+                                row: "rdp-row",
+                                cell: "rdp-cell",
+                                day: "rdp-day text-white hover:bg-zinc-700 rounded p-2 cursor-pointer",
+                                day_range_end: "rdp-day_range_end",
+                                day_selected:
+                                  "rdp-day_selected bg-blue-600 text-white",
+                                day_today: "rdp-day_today bg-zinc-700 font-bold",
+                                day_outside: "rdp-day_outside text-gray-500",
+                                day_disabled:
+                                  "rdp-day_disabled text-gray-600 cursor-not-allowed",
+                                day_hidden: "rdp-day_hidden invisible",
+                              }}
+                            />
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-300">
+                              Yayın Saati
+                            </label>
+                            <input
+                              type="time"
+                              value={batchPublishTime}
+                              onChange={(e) => setBatchPublishTime(e.target.value)}
+                              className="w-full px-3 py-2 bg-zinc-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            <p className="text-xs text-gray-500">
+                              Bölümün yayınlanacağı saati seçin
+                            </p>
+                          </div>
                         </div>
                       </div>
 
@@ -1041,44 +1083,60 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                       <label htmlFor="publishDate" className="text-lg">
                         {t("publishDate")}
                       </label>
-                      <div className="p-4 border border-gray-600 rounded-lg bg-zinc-800 max-w-fit">
-                        <DayPicker
-                          mode="single"
-                          selected={values.publishDate}
-                          onSelect={(date) => {
-                            if (date) {
-                              setFieldValue("publishDate", date);
-                            }
-                          }}
-                          showOutsideDays
-                          className="rdp"
-                          classNames={{
-                            months: "rdp-months text-white",
-                            month: "rdp-month",
-                            caption: "rdp-caption text-white font-medium",
-                            caption_label: "rdp-caption_label text-lg",
-                            nav: "rdp-nav",
-                            nav_button:
-                              "rdp-nav_button text-white hover:bg-zinc-700 rounded p-2",
-                            nav_button_previous: "rdp-nav_button_previous",
-                            nav_button_next: "rdp-nav_button_next",
-                            table: "rdp-table",
-                            head_row: "rdp-head_row",
-                            head_cell:
-                              "rdp-head_cell text-gray-400 font-medium p-2",
-                            row: "rdp-row",
-                            cell: "rdp-cell",
-                            day: "rdp-day text-white hover:bg-zinc-700 rounded p-2 cursor-pointer",
-                            day_range_end: "rdp-day_range_end",
-                            day_selected:
-                              "rdp-day_selected bg-blue-600 text-white",
-                            day_today: "rdp-day_today bg-zinc-700 font-bold",
-                            day_outside: "rdp-day_outside text-gray-500",
-                            day_disabled:
-                              "rdp-day_disabled text-gray-600 cursor-not-allowed",
-                            day_hidden: "rdp-day_hidden invisible",
-                          }}
-                        />
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="p-4 border border-gray-600 rounded-lg bg-zinc-800 max-w-fit">
+                          <DayPicker
+                            mode="single"
+                            selected={values.publishDate}
+                            onSelect={(date) => {
+                              if (date) {
+                                setFieldValue("publishDate", date);
+                              }
+                            }}
+                            showOutsideDays
+                            className="rdp"
+                            classNames={{
+                              months: "rdp-months text-white",
+                              month: "rdp-month",
+                              caption: "rdp-caption text-white font-medium",
+                              caption_label: "rdp-caption_label text-lg",
+                              nav: "rdp-nav",
+                              nav_button:
+                                "rdp-nav_button text-white hover:bg-zinc-700 rounded p-2",
+                              nav_button_previous: "rdp-nav_button_previous",
+                              nav_button_next: "rdp-nav_button_next",
+                              table: "rdp-table",
+                              head_row: "rdp-head_row",
+                              head_cell:
+                                "rdp-head_cell text-gray-400 font-medium p-2",
+                              row: "rdp-row",
+                              cell: "rdp-cell",
+                              day: "rdp-day text-white hover:bg-zinc-700 rounded p-2 cursor-pointer",
+                              day_range_end: "rdp-day_range_end",
+                              day_selected:
+                                "rdp-day_selected bg-blue-600 text-white",
+                              day_today: "rdp-day_today bg-zinc-700 font-bold",
+                              day_outside: "rdp-day_outside text-gray-500",
+                              day_disabled:
+                                "rdp-day_disabled text-gray-600 cursor-not-allowed",
+                              day_hidden: "rdp-day_hidden invisible",
+                            }}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <label className="text-sm font-medium text-gray-300">
+                            Yayın Saati
+                          </label>
+                          <input
+                            type="time"
+                            value={publishTime}
+                            onChange={(e) => setPublishTime(e.target.value)}
+                            className="w-full px-3 py-2 bg-zinc-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          <p className="text-xs text-gray-500">
+                            Bölümün yayınlanacağı saati seçin
+                          </p>
+                        </div>
                       </div>
                     </div>
 

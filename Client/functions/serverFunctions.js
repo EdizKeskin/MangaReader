@@ -73,3 +73,30 @@ export const deleteChapter = async (id) => {
     throw error;
   }
 };
+
+export const deleteSubscriber = async (userId) => {
+  "use server";
+  try {
+    const response = await axios.delete(
+      process.env.NEXT_PUBLIC_MONGO_DB_URL + "subscriber/delete/" + userId
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const patchSubscriber = async (userId, days) => {
+  "use server";
+  try {
+    const response = await axios.patch(
+      process.env.NEXT_PUBLIC_MONGO_DB_URL + "subscriber/update",
+      { userId, day: days }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};

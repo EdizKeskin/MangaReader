@@ -5,10 +5,11 @@ import {
   fetchGenres,
   fetchMangaCount,
   getUserCount,
+  getSubscriberCount,
 } from "@/functions";
 import { BiImages } from "react-icons/bi";
 import { MdOutlineAnnouncement } from "react-icons/md";
-import { TbBooks, TbCategory2, TbUsers } from "react-icons/tb";
+import { TbBooks, TbCategory2, TbUsers, TbUserCheck } from "react-icons/tb";
 import dynamic from "next/dynamic";
 
 import AdminControls from "@/components/AdminControls";
@@ -23,6 +24,7 @@ export default async function Admin() {
   const userCount = await getUserCount();
   const chapterCount = await fetchChapterCount();
   const announcements = await fetchAnnouncements();
+  const subscriberCount = await getSubscriberCount();
   const stats = [
     {
       title: "manga",
@@ -54,6 +56,12 @@ export default async function Admin() {
       stat: announcements.length,
       icon: <MdOutlineAnnouncement size={"3em"} />,
       href: "/admin/announcements",
+    },
+    {
+      title: "subscribers",
+      stat: subscriberCount,
+      icon: <TbUserCheck size={"3em"} />,
+      href: "/admin/subscribers",
     },
   ];
 

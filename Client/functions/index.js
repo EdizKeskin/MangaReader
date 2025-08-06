@@ -535,6 +535,18 @@ export const getSubscriberList = async () => {
   }
 };
 
+export const getSubscriberCount = async () => {
+  try {
+    const response = await axios.get(
+      process.env.NEXT_PUBLIC_MONGO_DB_URL + "subscriber/"
+    );
+    return response.data.length;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export const wakeUpAdmin = async () => {
   try {
     const response = await axios.get(
