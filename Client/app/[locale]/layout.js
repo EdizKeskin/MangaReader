@@ -1,3 +1,4 @@
+export const runtime = "edge";
 import Navbar from "@/components/Navbar";
 import { dark } from "@clerk/themes";
 import "./globals.css";
@@ -9,12 +10,11 @@ import { NextIntlClientProvider } from "next-intl";
 import { enUS, trTR } from "@clerk/localizations";
 import { notFound } from "next/navigation";
 import { Toaster } from "react-hot-toast";
-import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
-import { Inter } from "next/font/google";
+// import { Inter } from "next/font/google";
 import { GTM } from "@/components/GTM";
 
-const inter = Inter({ subsets: ["latin"], weight: "400" });
+// const inter = Inter({ subsets: ["latin"], weight: "400" });
 export const metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_BASE_URL || "https://monomanga.com.tr/"
@@ -164,7 +164,7 @@ export default async function RootLayout({ children, params: { locale } }) {
   return (
     <html
       lang={locale}
-      className={`dark dark-theme bg-grid-white/[0.02] ${inter.className}`}
+      className={`dark dark-theme bg-grid-white/[0.02] font-inter`}
     >
       <Script
         src="https://static.cloudflareinsights.com/beacon.min.js"
@@ -172,30 +172,28 @@ export default async function RootLayout({ children, params: { locale } }) {
         strategy="afterInteractive"
       />
       <head>
-        <head>
-          {/* Google Analytics */}
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GTAG_ID}`}
-            strategy="afterInteractive"
-          />
-          <Script id="google-analytics" strategy="afterInteractive">
-            {`
+        {/* Google Analytics */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GTAG_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
             gtag('config', '${process.env.NEXT_PUBLIC_GTAG_ID}');
           `}
-          </Script>
-          <Script id="gtm-script" strategy="afterInteractive">
-            {`
+        </Script>
+        <Script id="gtm-script" strategy="afterInteractive">
+          {`
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
               new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
               j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
             })(window,document,'script','dataLayer','${process.env.NEXT_PUBLIC_GTM_ID}');
           `}
-          </Script>
-        </head>
+        </Script>
       </head>
       <body>
         <GTM />
@@ -220,7 +218,6 @@ export default async function RootLayout({ children, params: { locale } }) {
               />
             </Providers>
             <SpeedInsights />
-            <Analytics />
           </ClerkProvider>
         </NextIntlClientProvider>
       </body>

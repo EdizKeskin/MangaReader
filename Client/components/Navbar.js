@@ -45,7 +45,8 @@ export default function Navbar() {
       { name: t("bookmarks"), href: "/bookmarks" },
       { name: t("announcements"), href: "/announcements" },
       { name: t("faq"), href: "/faq" },
-      { name: t("mobile"), href: "/mobile" },
+      // { name: t("mobile"), href: "/mobile" },
+      { name: t("pricing"), href: "/pricing" },
     ],
     [t]
   );

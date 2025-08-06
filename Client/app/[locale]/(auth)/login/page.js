@@ -9,6 +9,7 @@ import { useRouter } from "next13-progressbar";
 import Loading from "@/components/Loading";
 import { useTranslations } from "next-intl";
 import SignInOAuthButtons from "@/components/SignInOAuthButtons";
+import Link from "next/link";
 
 export default function Login() {
   const { isLoaded, signIn, setActive } = useSignIn();
@@ -54,7 +55,7 @@ export default function Login() {
   }
 
   return (
-    <div className="flex items-center justify-center mt-10">
+    <div className="mt-20 flex items-center justify-center mt-10 flex-col">
       <Card className="w-11/12 md:w-[400px] lg:w-[450px]">
         <Formik
           initialValues={{
@@ -163,6 +164,12 @@ export default function Login() {
           )}
         </Formik>
       </Card>
+      <div className="mt-4 text-center">
+        <span className="text-gray-500">Hesabınız yok mu? </span>
+        <Link href={`/register`} className="text-secondary underline">
+          Kayıt olun
+        </Link>
+      </div>
     </div>
   );
 }

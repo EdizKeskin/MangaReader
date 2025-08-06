@@ -11,12 +11,12 @@ export default function Pricing() {
       { title: "Discord'da efsanevi bi rol" },
       { title: "Ekstra farkı yok bizi daha fazla destekliyon :D" },
     ],
-    price: "30TL",
+    price: "YAKINDA",
     title: "Pro",
   };
   const starter = {
     specs: [{ title: "Bölümlere Erken Erişim" }, { title: "30 gün" }],
-    price: "10TL",
+    price: "YAKINDA",
     title: "Starter",
   };
   return (

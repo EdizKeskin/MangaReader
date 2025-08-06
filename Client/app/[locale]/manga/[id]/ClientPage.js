@@ -377,17 +377,17 @@ export default function Manga({ params }) {
   const [showFullSummary, setShowFullSummary] = useState(false);
 
   const [bookmarkStatus, setBookmarkStatus] = useState(false);
-  
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
 
   const { width } = useWindowSize();
-  
+
   // Responsive items per page
   const itemsPerPage = useMemo(() => {
-    if (width <= 640) return 6; // Mobile: 6 items
-    if (width <= 1024) return 9; // Tablet: 9 items
-    return 12; // Desktop: 12 items
+    if (width <= 640) return 8; // Mobile: 6 items
+    if (width <= 1024) return 12; // Tablet: 9 items
+    return 18; // Desktop: 12 items
   }, [width]);
   const router = useRouter();
   const t = useTranslations("Manga");
@@ -511,14 +511,12 @@ export default function Manga({ params }) {
   // Scroll to chapters section when page changes
   useEffect(() => {
     if (currentPage > 1) {
-      const chaptersSection = document.querySelector('#chapters-section');
+      const chaptersSection = document.querySelector("#chapters-section");
       if (chaptersSection) {
-        chaptersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        chaptersSection.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }
   }, [currentPage]);
-
-
 
   useEffect(() => {
     let isMounted = true;
@@ -625,10 +623,10 @@ export default function Manga({ params }) {
 
           {/* Manga Information */}
           <div className="space-y-6 lg:col-span-3">
-            <div className="p-4 md:p-6 lg:p-8 border shadow-2xl bg-zinc-900/80 backdrop-blur-md rounded-2xl border-zinc-800">
+            <div className="p-4 border shadow-2xl md:p-6 lg:p-8 bg-zinc-900/80 backdrop-blur-md rounded-2xl border-zinc-800">
               {/* Title and Actions */}
               <div className="flex flex-col gap-3 mb-4 md:mb-6 sm:flex-row sm:items-start sm:justify-between">
-                <h1 className="text-2xl md:text-4xl lg:text-6xl font-bold text-transparent text-white bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text">
+                <h1 className="text-2xl font-bold text-transparent text-white md:text-4xl lg:text-6xl bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text">
                   {manga.name}
                 </h1>
 
@@ -700,11 +698,11 @@ export default function Manga({ params }) {
               <div className="flex flex-col gap-1 space-y-3 md:space-y-4">
                 {manga.author && (
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
-                    <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
+                    <dt className="text-sm font-semibold text-gray-300 md:text-base lg:text-lg sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                       {t("author")}:
                     </dt>
                     <dd
-                      className="text-sm md:text-base lg:text-lg font-medium text-purple-400 transition-colors duration-200 cursor-pointer hover:text-purple-300"
+                      className="text-sm font-medium text-purple-400 transition-colors duration-200 cursor-pointer md:text-base lg:text-lg hover:text-purple-300"
                       onClick={handleAuthorClick}
                     >
                       {manga.author}
@@ -714,11 +712,11 @@ export default function Manga({ params }) {
 
                 {manga.artist && (
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
-                    <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
+                    <dt className="text-sm font-semibold text-gray-300 md:text-base lg:text-lg sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                       {t("artist")}:
                     </dt>
                     <dd
-                      className="text-sm md:text-base lg:text-lg font-medium text-purple-400 transition-colors duration-200 cursor-pointer hover:text-purple-300"
+                      className="text-sm font-medium text-purple-400 transition-colors duration-200 cursor-pointer md:text-base lg:text-lg hover:text-purple-300"
                       onClick={handleArtistClick}
                     >
                       {manga.artist}
@@ -727,7 +725,7 @@ export default function Manga({ params }) {
                 )}
 
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-start">
-                  <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
+                  <dt className="text-sm font-semibold text-gray-300 md:text-base lg:text-lg sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                     {t("categories")}:
                   </dt>
                   <dd className="flex flex-wrap gap-1.5 md:gap-2">
@@ -750,7 +748,7 @@ export default function Manga({ params }) {
 
                 {manga.status && (
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
-                    <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
+                    <dt className="text-sm font-semibold text-gray-300 md:text-base lg:text-lg sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                       Durum:
                     </dt>
                     <dd>
@@ -784,10 +782,10 @@ export default function Manga({ params }) {
 
                 {manga.releaseYear && (
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
-                    <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
+                    <dt className="text-sm font-semibold text-gray-300 md:text-base lg:text-lg sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                       Çıkış Yılı:
                     </dt>
-                    <dd className="text-sm md:text-base lg:text-lg font-medium text-gray-300">
+                    <dd className="text-sm font-medium text-gray-300 md:text-base lg:text-lg">
                       {manga.releaseYear}
                     </dd>
                   </div>
@@ -795,7 +793,7 @@ export default function Manga({ params }) {
 
                 {manga.isAdult && (
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
-                    <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
+                    <dt className="text-sm font-semibold text-gray-300 md:text-base lg:text-lg sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                       İçerik:
                     </dt>
                     <dd>
@@ -808,12 +806,15 @@ export default function Manga({ params }) {
 
                 {manga.otherNames && manga.otherNames.length > 0 && (
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-start">
-                    <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
+                    <dt className="text-sm font-semibold text-gray-300 md:text-base lg:text-lg sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                       Diğer İsimler:
                     </dt>
                     <dd className="space-y-0.5">
                       {manga.otherNames.map((name, index) => (
-                        <div key={index} className="text-sm md:text-base lg:text-lg text-gray-300">
+                        <div
+                          key={index}
+                          className="text-sm text-gray-300 md:text-base lg:text-lg"
+                        >
                           {name}
                         </div>
                       ))}
@@ -822,18 +823,22 @@ export default function Manga({ params }) {
                 )}
 
                 <div className="flex flex-col gap-1 sm:flex-row">
-                  <dt className="text-sm md:text-base lg:text-lg font-semibold text-gray-300 sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
+                  <dt className="text-sm font-semibold text-gray-300 md:text-base lg:text-lg sm:min-w-28 md:sm:min-w-32 lg:sm:min-w-36 sm:flex-shrink-0">
                     {t("summary")}:
                   </dt>
                   <dd
-                    className="text-gray-300 text-sm md:text-base lg:text-lg leading-relaxed cursor-pointer transition-all duration-300"
+                    className="text-sm leading-relaxed text-gray-300 transition-all duration-300 cursor-pointer md:text-base lg:text-lg"
                     onClick={handleToggleSummary}
                   >
                     {manga.summary && manga.summary.length > 150 ? (
                       <>
-                        {showFullSummary ? manga.summary : `${manga.summary.substring(0, 150)}...`}
+                        {showFullSummary
+                          ? manga.summary
+                          : `${manga.summary.substring(0, 150)}...`}
                         <span className="ml-2 text-purple-400 hover:text-purple-300">
-                          {showFullSummary ? "Daha az göster" : "Devamını oku..."}
+                          {showFullSummary
+                            ? "Daha az göster"
+                            : "Devamını oku..."}
                         </span>
                       </>
                     ) : (
@@ -917,7 +922,9 @@ export default function Manga({ params }) {
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                 {paginatedChapters.map((chapter, index) => {
-                  const originalIndex = reversedChapters.findIndex(ch => ch._id === chapter._id);
+                  const originalIndex = reversedChapters.findIndex(
+                    (ch) => ch._id === chapter._id
+                  );
                   return (
                     <MemoizedChapterCard
                       key={chapter._id}
@@ -929,7 +936,7 @@ export default function Manga({ params }) {
                   );
                 })}
               </div>
-              
+
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center px-6 py-4 md:justify-end">

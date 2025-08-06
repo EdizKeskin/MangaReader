@@ -8,16 +8,10 @@ import {
 } from "@/functions";
 import { BiImages } from "react-icons/bi";
 import { MdOutlineAnnouncement } from "react-icons/md";
-import {
-  TbBooks,
-  TbCategory2,
-  TbUsers,
-  TbPlus,
-  TbBookUpload,
-} from "react-icons/tb";
+import { TbBooks, TbCategory2, TbUsers } from "react-icons/tb";
 import dynamic from "next/dynamic";
-import Link from "next/link";
-import { Button } from "@nextui-org/react";
+
+import AdminControls from "@/components/AdminControls";
 
 const StatsSection = dynamic(() => import("@/components/StatsSection"), {
   ssr: false,
@@ -72,30 +66,7 @@ export default async function Admin() {
           </h1>
         </div>
 
-        <div className="flex justify-center mb-12 ">
-          <div className="flex flex-col gap-4 px-6 sm:flex-row">
-            <Button
-              as={Link}
-              href="/admin/mangas/add"
-              color="primary"
-              size="lg"
-              startContent={<TbPlus size={20} />}
-              className="font-semibold transition-all duration-300 shadow-lg hover:shadow-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 "
-            >
-              Yeni Manga Ekle
-            </Button>
-            <Button
-              as={Link}
-              href="/admin/chapters/add"
-              color="secondary"
-              size="lg"
-              startContent={<TbBookUpload size={20} />}
-              className="font-semibold transition-all duration-300 shadow-lg hover:shadow-xl bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 "
-            >
-              Yeni Bölüm Ekle
-            </Button>
-          </div>
-        </div>
+        <AdminControls />
 
         <div className=" -delay-2">
           <StatsSection stats={stats} />

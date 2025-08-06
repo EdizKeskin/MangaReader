@@ -1,13 +1,37 @@
 import { getChapterBySlug, getMangaBySlug } from "@/functions";
-
 import ClientPage from "./ClientPage";
+import { currentUser } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
+import axios from "axios";
 
-export default function MangaRead({ params }) {
-  return (
-    <>
-      <ClientPage params={params} />
-    </>
-  );
+async function getSubscriber(userId) {
+  try {
+    const response = await axios.get(
+      process.env.NEXT_PUBLIC_MONGO_DB_URL + "subscriber/" + userId
+    );
+    return response.data;
+  } catch (error) {
+    return null;
+  }
+}
+
+export default async function MangaRead({ params }) {
+  const chapter = await getChapterBySlug(params.chapter, params.id);
+  const user = await currentUser();
+
+  // If chapter is not published yet, check for subscriber
+  const publishDate = new Date(chapter.chapter.publishDate);
+  if (publishDate > new Date()) {
+    if (!user) {
+      redirect("/pricing");
+    }
+    const subscriber = await getSubscriber(user.id);
+    if (!subscriber || new Date(subscriber.expireAt) <= new Date()) {
+      redirect("/pricing");
+    }
+  }
+
+  return <ClientPage params={params} />;
 }
 
 export async function generateMetadata({ params }) {

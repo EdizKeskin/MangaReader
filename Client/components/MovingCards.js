@@ -1,7 +1,8 @@
 "use client";
 
 import { cn } from "@/utils/cn";
-import { Link, useRouter } from "next13-progressbar";
+import { useRouter } from "next13-progressbar";
+import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 export default function MovingCards({
   items,

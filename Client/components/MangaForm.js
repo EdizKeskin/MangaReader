@@ -723,180 +723,160 @@ export default function MangaForm({ update, mangaId, username, email }) {
                 </div>
               ) : null}
 
-              <Accordion variant="bordered">
-                <AccordionItem
-                  key="1"
-                  aria-label="Advanced Settings"
-                  title={t("advanced")}
-                  classNames={{
-                    title: "text-sm font-medium",
+              <div className="space-y-6">
+                <RadioGroup
+                  label={t("type")}
+                  color="primary"
+                  defaultValue="manga"
+                  orientation="horizontal"
+                  value={values.type}
+                  onValueChange={(value) => {
+                    setFieldValue("type", value);
                   }}
+                  isDisabled={isSubmitting || uploading}
                 >
-                  <div className="space-y-6">
-                    <RadioGroup
-                      label={t("type")}
-                      color="primary"
-                      defaultValue="manga"
-                      orientation="horizontal"
-                      value={values.type}
-                      onValueChange={(value) => {
-                        setFieldValue("type", value);
-                      }}
-                      isDisabled={isSubmitting || uploading}
-                    >
-                      <Radio value="manga">Manga</Radio>
-                      <Radio value="webtoon">Webtoon</Radio>
-                      <Radio value="novel">Novel</Radio>
-                    </RadioGroup>
+                  <Radio value="manga">Manga</Radio>
+                  <Radio value="webtoon">Webtoon</Radio>
+                  <Radio value="novel">Novel</Radio>
+                </RadioGroup>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          id="isActive"
-                          checked={values.isActive}
-                          onChange={(e) =>
-                            setFieldValue("isActive", e.target.checked)
-                          }
-                          disabled={isSubmitting || uploading}
-                          className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary focus:ring-primary focus:ring-2"
-                        />
-                        <label
-                          htmlFor="isActive"
-                          className="text-sm font-medium"
-                        >
-                          {t("isActive")}
-                        </label>
-                      </div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="isActive"
+                      checked={values.isActive}
+                      onChange={(e) =>
+                        setFieldValue("isActive", e.target.checked)
+                      }
+                      disabled={isSubmitting || uploading}
+                      className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary focus:ring-primary focus:ring-2"
+                    />
+                    <label htmlFor="isActive" className="text-sm font-medium">
+                      {t("isActive")}
+                    </label>
+                  </div>
 
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          id="isAdult"
-                          checked={values.isAdult}
-                          onChange={(e) =>
-                            setFieldValue("isAdult", e.target.checked)
-                          }
-                          disabled={isSubmitting || uploading}
-                          className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary focus:ring-primary focus:ring-2"
-                        />
-                        <label
-                          htmlFor="isAdult"
-                          className="text-sm font-medium"
-                        >
-                          {t("isAdult")} (+18)
-                        </label>
-                      </div>
-                    </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="isAdult"
+                      checked={values.isAdult}
+                      onChange={(e) =>
+                        setFieldValue("isAdult", e.target.checked)
+                      }
+                      disabled={isSubmitting || uploading}
+                      className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary focus:ring-primary focus:ring-2"
+                    />
+                    <label htmlFor="isAdult" className="text-sm font-medium">
+                      {t("isAdult")} (+18)
+                    </label>
+                  </div>
+                </div>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <Select
-                        label={t("status")}
-                        placeholder={t("selectStatus")}
-                        selectedKeys={values.status ? [values.status] : []}
-                        onSelectionChange={(keys) => {
-                          const selectedKey = Array.from(keys)[0];
-                          setFieldValue("status", selectedKey);
-                        }}
-                        isDisabled={isSubmitting || uploading}
-                        variant="bordered"
-                      >
-                        <SelectItem key="ongoing" value="ongoing">
-                          {t("ongoing")}
-                        </SelectItem>
-                        <SelectItem key="completed" value="completed">
-                          {t("completed")}
-                        </SelectItem>
-                        <SelectItem key="dropped" value="dropped">
-                          {t("dropped")}
-                        </SelectItem>
-                        <SelectItem key="hiatus" value="hiatus">
-                          {t("hiatus")}
-                        </SelectItem>
-                        <SelectItem key="güncel" value="güncel">
-                          {t("güncel")}
-                        </SelectItem>
-                      </Select>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <Select
+                    label={t("status")}
+                    placeholder={t("selectStatus")}
+                    selectedKeys={values.status ? [values.status] : []}
+                    onSelectionChange={(keys) => {
+                      const selectedKey = Array.from(keys)[0];
+                      setFieldValue("status", selectedKey);
+                    }}
+                    isDisabled={isSubmitting || uploading}
+                    variant="bordered"
+                  >
+                    <SelectItem key="ongoing" value="ongoing">
+                      {t("ongoing")}
+                    </SelectItem>
+                    <SelectItem key="completed" value="completed">
+                      {t("completed")}
+                    </SelectItem>
+                    <SelectItem key="dropped" value="dropped">
+                      {t("dropped")}
+                    </SelectItem>
+                    <SelectItem key="hiatus" value="hiatus">
+                      {t("hiatus")}
+                    </SelectItem>
+                    <SelectItem key="güncel" value="güncel">
+                      {t("güncel")}
+                    </SelectItem>
+                  </Select>
 
-                      <Input
-                        label={t("releaseYear")}
-                        type="number"
-                        placeholder={t("releaseYearPlaceholder")}
-                        value={values.releaseYear || ""}
-                        onChange={(e) => {
-                          const year = e.target.value
-                            ? parseInt(e.target.value)
-                            : null;
-                          setFieldValue("releaseYear", year);
-                        }}
-                        isDisabled={isSubmitting || uploading}
-                        variant="bordered"
-                        min={1900}
-                        max={new Date().getFullYear() + 10}
-                        validationState={
-                          errors.releaseYear && touched.releaseYear
-                            ? "invalid"
-                            : "valid"
-                        }
-                        errorMessage={errors.releaseYear}
-                      />
-                    </div>
+                  <Input
+                    label={t("releaseYear")}
+                    type="number"
+                    placeholder={t("releaseYearPlaceholder")}
+                    value={values.releaseYear || ""}
+                    onChange={(e) => {
+                      const year = e.target.value
+                        ? parseInt(e.target.value)
+                        : null;
+                      setFieldValue("releaseYear", year);
+                    }}
+                    isDisabled={isSubmitting || uploading}
+                    variant="bordered"
+                    min={1900}
+                    max={new Date().getFullYear() + 10}
+                    validationState={
+                      errors.releaseYear && touched.releaseYear
+                        ? "invalid"
+                        : "valid"
+                    }
+                    errorMessage={errors.releaseYear}
+                  />
+                </div>
 
-                    <div>
-                      <label className="block mb-2 text-sm font-medium">
-                        {t("otherNames")}
-                      </label>
-                      <div className="space-y-2">
-                        {values.otherNames.map((name, index) => (
-                          <div key={index} className="flex gap-2">
-                            <Input
-                              placeholder={t("otherNamePlaceholder")}
-                              value={name}
-                              onChange={(e) => {
-                                const newOtherNames = [...values.otherNames];
-                                newOtherNames[index] = e.target.value;
-                                setFieldValue("otherNames", newOtherNames);
-                              }}
-                              isDisabled={isSubmitting || uploading}
-                              variant="bordered"
-                              size="lg"
-                            />
-                            <Button
-                              color="danger"
-                              variant="light"
-                              size="lg"
-                              isIconOnly
-                              onClick={() => {
-                                const newOtherNames = values.otherNames.filter(
-                                  (_, i) => i !== index
-                                );
-                                setFieldValue("otherNames", newOtherNames);
-                              }}
-                              isDisabled={isSubmitting || uploading}
-                            >
-                              ✕
-                            </Button>
-                          </div>
-                        ))}
-                        <Button
-                          color="primary"
+                <div>
+                  <label className="block mb-2 text-sm font-medium">
+                    {t("otherNames")}
+                  </label>
+                  <div className="space-y-2">
+                    {values.otherNames.map((name, index) => (
+                      <div key={index} className="flex gap-2">
+                        <Input
+                          placeholder={t("otherNamePlaceholder")}
+                          value={name}
+                          onChange={(e) => {
+                            const newOtherNames = [...values.otherNames];
+                            newOtherNames[index] = e.target.value;
+                            setFieldValue("otherNames", newOtherNames);
+                          }}
+                          isDisabled={isSubmitting || uploading}
                           variant="bordered"
-                          size="sm"
+                          size="lg"
+                        />
+                        <Button
+                          color="danger"
+                          variant="light"
+                          size="lg"
+                          isIconOnly
                           onClick={() => {
-                            setFieldValue("otherNames", [
-                              ...values.otherNames,
-                              "",
-                            ]);
+                            const newOtherNames = values.otherNames.filter(
+                              (_, i) => i !== index
+                            );
+                            setFieldValue("otherNames", newOtherNames);
                           }}
                           isDisabled={isSubmitting || uploading}
                         >
-                          + {t("addOtherName")}
+                          ✕
                         </Button>
                       </div>
-                    </div>
+                    ))}
+                    <Button
+                      color="primary"
+                      variant="bordered"
+                      size="sm"
+                      onClick={() => {
+                        setFieldValue("otherNames", [...values.otherNames, ""]);
+                      }}
+                      isDisabled={isSubmitting || uploading}
+                    >
+                      + {t("addOtherName")}
+                    </Button>
                   </div>
-                </AccordionItem>
-              </Accordion>
+                </div>
+              </div>
 
               <Button
                 type="submit"

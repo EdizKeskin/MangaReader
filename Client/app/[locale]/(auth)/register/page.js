@@ -21,6 +21,7 @@ import { useRouter } from "next13-progressbar";
 import { useSignUp } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
 import SignInOAuthButtons from "@/components/SignInOAuthButtons";
+import Link from "next/link";
 
 export default function Login() {
   const t = useTranslations("Register");
@@ -214,6 +215,12 @@ export default function Login() {
           )}
         </Formik>
       </Card>
+      <div className="mt-4 text-center">
+        <span className="text-gray-500">Hesabınız zaten var mı? </span>
+        <Link href={`/login`} className="text-secondary underline">
+          Giriş yapın
+        </Link>
+      </div>
       {error && (
         <p className="p-4 mt-4 text-center bg-neutral-900 text-neutral-300">
           {error}

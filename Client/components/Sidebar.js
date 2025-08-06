@@ -6,11 +6,16 @@ import { useRouter } from "next13-progressbar";
 export default function Sidebar({ genres }) {
   const router = useRouter();
 
+  // Genres'leri alfabetik sıraya göre sırala
+  const sortedGenres = [...genres].sort((a, b) =>
+    a.name.localeCompare(b.name, "tr", { sensitivity: "base" })
+  );
+
   return (
     <Card className="z-10 mr-10">
       <CardBody>
         <div className="flex flex-row flex-wrap gap-5">
-          {genres.map((category, i) => (
+          {sortedGenres.map((category, i) => (
             <Chip
               onClick={() => router.push(`/manga?id=${category._id}`)}
               key={i}

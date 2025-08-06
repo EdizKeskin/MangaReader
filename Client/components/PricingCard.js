@@ -23,7 +23,7 @@ export default function PricingCard({ data, bordered }) {
             {data.price}
           </strong>
 
-          <span className="text-sm font-medium text-gray-500">/month</span>
+          <span className="text-sm font-medium text-gray-500">/ay</span>
         </p>
       </div>
 

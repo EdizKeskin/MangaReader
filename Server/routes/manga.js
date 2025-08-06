@@ -59,7 +59,27 @@ router.get("/list", async (req, res) => {
           return -1;
         }
 
-        return bLastChapter.publishDate - aLastChapter.publishDate;
+        const now = new Date();
+        
+        // Check if chapters are published and scheduled (publishDate > uploadDate)
+        const aIsScheduledAndPublished = aLastChapter.publishDate <= now && aLastChapter.publishDate > aLastChapter.uploadDate;
+        const bIsScheduledAndPublished = bLastChapter.publishDate <= now && bLastChapter.publishDate > bLastChapter.uploadDate;
+        
+        // If one is scheduled and published but the other isn't, prioritize the scheduled one
+        if (aIsScheduledAndPublished && !bIsScheduledAndPublished) {
+          return -1;
+        }
+        if (bIsScheduledAndPublished && !aIsScheduledAndPublished) {
+          return 1;
+        }
+        
+        // If both are scheduled and published, sort by publishDate
+        if (aIsScheduledAndPublished && bIsScheduledAndPublished) {
+          return bLastChapter.publishDate - aLastChapter.publishDate;
+        }
+        
+        // For normal chapters (not scheduled), sort by uploadDate as before
+        return bLastChapter.uploadDate - aLastChapter.uploadDate;
       });
 
     res.json(sortedMangaListWithLastTwoChapters);
@@ -108,6 +128,26 @@ router.get("/list/home", async (req, res) => {
           return -1;
         }
 
+        const now = new Date();
+        
+        // Check if chapters are published and scheduled (publishDate > uploadDate)
+        const aIsScheduledAndPublished = aLastChapter.publishDate <= now && aLastChapter.publishDate > aLastChapter.uploadDate;
+        const bIsScheduledAndPublished = bLastChapter.publishDate <= now && bLastChapter.publishDate > bLastChapter.uploadDate;
+        
+        // If one is scheduled and published but the other isn't, prioritize the scheduled one
+        if (aIsScheduledAndPublished && !bIsScheduledAndPublished) {
+          return -1;
+        }
+        if (bIsScheduledAndPublished && !aIsScheduledAndPublished) {
+          return 1;
+        }
+        
+        // If both are scheduled and published, sort by publishDate
+        if (aIsScheduledAndPublished && bIsScheduledAndPublished) {
+          return bLastChapter.publishDate - aLastChapter.publishDate;
+        }
+        
+        // For normal chapters (not scheduled), sort by uploadDate as before
         return bLastChapter.uploadDate - aLastChapter.uploadDate;
       })
       .slice((page - 1) * limit, page * limit);
@@ -605,7 +645,27 @@ router.get("/list/status/:status", async (req, res) => {
           return -1;
         }
 
-        return bLastChapter.publishDate - aLastChapter.publishDate;
+        const now = new Date();
+        
+        // Check if chapters are published and scheduled (publishDate > uploadDate)
+        const aIsScheduledAndPublished = aLastChapter.publishDate <= now && aLastChapter.publishDate > aLastChapter.uploadDate;
+        const bIsScheduledAndPublished = bLastChapter.publishDate <= now && bLastChapter.publishDate > bLastChapter.uploadDate;
+        
+        // If one is scheduled and published but the other isn't, prioritize the scheduled one
+        if (aIsScheduledAndPublished && !bIsScheduledAndPublished) {
+          return -1;
+        }
+        if (bIsScheduledAndPublished && !aIsScheduledAndPublished) {
+          return 1;
+        }
+        
+        // If both are scheduled and published, sort by publishDate
+        if (aIsScheduledAndPublished && bIsScheduledAndPublished) {
+          return bLastChapter.publishDate - aLastChapter.publishDate;
+        }
+        
+        // For normal chapters (not scheduled), sort by uploadDate as before
+        return bLastChapter.uploadDate - aLastChapter.uploadDate;
       });
 
     if (sortedMangaListWithLastTwoChapters.length === 0) {

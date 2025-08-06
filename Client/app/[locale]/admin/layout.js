@@ -1,3 +1,4 @@
+export const runtime = "edge";
 import { wakeUpAdmin } from "@/functions";
 import { currentUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";

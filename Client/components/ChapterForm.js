@@ -30,16 +30,10 @@ import dynamic from "next/dynamic";
 import JSZip from "jszip";
 import { uploadMultipleFilesToR2, convertToWebP } from "@/utils/r2-upload";
 import "@/styles/expandButton.css";
-import "react-datetime-picker/dist/DateTimePicker.css";
-import "react-calendar/dist/Calendar.css";
-import "@/styles/calendar.css";
+import "react-day-picker/dist/style.css";
 
 import { SimpleEditor } from "./tiptap-templates/simple/simple-editor";
-
-const DateTimePicker = dynamic(() => import("react-datetime-picker"), {
-  ssr: false,
-  loading: () => <p>Loading...</p>,
-});
+import { DayPicker } from "react-day-picker";
 
 export default function ChapterForm({ update, chapterId, username, email }) {
   const [mangaList, setMangaList] = useState([]);
@@ -66,6 +60,7 @@ export default function ChapterForm({ update, chapterId, username, email }) {
   const [batchFiles, setBatchFiles] = useState([]); // Array of {file, extractedImages, metadata}
   const [batchProgress, setBatchProgress] = useState(0);
   const [batchUploading, setBatchUploading] = useState(false);
+  const [batchPublishDate, setBatchPublishDate] = useState(new Date());
 
   const searchParams = useSearchParams();
   const search = searchParams.get("mangaId");
@@ -721,13 +716,59 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                         </div>
                       </div>
 
+                      {/* Batch Publish Date */}
+                      <div className="flex flex-col gap-4">
+                        <label className="text-lg font-semibold">
+                          {t("publishDate")}
+                        </label>
+                        <div className="">
+                          <DayPicker
+                            mode="single"
+                            selected={batchPublishDate}
+                            onSelect={(date) => {
+                              if (date) {
+                                setBatchPublishDate(date);
+                              }
+                            }}
+                            showOutsideDays
+                            className="rdp"
+                            classNames={{
+                              months: "rdp-months text-white",
+                              month: "rdp-month",
+                              caption: "rdp-caption text-white font-medium",
+                              caption_label: "rdp-caption_label text-lg",
+                              nav: "rdp-nav",
+                              nav_button:
+                                "rdp-nav_button text-white hover:bg-zinc-700 rounded p-2",
+                              nav_button_previous: "rdp-nav_button_previous",
+                              nav_button_next: "rdp-nav_button_next",
+                              table: "rdp-table",
+                              head_row: "rdp-head_row",
+                              head_cell:
+                                "rdp-head_cell text-gray-400 font-medium p-2",
+                              row: "rdp-row",
+                              cell: "rdp-cell",
+                              day: "rdp-day text-white hover:bg-zinc-700 rounded p-2 cursor-pointer",
+                              day_range_end: "rdp-day_range_end",
+                              day_selected:
+                                "rdp-day_selected bg-blue-600 text-white",
+                              day_today: "rdp-day_today bg-zinc-700 font-bold",
+                              day_outside: "rdp-day_outside text-gray-500",
+                              day_disabled:
+                                "rdp-day_disabled text-gray-600 cursor-not-allowed",
+                              day_hidden: "rdp-day_hidden invisible",
+                            }}
+                          />
+                        </div>
+                      </div>
+
                       {/* Batch Upload Button */}
                       <Button
                         color="primary"
                         size="lg"
                         isLoading={batchUploading}
                         onClick={() =>
-                          handleBatchSubmit(selectedManga, new Date())
+                          handleBatchSubmit(selectedManga, batchPublishDate)
                         }
                         isDisabled={batchFiles.length === 0}
                       >
@@ -846,7 +887,7 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                       <div
                         className={`${
                           expanded &&
-                          "absolute top-0 bottom-0 left-0 right-0 z-50 w-full h-full bg-zinc-800"
+                          "absolute top-0 bottom-0 left-0 right-0 z-10 w-full h-full bg-zinc-800"
                         }`}
                       >
                         <div
@@ -995,89 +1036,121 @@ export default function ChapterForm({ update, chapterId, username, email }) {
                       ) : null}
                     </>
                   )}
-                  <div className="flex flex-col gap-4">
-                    <label htmlFor="publishDate" className="text-lg">
-                      {t("publishDate")}
-                    </label>
-                    <DateTimePicker
-                      onChange={(date) => {
-                        setFieldValue("publishDate", date);
-                      }}
-                      value={values.publishDate}
-                      disableClock
-                      name="publishDate"
-                      className={"bg-zinc-800"}
-                    />
-                  </div>
-
-                  {/* Yeni Alanlar */}
-                  <div className="flex flex-col gap-6">
-                    <h3 className="text-lg font-semibold">
-                      {t("chapterSettings")}
-                    </h3>
-
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                      {/* Aktif/Pasif Durumu */}
-                      <div className="flex flex-col gap-2">
-                        <Switch
-                          isSelected={isActive}
-                          onValueChange={(value) => {
-                            setIsActive(value);
-                            setFieldValue("isActive", value);
+                  <div className="flex flex-col gap-10 md:flex-row ">
+                    <div className="flex flex-col gap-4">
+                      <label htmlFor="publishDate" className="text-lg">
+                        {t("publishDate")}
+                      </label>
+                      <div className="p-4 border border-gray-600 rounded-lg bg-zinc-800 max-w-fit">
+                        <DayPicker
+                          mode="single"
+                          selected={values.publishDate}
+                          onSelect={(date) => {
+                            if (date) {
+                              setFieldValue("publishDate", date);
+                            }
                           }}
-                          color="success"
-                        >
-                          <span className="text-sm font-medium">
-                            {t("activeStatus")}
-                          </span>
-                        </Switch>
-                        <p className="text-xs text-gray-500">
-                          {t("activeStatusDesc")}
-                        </p>
-                      </div>
-
-                      {/* +18 İçerik */}
-                      <div className="flex flex-col gap-2">
-                        <Switch
-                          isSelected={isAdult}
-                          onValueChange={(value) => {
-                            setIsAdult(value);
-                            setFieldValue("isAdult", value);
+                          showOutsideDays
+                          className="rdp"
+                          classNames={{
+                            months: "rdp-months text-white",
+                            month: "rdp-month",
+                            caption: "rdp-caption text-white font-medium",
+                            caption_label: "rdp-caption_label text-lg",
+                            nav: "rdp-nav",
+                            nav_button:
+                              "rdp-nav_button text-white hover:bg-zinc-700 rounded p-2",
+                            nav_button_previous: "rdp-nav_button_previous",
+                            nav_button_next: "rdp-nav_button_next",
+                            table: "rdp-table",
+                            head_row: "rdp-head_row",
+                            head_cell:
+                              "rdp-head_cell text-gray-400 font-medium p-2",
+                            row: "rdp-row",
+                            cell: "rdp-cell",
+                            day: "rdp-day text-white hover:bg-zinc-700 rounded p-2 cursor-pointer",
+                            day_range_end: "rdp-day_range_end",
+                            day_selected:
+                              "rdp-day_selected bg-blue-600 text-white",
+                            day_today: "rdp-day_today bg-zinc-700 font-bold",
+                            day_outside: "rdp-day_outside text-gray-500",
+                            day_disabled:
+                              "rdp-day_disabled text-gray-600 cursor-not-allowed",
+                            day_hidden: "rdp-day_hidden invisible",
                           }}
-                          color="warning"
-                        >
-                          <span className="text-sm font-medium">
-                            {t("adultContent")}
-                          </span>
-                        </Switch>
-                        <p className="text-xs text-gray-500">
-                          {t("adultContentDesc")}
-                        </p>
+                        />
                       </div>
                     </div>
 
-                    {/* Bölüm Tipi */}
-                    <Select
-                      label={t("chapterType")}
-                      placeholder={t("chapterTypeDesc")}
-                      selectedKeys={[chapterType]}
-                      onSelectionChange={(keys) => {
-                        const selectedType = Array.from(keys)[0];
-                        setChapterType(selectedType);
-                        setFieldValue("chapterType", selectedType);
-                      }}
-                      className="max-w-xs"
-                    >
-                      <SelectItem key="manga" value="manga">
-                        Manga
-                      </SelectItem>
-                      <SelectItem key="novel" value="novel">
-                        Novel
-                      </SelectItem>
-                      <SelectItem key="webtoon" value="webtoon">
-                        Webtoon
-                      </SelectItem>
-                    </Select>
+                    {/* Yeni Alanlar */}
+                    <div className="flex flex-col gap-6">
+                      <h3 className="text-lg font-semibold">
+                        {t("chapterSettings")}
+                      </h3>
+
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        {/* Aktif/Pasif Durumu */}
+                        <div className="flex flex-col gap-2">
+                          <Switch
+                            isSelected={isActive}
+                            onValueChange={(value) => {
+                              setIsActive(value);
+                              setFieldValue("isActive", value);
+                            }}
+                            color="success"
+                          >
+                            <span className="text-sm font-medium">
+                              {t("activeStatus")}
+                            </span>
+                          </Switch>
+                          <p className="text-xs text-gray-500">
+                            {t("activeStatusDesc")}
+                          </p>
+                        </div>
+
+                        {/* +18 İçerik */}
+                        <div className="flex flex-col gap-2">
+                          <Switch
+                            isSelected={isAdult}
+                            onValueChange={(value) => {
+                              setIsAdult(value);
+                              setFieldValue("isAdult", value);
+                            }}
+                            color="warning"
+                          >
+                            <span className="text-sm font-medium">
+                              {t("adultContent")}
+                            </span>
+                          </Switch>
+                          <p className="text-xs text-gray-500">
+                            {t("adultContentDesc")}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Bölüm Tipi */}
+                      <Select
+                        label={t("chapterType")}
+                        placeholder={t("chapterTypeDesc")}
+                        selectedKeys={[chapterType]}
+                        onSelectionChange={(keys) => {
+                          const selectedType = Array.from(keys)[0];
+                          setChapterType(selectedType);
+                          setFieldValue("chapterType", selectedType);
+                        }}
+                        className="max-w-xs"
+                      >
+                        <SelectItem key="manga" value="manga">
+                          Manga
+                        </SelectItem>
+                        <SelectItem key="novel" value="novel">
+                          Novel
+                        </SelectItem>
+                        <SelectItem key="webtoon" value="webtoon">
+                          Webtoon
+                        </SelectItem>
+                      </Select>
+                    </div>
                   </div>
                   <Button
                     type="submit"
