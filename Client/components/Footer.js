@@ -9,14 +9,14 @@ export default function Footer() {
       <div className="max-w-screen-xl px-4 py-6 mx-auto space-y-8 overflow-hidden sm:px-6 lg:px-8">
         <div className="flex justify-center mt-8 space-x-6">
           <Link
-            href="https://www.instagram.com/ediz.keskinn"
+            href="https://www.instagram.com/monomangaa"
             className="text-gray-400 hover:text-secondary"
           >
             <span className="sr-only">Instagram</span>
             <BsInstagram className="w-6 h-6" />
           </Link>
           <Link
-            href="https://twitter.com/EdizKeskin_"
+            href="https://x.com/manga_mono"
             className="text-gray-400 hover:text-secondary"
           >
             <span className="sr-only">Twitter</span>
@@ -39,7 +39,7 @@ export default function Footer() {
           </Link>
         </div>
         <p className="mt-8 text-base leading-6 text-center text-gray-400">
-          Made with ❤️ by{" "}
+          by{" "}
           <Link
             href={"https://github.com/EdizKeskin"}
             className="underline cursor-pointer"

@@ -5,7 +5,6 @@ import "./globals.css";
 import "@/styles/background.css";
 import Providers from "./providers";
 import { ClerkProvider } from "@clerk/nextjs";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { NextIntlClientProvider } from "next-intl";
 import { enUS, trTR } from "@clerk/localizations";
 import { notFound } from "next/navigation";
@@ -13,6 +12,11 @@ import { Toaster } from "react-hot-toast";
 import Script from "next/script";
 // import { Inter } from "next/font/google";
 import { GTM } from "@/components/GTM";
+import dynamic from "next/dynamic";
+const Popunder = dynamic(() => import("@/components/Popunder"), { ssr: false });
+const SocialBar = dynamic(() => import("@/components/SocialBar"), {
+  ssr: false,
+});
 
 // const inter = Inter({ subsets: ["latin"], weight: "400" });
 export const metadata = {
@@ -113,8 +117,8 @@ export const metadata = {
     description:
       "Monomanga ile en yeni, popüler ve ücretsiz manga, webtoon, manhwa ve webnovel'leri çevrimiçi okuyun. Mobil uyumlu, reklamsız ve hızlı okuma deneyimi.",
     images: [process.env.NEXT_PUBLIC_BASE_URL + "/og-image.png"],
-    site: "@monomanga",
-    creator: "@monomanga",
+    site: "@manga_mono",
+    creator: "@manga_mono",
     domain: "monomanga.com.tr",
   },
   robots: {
@@ -216,8 +220,9 @@ export default async function RootLayout({ children, params: { locale } }) {
                   },
                 }}
               />
+              {/* <SocialBar />
+              <Popunder /> */}
             </Providers>
-            <SpeedInsights />
           </ClerkProvider>
         </NextIntlClientProvider>
       </body>

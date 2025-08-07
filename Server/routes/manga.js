@@ -3,7 +3,11 @@ const router = express.Router();
 const Manga = require("../models/Manga");
 const Chapter = require("../models/Chapter");
 const slugify = require("slugify");
-const { deleteFromR2, parseFileKeyFromURL, deleteMultipleFromR2 } = require("../utils/r2-client");
+const {
+  deleteFromR2,
+  parseFileKeyFromURL,
+  deleteMultipleFromR2,
+} = require("../utils/r2-client");
 
 function extractIdAndTextFromUrl(url) {
   // Parse the file key from R2 URL
@@ -60,11 +64,15 @@ router.get("/list", async (req, res) => {
         }
 
         const now = new Date();
-        
+
         // Check if chapters are published and scheduled (publishDate > uploadDate)
-        const aIsScheduledAndPublished = aLastChapter.publishDate <= now && aLastChapter.publishDate > aLastChapter.uploadDate;
-        const bIsScheduledAndPublished = bLastChapter.publishDate <= now && bLastChapter.publishDate > bLastChapter.uploadDate;
-        
+        const aIsScheduledAndPublished =
+          aLastChapter.publishDate <= now &&
+          aLastChapter.publishDate > aLastChapter.uploadDate;
+        const bIsScheduledAndPublished =
+          bLastChapter.publishDate <= now &&
+          bLastChapter.publishDate > bLastChapter.uploadDate;
+
         // If one is scheduled and published but the other isn't, prioritize the scheduled one
         if (aIsScheduledAndPublished && !bIsScheduledAndPublished) {
           return -1;
@@ -72,12 +80,12 @@ router.get("/list", async (req, res) => {
         if (bIsScheduledAndPublished && !aIsScheduledAndPublished) {
           return 1;
         }
-        
+
         // If both are scheduled and published, sort by publishDate
         if (aIsScheduledAndPublished && bIsScheduledAndPublished) {
           return bLastChapter.publishDate - aLastChapter.publishDate;
         }
-        
+
         // For normal chapters (not scheduled), sort by uploadDate as before
         return bLastChapter.uploadDate - aLastChapter.uploadDate;
       });
@@ -129,11 +137,15 @@ router.get("/list/home", async (req, res) => {
         }
 
         const now = new Date();
-        
+
         // Check if chapters are published and scheduled (publishDate > uploadDate)
-        const aIsScheduledAndPublished = aLastChapter.publishDate <= now && aLastChapter.publishDate > aLastChapter.uploadDate;
-        const bIsScheduledAndPublished = bLastChapter.publishDate <= now && bLastChapter.publishDate > bLastChapter.uploadDate;
-        
+        const aIsScheduledAndPublished =
+          aLastChapter.publishDate <= now &&
+          aLastChapter.publishDate > aLastChapter.uploadDate;
+        const bIsScheduledAndPublished =
+          bLastChapter.publishDate <= now &&
+          bLastChapter.publishDate > bLastChapter.uploadDate;
+
         // If one is scheduled and published but the other isn't, prioritize the scheduled one
         if (aIsScheduledAndPublished && !bIsScheduledAndPublished) {
           return -1;
@@ -141,12 +153,12 @@ router.get("/list/home", async (req, res) => {
         if (bIsScheduledAndPublished && !aIsScheduledAndPublished) {
           return 1;
         }
-        
+
         // If both are scheduled and published, sort by publishDate
         if (aIsScheduledAndPublished && bIsScheduledAndPublished) {
           return bLastChapter.publishDate - aLastChapter.publishDate;
         }
-        
+
         // For normal chapters (not scheduled), sort by uploadDate as before
         return bLastChapter.uploadDate - aLastChapter.uploadDate;
       })
@@ -261,16 +273,18 @@ router.get("/count", async (req, res) => {
 router.get("/random-chapters", async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 15;
-    
+
     // Get all active manga IDs
-    const activeMangas = await Manga.find({ isActive: true }).select("_id name coverImage slug author artist type summary");
-    
+    const activeMangas = await Manga.find({ isActive: true }).select(
+      "_id name coverImage slug author artist type summary"
+    );
+
     if (activeMangas.length === 0) {
       return res.json([]);
     }
-    
+
     const currentDate = new Date();
-    
+
     // For each manga, get one random published chapter
     const mangaWithRandomChapter = await Promise.all(
       activeMangas.map(async (manga) => {
@@ -278,16 +292,17 @@ router.get("/random-chapters", async (req, res) => {
         const chapters = await Chapter.find({
           manga: manga._id,
           isActive: true,
-          publishDate: { $lte: currentDate }
+          publishDate: { $lte: currentDate },
         }).select("_id chapterNumber title uploadDate publishDate slug");
-        
+
         if (chapters.length === 0) {
           return null; // No published chapters for this manga
         }
-        
+
         // Select random chapter from this manga
-        const randomChapter = chapters[Math.floor(Math.random() * chapters.length)];
-        
+        const randomChapter =
+          chapters[Math.floor(Math.random() * chapters.length)];
+
         return {
           _id: randomChapter._id,
           chapterNumber: randomChapter.chapterNumber,
@@ -303,18 +318,23 @@ router.get("/random-chapters", async (req, res) => {
           author: manga.author,
           artist: manga.artist,
           type: manga.type,
-          summary: manga.summary
+          summary: manga.summary,
         };
       })
     );
-    
+
     // Filter out nulls (mangas with no published chapters)
-    const validMangaChapters = mangaWithRandomChapter.filter(item => item !== null);
-    
+    const validMangaChapters = mangaWithRandomChapter.filter(
+      (item) => item !== null
+    );
+
     // Randomly shuffle and select the requested number
     const shuffledResults = validMangaChapters.sort(() => 0.5 - Math.random());
-    const finalResults = shuffledResults.slice(0, Math.min(limit, shuffledResults.length));
-    
+    const finalResults = shuffledResults.slice(
+      0,
+      Math.min(limit, shuffledResults.length)
+    );
+
     res.json(finalResults);
   } catch (error) {
     console.error("Random chapters error:", error);
@@ -413,42 +433,42 @@ router.get("/list/name", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
-  try {
-    const mangaId = req.params.id;
+// router.delete("/:id", async (req, res) => {
+//   try {
+//     const mangaId = req.params.id;
 
-    const deletedManga = await Manga.findByIdAndDelete(mangaId);
+//     const deletedManga = await Manga.findByIdAndDelete(mangaId);
 
-    if (!deletedManga) {
-      return res.status(404).json({ message: "Manga bulunamadı." });
-    }
+//     if (!deletedManga) {
+//       return res.status(404).json({ message: "Manga bulunamadı." });
+//     }
 
-    // Find all chapters for this manga to delete their images from R2
-    const chaptersToDelete = await Chapter.find({ manga: mangaId });
-    
-    // Delete R2 images for each chapter
-    for (const chapter of chaptersToDelete) {
-      if (chapter.content && chapter.content.length > 0) {
-        try {
-          const result = extractIdAndTextFromUrl(chapter.content[0]);
-          const folderPath = `chapters/${result.id}/${result.text}`;
-          
-          await deleteMultipleFromR2(folderPath);
-          console.log(`Klasör başarıyla silindi: ${folderPath}`);
-        } catch (error) {
-          console.error(`Chapter images silinirken hata oluştu: ${error}`);
-        }
-      }
-    }
+//     // Find all chapters for this manga to delete their images from R2
+//     const chaptersToDelete = await Chapter.find({ manga: mangaId });
 
-    // Delete all chapters
-    await Chapter.deleteMany({ manga: mangaId });
+//     // Delete R2 images for each chapter
+//     for (const chapter of chaptersToDelete) {
+//       if (chapter.content && chapter.content.length > 0) {
+//         try {
+//           const result = extractIdAndTextFromUrl(chapter.content[0]);
+//           const folderPath = `chapters/${result.id}/${result.text}`;
 
-    res.json({ message: "Manga ve tüm bölümleri başarıyla silindi." });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+//           await deleteMultipleFromR2(folderPath);
+//           console.log(`Klasör başarıyla silindi: ${folderPath}`);
+//         } catch (error) {
+//           console.error(`Chapter images silinirken hata oluştu: ${error}`);
+//         }
+//       }
+//     }
+
+//     // Delete all chapters
+//     await Chapter.deleteMany({ manga: mangaId });
+
+//     res.json({ message: "Manga ve tüm bölümleri başarıyla silindi." });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 
 router.patch("/:id", async (req, res) => {
   try {
@@ -597,24 +617,31 @@ router.get("/list/search", async (req, res) => {
 router.get("/list/status/:status", async (req, res) => {
   try {
     const status = req.params.status;
-    const validStatuses = ["ongoing", "completed", "dropped", "hiatus", "güncel"];
-    
+    const validStatuses = [
+      "ongoing",
+      "completed",
+      "dropped",
+      "hiatus",
+      "güncel",
+    ];
+
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({ 
-        message: "Geçersiz statü. Geçerli statüler: " + validStatuses.join(", ") 
+      return res.status(400).json({
+        message:
+          "Geçersiz statü. Geçerli statüler: " + validStatuses.join(", "),
       });
     }
 
-    const mangaList = await Manga.find({ 
-      status: status, 
-      isActive: true 
+    const mangaList = await Manga.find({
+      status: status,
+      isActive: true,
     });
-    
+
     const mangaListWithLastTwoChapters = await Promise.all(
       mangaList.map(async (manga) => {
-        let lastTwoChapters = await Chapter.find({ 
+        let lastTwoChapters = await Chapter.find({
           manga: manga._id,
-          isActive: true 
+          isActive: true,
         })
           .sort({ chapterNumber: -1 })
           .limit(2)
@@ -646,11 +673,15 @@ router.get("/list/status/:status", async (req, res) => {
         }
 
         const now = new Date();
-        
+
         // Check if chapters are published and scheduled (publishDate > uploadDate)
-        const aIsScheduledAndPublished = aLastChapter.publishDate <= now && aLastChapter.publishDate > aLastChapter.uploadDate;
-        const bIsScheduledAndPublished = bLastChapter.publishDate <= now && bLastChapter.publishDate > bLastChapter.uploadDate;
-        
+        const aIsScheduledAndPublished =
+          aLastChapter.publishDate <= now &&
+          aLastChapter.publishDate > aLastChapter.uploadDate;
+        const bIsScheduledAndPublished =
+          bLastChapter.publishDate <= now &&
+          bLastChapter.publishDate > bLastChapter.uploadDate;
+
         // If one is scheduled and published but the other isn't, prioritize the scheduled one
         if (aIsScheduledAndPublished && !bIsScheduledAndPublished) {
           return -1;
@@ -658,12 +689,12 @@ router.get("/list/status/:status", async (req, res) => {
         if (bIsScheduledAndPublished && !aIsScheduledAndPublished) {
           return 1;
         }
-        
+
         // If both are scheduled and published, sort by publishDate
         if (aIsScheduledAndPublished && bIsScheduledAndPublished) {
           return bLastChapter.publishDate - aLastChapter.publishDate;
         }
-        
+
         // For normal chapters (not scheduled), sort by uploadDate as before
         return bLastChapter.uploadDate - aLastChapter.uploadDate;
       });
@@ -672,7 +703,7 @@ router.get("/list/status/:status", async (req, res) => {
       return res.json({
         message: `${status} statüsünde manga bulunamadı.`,
         status: 404,
-        mangaList: []
+        mangaList: [],
       });
     }
 

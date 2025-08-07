@@ -264,37 +264,37 @@ router.post("/add", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
-  try {
-    const chapterId = req.params.id;
+// router.delete("/:id", async (req, res) => {
+//   try {
+//     const chapterId = req.params.id;
 
-    const oldChapter = await Chapter.findById(chapterId);
-    if (oldChapter) {
-      // Delete R2 images if chapter has content
-      if (oldChapter.content && oldChapter.content.length > 0) {
-        try {
-          const result = extractIdAndTextFromUrl(oldChapter.content[0]);
-          const folderPath = `chapters/${result.id}/${result.text}`;
-          
-          await deleteMultipleFromR2(folderPath);
-          console.log(`Klasör başarıyla silindi: ${folderPath}`);
-        } catch (error) {
-          console.error(`Klasör silinirken hata oluştu: ${error}`);
-        }
-      }
+//     const oldChapter = await Chapter.findById(chapterId);
+//     if (oldChapter) {
+//       // Delete R2 images if chapter has content
+//       if (oldChapter.content && oldChapter.content.length > 0) {
+//         try {
+//           const result = extractIdAndTextFromUrl(oldChapter.content[0]);
+//           const folderPath = `chapters/${result.id}/${result.text}`;
 
-      await Chapter.findByIdAndRemove(chapterId);
+//           await deleteMultipleFromR2(folderPath);
+//           console.log(`Klasör başarıyla silindi: ${folderPath}`);
+//         } catch (error) {
+//           console.error(`Klasör silinirken hata oluştu: ${error}`);
+//         }
+//       }
 
-      res.json({ message: "Chapter başarıyla silindi" });
-    } else {
-      res
-        .status(404)
-        .json({ error: "Belirtilen ID'ye sahip bölüm bulunamadı" });
-    }
-  } catch (error) {
-    console.error("Chapter silinirken bir hata oluştu:", error);
-    res.status(500).json({ error: "Chapter silinirken bir hata oluştu" });
-  }
-});
+//       await Chapter.findByIdAndRemove(chapterId);
+
+//       res.json({ message: "Chapter başarıyla silindi" });
+//     } else {
+//       res
+//         .status(404)
+//         .json({ error: "Belirtilen ID'ye sahip bölüm bulunamadı" });
+//     }
+//   } catch (error) {
+//     console.error("Chapter silinirken bir hata oluştu:", error);
+//     res.status(500).json({ error: "Chapter silinirken bir hata oluştu" });
+//   }
+// });
 
 module.exports = router;

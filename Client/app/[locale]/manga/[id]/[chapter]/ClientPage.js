@@ -33,6 +33,9 @@ const TiptapNovelReader = dynamic(
 );
 import { motion } from "framer-motion";
 import { FaRegComments } from "react-icons/fa";
+const AdBanner = dynamic(() => import("@/components/AdBanner"), {
+  ssr: false,
+});
 
 export default function MangaRead({ params }) {
   const [isVisible, setIsVisible] = useState(false);
@@ -673,10 +676,18 @@ export default function MangaRead({ params }) {
 
                 <Button
                   isDisabled={false}
-                  onClick={buttonStates?.isNextDisabled ? goToMangaPage : goToNextChapter}
+                  onClick={
+                    buttonStates?.isNextDisabled
+                      ? goToMangaPage
+                      : goToNextChapter
+                  }
                   size={buttonStates?.buttonSize}
                   className="flex items-center gap-2"
-                  aria-label={buttonStates?.isNextDisabled ? "Go to Manga" : "Next Chapter"}
+                  aria-label={
+                    buttonStates?.isNextDisabled
+                      ? "Go to Manga"
+                      : "Next Chapter"
+                  }
                 >
                   {buttonStates?.isNextDisabled ? (
                     <span>Seriye Dön</span>
@@ -963,10 +974,18 @@ export default function MangaRead({ params }) {
 
                 <Button
                   isDisabled={false}
-                  onClick={buttonStates?.isNextDisabled ? goToMangaPage : goToNextChapter}
+                  onClick={
+                    buttonStates?.isNextDisabled
+                      ? goToMangaPage
+                      : goToNextChapter
+                  }
                   size={buttonStates?.buttonSize}
                   className="flex items-center gap-2"
-                  aria-label={buttonStates?.isNextDisabled ? "Go to Manga" : "Next Chapter"}
+                  aria-label={
+                    buttonStates?.isNextDisabled
+                      ? "Go to Manga"
+                      : "Next Chapter"
+                  }
                 >
                   {buttonStates?.isNextDisabled ? (
                     <span>Seriye Dön</span>
@@ -1118,6 +1137,7 @@ export default function MangaRead({ params }) {
             </div>
           </motion.div>
         )}
+        <AdBanner />
 
         <div
           className="w-full max-w-4xl px-4 mx-auto sm:px-6 lg:px-10"

@@ -9,6 +9,10 @@ import MangaListArea from "@/sections/MangaListArea";
 import "@/styles/background.css";
 import TopContent from "@/sections/TopContent";
 import { discordIframe } from "@/config";
+import dynamic from "next/dynamic";
+const AdBanner = dynamic(() => import("@/components/AdBanner"), {
+  ssr: false,
+});
 
 export default async function Index() {
   const genres = await fetchGenres();
@@ -23,11 +27,11 @@ export default async function Index() {
         <TopContent
           data={{ mangaList1: randomChapters1, mangaList2: randomChapters2 }}
         />
+
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-8 ">
           <MangaListArea />
           <div className="hidden my-6 md:block">
             <Announcements />
-
             <div className="my-6">
               <Title text={"categories"} />
             </div>
@@ -46,8 +50,12 @@ export default async function Index() {
                 sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
               ></iframe>
             </div>
+            <AdBanner />
           </div>
         </div>
+      </div>
+      <div className="block md:hidden">
+        <AdBanner />
       </div>
       <Footer />
     </div>

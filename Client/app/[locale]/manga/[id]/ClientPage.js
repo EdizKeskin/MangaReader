@@ -38,6 +38,7 @@ import {
 } from "react-icons/tb";
 import { BsTwitter, BsFacebook, BsWhatsapp, BsLink45Deg } from "react-icons/bs";
 import { useUser } from "@clerk/nextjs";
+import AdBanner from "@/components/AdBanner";
 
 const MemoizedChapterCard = memo(ChapterCard);
 const MemoizedDisqusComments = memo(DisqusComments);
@@ -954,6 +955,7 @@ export default function Manga({ params }) {
             </div>
           )}
         </div>
+        <AdBanner />
 
         {/* Comments Section */}
         <div className="my-12">

@@ -1,0 +1,4 @@
+[ZoneTransfer]
+ZoneId=3
+ReferrerUrl=https://cloudconvert.com/
+HostUrl=https://eu-central.storage.cloudconvert.com/tasks/b56d9f45-18cf-49fa-a56e-8b7c4dddc680/phantom.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cloudconvert-production%2F20250806%2Ffra%2Fs3%2Faws4_request&X-Amz-Date=20250806T201434Z&X-Amz-Expires=86400&X-Amz-Signature=ca8fcf365fdde3deba1a7c3c92d5d0e2da8b88fe294a6302943cdaa1a9e248c6&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3D%22phantom.webp%22&response-content-type=image%2Fwebp&x-id=GetObject

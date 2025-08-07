@@ -228,7 +228,7 @@ export const getUserCount = async () => {
   try {
     const response = await axios.get("https://api.clerk.com/v1/users/count", {
       headers: {
-        Authorization: "Bearer " + process.env.NEXT_PUBLIC_CLERK_API_KEY,
+        Authorization: "Bearer " + process.env.CLERK_SECRET_KEY,
       },
     });
     return response.data.total_count;
@@ -589,7 +589,9 @@ export const getChaptersSlugs = async (slug) => {
 export const fetchRandomChapters = async (limit = 15) => {
   try {
     const response = await axios.get(
-      process.env.NEXT_PUBLIC_MONGO_DB_URL + "manga/random-chapters?limit=" + limit
+      process.env.NEXT_PUBLIC_MONGO_DB_URL +
+        "manga/random-chapters?limit=" +
+        limit
     );
     return response.data;
   } catch (error) {
