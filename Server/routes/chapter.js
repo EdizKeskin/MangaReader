@@ -7,6 +7,11 @@ const {
   deleteMultipleFromR2,
   parseFileKeyFromURL,
 } = require("../utils/r2-client");
+const {
+  sendDiscordNotification,
+  createChapterNotificationEmbed,
+  createDiscordNotification,
+} = require("../utils/discord-webhook");
 
 router.get("/count", async (req, res) => {
   try {
@@ -184,6 +189,29 @@ router.patch("/:id", async (req, res) => {
 
     await Chapter.findByIdAndUpdate(chapterId, updatedChapter);
 
+    // Send Discord notification if chapter is being activated
+    try {
+      if (isActive && isActive !== undefined) {
+        const mangaData = await Manga.findById(manga);
+        const updatedChapterData = await Chapter.findById(chapterId);
+
+        if (mangaData && updatedChapterData) {
+          const baseUrl = process.env.BASE_URL || "https://monomanga.com.tr";
+          const notification = createDiscordNotification(
+            updatedChapterData,
+            mangaData,
+            baseUrl
+          );
+          const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+
+          await sendDiscordNotification(webhookUrl, notification);
+        }
+      }
+    } catch (discordError) {
+      console.error("Discord notification error:", discordError.message);
+      // Don't fail the chapter update if Discord notification fails
+    }
+
     res.json({ message: "Chapter başarıyla güncellendi" });
   } catch (error) {
     console.error("Chapter güncellenirken bir hata oluştu:", error);
@@ -256,6 +284,25 @@ router.post("/add", async (req, res) => {
     });
 
     await chapter.save();
+
+    // Send Discord notification for new chapter
+    try {
+      const mangaData = await Manga.findById(manga);
+      if (mangaData && chapter.isActive) {
+        const baseUrl = process.env.BASE_URL || "https://monomanga.com.tr";
+        const notification = createDiscordNotification(
+          chapter,
+          mangaData,
+          baseUrl
+        );
+        const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+
+        await sendDiscordNotification(webhookUrl, notification);
+      }
+    } catch (discordError) {
+      console.error("Discord notification error:", discordError.message);
+      // Don't fail the chapter creation if Discord notification fails
+    }
 
     res.json({ message: "Chapter başarıyla yüklendi" });
   } catch (error) {

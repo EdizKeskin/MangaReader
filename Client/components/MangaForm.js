@@ -312,6 +312,7 @@ export default function MangaForm({ update, mangaId, username, email }) {
         ? otherNames.filter((name) => name.trim() !== "")
         : [],
       releaseYear: releaseYear || null,
+      discordRoleId: values.discordRoleId || null,
     };
 
     if (update) {
@@ -384,6 +385,7 @@ export default function MangaForm({ update, mangaId, username, email }) {
             status: manga?.status || "ongoing",
             otherNames: manga?.otherNames || [],
             releaseYear: manga?.releaseYear || null,
+            discordRoleId: manga?.discordRoleId || "",
           }}
           validationSchema={validationSchema}
           validationContext={{ isUpdate: update }}
@@ -826,6 +828,24 @@ export default function MangaForm({ update, mangaId, username, email }) {
                     errorMessage={errors.releaseYear}
                   />
                 </div>
+
+                <Input
+                  name="discordRoleId"
+                  label="Discord Rol ID"
+                  placeholder="1234567890123456789"
+                  size="lg"
+                  labelPlacement="outside"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.discordRoleId}
+                  isDisabled={isSubmitting || uploading}
+                  variant="bordered"
+                  classNames={{
+                    input: "text-base",
+                    inputWrapper: "h-12",
+                  }}
+                  description="Bu manga için Discord'da etiketlenecek rol ID'si. Boş bırakılırsa rol etiketlenmez."
+                />
 
                 <div>
                   <label className="block mb-2 text-sm font-medium">

@@ -29,6 +29,7 @@ const BOT_USER_AGENTS = [
 ];
 
 export default function middleware(req) {
+  const pathname = req.nextUrl.pathname || "";
   const userAgent = req.headers.get("user-agent") || "";
   if (BOT_USER_AGENTS.some((bot) => userAgent.includes(bot))) {
     // Sadece botlar için: Sadece intlMiddleware çalışsın, auth devre dışı
@@ -73,9 +74,15 @@ export default function middleware(req) {
       "/:locale/pricing",
       "/manga",
       "/:locale/manga",
+      // Public API routes
+      "/api/clerk/user/:path*",
     ],
 
-    beforeAuth: (req) => intlMiddleware(req),
+    beforeAuth: (req) => {
+      // API route'larda locale middleware çalışmasın
+      if (pathname.startsWith("/api")) return;
+      return intlMiddleware(req);
+    },
   })(req);
 }
 

@@ -1,7 +1,7 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { fetchAnnouncements, getAnnouncementById } from "@/functions";
+import { fetchAnnouncements, getAnnouncementById, getUserById } from "@/functions";
 import Loading from "@/components/Loading";
 import { unixTimeStampToDateTime } from "@/utils";
 import { useTranslations } from "next-intl";
@@ -29,10 +29,50 @@ export default function Announcements() {
   const [id, setId] = useState(useSearchParams().get("id"));
   const [limit, setLimit] = useState(10);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [uploaderNames, setUploaderNames] = useState({});
+  const [uploaderAvatars, setUploaderAvatars] = useState({});
   const t = useTranslations("Announcements");
 
   useEffect(() => {
     setLoading(true);
+    const resolveDisplayName = (user) => {
+      if (!user) return undefined;
+      return (
+        user.username ||
+        undefined
+      );
+    };
+
+    const ensureUploaderNames = async (ids) => {
+      const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
+      const toFetch = uniqueIds.filter(
+        (userId) => !uploaderNames[userId] || !uploaderAvatars[userId]
+      );
+      if (toFetch.length === 0) return;
+      try {
+        const results = await Promise.all(
+          toFetch.map(async (userId) => {
+            try {
+              const user = await getUserById(userId);
+              return [userId, { name: resolveDisplayName(user), image: user.image_url }];
+            } catch (_) {
+              return [userId, { name: undefined, image: undefined }];
+            }
+          })
+        );
+        const namesUpdate = {};
+        const avatarsUpdate = {};
+        for (const [key, value] of results) {
+          namesUpdate[key] = value.name;
+          avatarsUpdate[key] = value.image;
+        }
+        setUploaderNames((prev) => ({ ...prev, ...namesUpdate }));
+        setUploaderAvatars((prev) => ({ ...prev, ...avatarsUpdate }));
+      } catch (_) {
+        // ignore
+      }
+    };
+
     const fetchData = async () => {
       const response = await getAnnouncementById(id);
       if (response.status === 404 || response.status === 500) {
@@ -41,12 +81,15 @@ export default function Announcements() {
         return;
       }
       setAnnouncement(response);
+      await ensureUploaderNames([response.uploader]);
       setNotFound(false);
       setLoading(false);
     };
     const getAllAnnouncements = async () => {
       const response = await fetchAnnouncements(limit);
       setList(response);
+      const ids = (response?.announcements || []).map((a) => a.uploader);
+      await ensureUploaderNames(ids);
       setLoading(false);
     };
 
@@ -55,7 +98,7 @@ export default function Announcements() {
     } else {
       getAllAnnouncements();
     }
-  }, [id, limit]);
+  }, [id, limit, uploaderNames, uploaderAvatars]);
 
   const handleLoadMore = async () => {
     setLoadingMore(true);
@@ -173,7 +216,7 @@ export default function Announcements() {
               transition={{ delay: 0.2 }}
             >
               <Card className="border shadow-2xl bg-zinc-900/80 backdrop-blur-sm border-zinc-700/50">
-                <CardHeader className="pb-4">
+                <CardHeader className="pb-4 p-6">
                   <div className="flex flex-col w-full">
                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                       <div className="flex-1">
@@ -189,7 +232,7 @@ export default function Announcements() {
                           color="secondary"
                           className="font-medium"
                         >
-                          {announcement.uploader}
+                          {uploaderNames[announcement.uploader] || announcement.uploader}
                         </Chip>
                         <Chip
                           startContent={<TbCalendar className="text-sm" />}
@@ -294,11 +337,12 @@ export default function Announcements() {
                             <div className="flex items-center gap-2 text-gray-300">
                               <Avatar
                                 size="sm"
-                                name={announcement.uploader}
+                                src={uploaderAvatars[announcement.uploader]}
+                                name={uploaderNames[announcement.uploader] || announcement.uploader}
                                 className="bg-gradient-to-br from-blue-500 to-purple-600"
                               />
                               <span className="font-medium">
-                                {announcement.uploader}
+                                {uploaderNames[announcement.uploader] || announcement.uploader}
                               </span>
                             </div>
 

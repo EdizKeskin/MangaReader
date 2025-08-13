@@ -255,6 +255,17 @@ export const getUsers = async () => {
   }
 };
 
+// Fetch a single Clerk user by id
+export const getUserById = async (id) => {
+  try {
+    const response = await axios.get(`/api/clerk/user/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export const getChapterList = async () => {
   try {
     const response = await axios.get(

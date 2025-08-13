@@ -48,6 +48,10 @@ const mangaSchema = new mongoose.Schema({
     min: 1900,
     max: new Date().getFullYear() + 10,
   },
+  discordRoleId: {
+    type: String,
+    default: null,
+  },
 });
 
 // Pre-save middleware to update slug when name changes

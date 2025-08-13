@@ -487,6 +487,7 @@ router.patch("/:id", async (req, res) => {
       status,
       otherNames,
       releaseYear,
+      discordRoleId,
     } = req.body;
 
     const existingManga = await Manga.findById(mangaId);
@@ -516,6 +517,7 @@ router.patch("/:id", async (req, res) => {
     if (otherNames !== undefined)
       updatedManga.otherNames = Array.isArray(otherNames) ? otherNames : [];
     if (releaseYear !== undefined) updatedManga.releaseYear = releaseYear;
+    if (discordRoleId !== undefined) updatedManga.discordRoleId = discordRoleId;
 
     // If new cover image URL is provided and different from existing
     if (coverImageUrl && coverImageUrl !== existingManga.coverImage) {
@@ -564,6 +566,7 @@ router.post("/add", async (req, res) => {
       status,
       otherNames,
       releaseYear,
+      discordRoleId,
     } = req.body;
 
     if (!coverImageUrl) {
@@ -592,6 +595,7 @@ router.post("/add", async (req, res) => {
       status: status || "ongoing",
       otherNames: Array.isArray(otherNames) ? otherNames : [],
       releaseYear: releaseYear,
+      discordRoleId: discordRoleId || null,
     });
 
     await manga.save();
