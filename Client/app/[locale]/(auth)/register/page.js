@@ -14,16 +14,15 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 import { TbEye, TbEyeClosed, TbLock, TbMail, TbUser } from "react-icons/tb";
-import { Formik } from "formik";
+import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import OtpInput from "react-otp-input";
 import { useRouter } from "next13-progressbar";
 import { useSignUp } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
-import SignInOAuthButtons from "@/components/SignInOAuthButtons";
 import Link from "next/link";
 
-export default function Login() {
+export default function Register() {
   const t = useTranslations("Register");
   const { isLoaded, signUp, setActive } = useSignUp();
   const [loading, setLoading] = useState(false);
@@ -36,6 +35,7 @@ export default function Login() {
   const router = useRouter();
   const toggleVisibility = () => setIsVisible(!isVisible);
 
+  // Validation
   const validationSchema = Yup.object({
     username: Yup.string()
       .min(4, t("minLength"))
@@ -46,48 +46,48 @@ export default function Login() {
       .required(t("passwordRequired")),
   });
 
+  // Register Submit
   const handleSubmit = async (values) => {
     const { username, email, password } = values;
-    const emailAddress = email;
-    if (!isLoaded) {
-      return;
-    }
+    if (!isLoaded) return;
 
+    setLoading(true);
     try {
       await signUp.create({
-        emailAddress,
+        emailAddress: email,
         password,
         username,
       });
 
+      // Email doğrulama başlat
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-
       setPendingVerification(true);
       onOpen();
     } catch (err) {
       console.error(JSON.stringify(err, null, 2));
-      setError(err.errors[0].message);
+      setError(err.errors?.[0]?.message || "Kayıt başarısız oldu");
+      setLoading(false);
     }
   };
+
+  // Verify OTP
   const onPressVerify = async () => {
-    if (!isLoaded) {
-      return;
-    }
+    if (!isLoaded) return;
     try {
       const completeSignUp = await signUp.attemptEmailAddressVerification({
         code,
       });
-      if (completeSignUp.status !== "complete") {
-        console.log(JSON.stringify(completeSignUp, null, 2));
-      }
       if (completeSignUp.status === "complete") {
         await setActive({ session: completeSignUp.createdSessionId });
         router.push("/");
-        setLoading(false);
+      } else {
+        console.log("Verify durumu:", completeSignUp.status);
       }
     } catch (err) {
       console.error(JSON.stringify(err, null, 2));
-      setVerifyError(err.errors[0].message);
+      setVerifyError(err.errors?.[0]?.message || "Doğrulama hatası");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -95,23 +95,12 @@ export default function Login() {
     <div className="flex flex-col items-center justify-center mt-20">
       <Card className="w-11/12 md:w-[400px] lg:w-[450px]">
         <Formik
-          initialValues={{
-            username: "",
-            email: "",
-            password: "",
-          }}
+          initialValues={{ username: "", email: "", password: "" }}
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
         >
-          {({
-            handleBlur,
-            handleChange,
-            errors,
-            values,
-            handleSubmit,
-            isSubmitting,
-          }) => (
-            <>
+          {({ handleBlur, handleChange, errors, values }) => (
+            <Form>
               <CardHeader className="flex justify-center">
                 <p className="text-lg font-bold">{t("title")}</p>
               </CardHeader>
@@ -129,11 +118,10 @@ export default function Login() {
                     onChange={handleChange}
                     onBlur={handleBlur}
                     value={values.username}
-                    startContent={
-                      <TbUser className="flex-shrink-0 text-2xl pointer-events-none text-default-400" />
-                    }
+                    startContent={<TbUser className="text-2xl text-default-400" />}
                     disabled={pendingVerification}
                   />
+
                   <Input
                     type="email"
                     name="email"
@@ -146,9 +134,7 @@ export default function Login() {
                     onChange={handleChange}
                     onBlur={handleBlur}
                     value={values.email}
-                    startContent={
-                      <TbMail className="flex-shrink-0 text-2xl pointer-events-none text-default-400" />
-                    }
+                    startContent={<TbMail className="text-2xl text-default-400" />}
                     disabled={pendingVerification}
                   />
 
@@ -163,19 +149,17 @@ export default function Login() {
                     onChange={handleChange}
                     onBlur={handleBlur}
                     value={values.password}
-                    startContent={
-                      <TbLock className="flex-shrink-0 text-2xl pointer-events-none text-default-400" />
-                    }
+                    startContent={<TbLock className="text-2xl text-default-400" />}
                     endContent={
                       <button
-                        className="focus:outline-none"
                         type="button"
                         onClick={toggleVisibility}
+                        className="focus:outline-none"
                       >
                         {isVisible ? (
-                          <TbEyeClosed className="text-2xl pointer-events-none text-default-400" />
+                          <TbEyeClosed className="text-2xl text-default-400" />
                         ) : (
-                          <TbEye className="text-2xl pointer-events-none text-default-400" />
+                          <TbEye className="text-2xl text-default-400" />
                         )}
                       </button>
                     }
@@ -186,50 +170,36 @@ export default function Login() {
 
                 <Button
                   type="submit"
-                  as={"button"}
                   color="secondary"
-                  className="mt-6"
-                  onClick={handleSubmit}
-                  isDisabled={true}
+                  className="mt-6 w-full"
+                  isDisabled={loading}
                 >
-                  Geçici olarak devre dışı 
+                  {loading ? "Kaydediliyor..." : "Kayıt Ol"}
                 </Button>
-
-                <div className="relative flex items-center py-5">
-                  <div className="flex-grow border-t border-gray-400"></div>
-                  <span className="flex-shrink mx-4 text-gray-400">
-                    {t("or")}
-                  </span>
-                  <div className="flex-grow border-t border-gray-400"></div>
-                </div>
-
-                {/* <SignInOAuthButtons /> */}
               </CardBody>
-            </>
+            </Form>
           )}
         </Formik>
       </Card>
+
       <div className="mt-4 text-center">
         <span className="text-gray-500">Hesabınız zaten var mı? </span>
         <Link href={`/login`} className="text-secondary underline">
           Giriş yapın
         </Link>
       </div>
+
       {error && (
         <p className="p-4 mt-4 text-center bg-neutral-900 text-neutral-300">
           {error}
         </p>
       )}
-      <Modal
-        placement="center"
-        backdrop={"blur"}
-        isOpen={isOpen}
-        hideCloseButton={true}
-      >
+
+      <Modal placement="center" backdrop={"blur"} isOpen={isOpen} hideCloseButton>
         <ModalContent>
           {() => (
             <>
-              <ModalHeader className="flex flex-col items-center gap-1">
+              <ModalHeader className="flex flex-col items-center">
                 {t("verifyEmail")}
               </ModalHeader>
               <ModalBody className="items-center">
@@ -239,7 +209,7 @@ export default function Login() {
                   numInputs={6}
                   renderSeparator={<span className="mx-2">-</span>}
                   renderInput={(props) => (
-                    <Input type="numInputs" size="md" {...props} />
+                    <Input type="text" size="md" {...props} />
                   )}
                   placeholder="000000"
                 />
