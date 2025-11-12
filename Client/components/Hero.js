@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import HeroImage from "@/public/phantom.webp";
 import HeroImage2 from "@/public/trash.webp";
 import HeroImage3 from "@/public/osa.webp";
+import HeroImage4 from "@/public/hero.webp";
 import { useWindowSize } from "@/hooks/useWindowSize";
 import { useState, useEffect } from "react";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
@@ -18,20 +19,29 @@ function Hero() {
 
   const isMobile = width < 640;
 
-  // Carousel data - 3 farklı item
   const carouselItems = [
     {
       id: 1,
+      title: "Tomodachi Game",
+      description:
+        "Katagiri Yuuichi, arkadaşların paradan daha önemli olduğuna inanmaktadır. Ancak parasızlığında ne kadar zor olduğunun bilincindedir. Yapacakları okul gezisi için sıkı bir şekilde çalışıp para biriktirmektedir, çünkü arkadaşlarına beraber gideceklerine dair söz vermiştir. Ancak okulda geziye gidecek olan bütün sınıflardan para toplandıktan sonra toplanan para çalınır!",
+      image: HeroImage4,
+      link: "/manga/tomodachi-game",
+      genres: ["Dram", "Seinen", "Psikoloji"],
+      featured: true,
+    },
+    {
+      id: 2,
       title: "Phantom Busters",
       description:
         "Lise birinci sınıf öğrencisi Eugene Korekishi, hiçbir ruhani gücü olmayan ve hayaletlere inanmayan bir onur öğrencisidir! Ancak lise hayatı, hayaletleri yiyerek kovduğunu söyleyen asi bir çocuk olan Mogari Shishikuno ile tanışınca beklenmedik bir şekilde değişir!",
       image: HeroImage,
       link: "/manga/phantom-busters",
       genres: ["Aksiyon", "Komedi", "Doğaüstü"],
-      featured: true,
+      featured: false,
     },
     {
-      id: 2,
+      id: 3,
       title: "What Do You Call This Trash",
       description:
         "Aşık olduğum kız, ağabeyimin eski sevgilisi. Yapışkan, inatçı ve zayıf noktalarımı kullanan aşağılık bir kız. Ama onunla olan ilişkimi bir türlü bitiremiyorum.",
@@ -41,7 +51,7 @@ function Hero() {
       featured: false,
     },
     {
-      id: 3,
+      id: 4,
       title: "Osananananajimi",
       description:
         "Momose Yuuichi ve Fujino Sumi, çocukluklarından beri birlikte büyümüş iki yakın arkadaştır. Şimdi aynı lisede okuyorlar ama ergenliğe girdiklerinden beri aralarındaki o eski samimiyet kalmamış gibi. Birbirlerini çok iyi tanısalar da aralarında sanki bir resmiyet duygusu var. İşte aralarındaki bu hassas ilişki, bir gün Sumi aniden Yuuichi’nin evine gelene kadar böyle devam eder...",
@@ -52,11 +62,10 @@ function Hero() {
     },
   ];
 
-  // Auto-play carousel
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
-    }, 8000); // 8 saniyede bir değişir
+    }, 8000);
 
     return () => clearInterval(interval);
   }, [carouselItems.length]);
