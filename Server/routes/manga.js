@@ -398,9 +398,7 @@ router.get("/slug/:slug/chapters", async (req, res) => {
 
 router.get("/list/name", async (req, res) => {
   try {
-    const mangaList = await Manga.find({ isActive: true }).select(
-      "name _id type"
-    );
+    const mangaList = await Manga.find().select("name _id type");
     res.json(mangaList);
   } catch (error) {
     res.status(500).json({ error: error.message });
